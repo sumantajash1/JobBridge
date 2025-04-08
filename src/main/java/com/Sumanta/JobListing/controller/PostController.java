@@ -14,9 +14,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-
-
 @RestController
+@CrossOrigin("http://localhost:3000/")
 public class PostController {
     @Autowired
     PostDAO dao;
@@ -29,7 +28,7 @@ public class PostController {
         response.sendRedirect("swagger-ui/index.html");
     }
 
-    @GetMapping(value="posts")
+    @GetMapping(value="allPosts")
     public List<Post> AllPosts() {
         return dao.findAll();
     }
