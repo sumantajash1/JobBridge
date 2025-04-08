@@ -13,8 +13,7 @@ public class Post {
     private int exp;
     private String techs[];
 
-    public Post() {
-    }
+    public Post() {}
 
     public String getProfile() {
         return profile;
