@@ -8,6 +8,7 @@ import java.util.List;
 
 @Document(collection = "JobPost")
 public class Post {
+    private String company;
     private String profile;
     private String desc;
     private int exp;
@@ -47,9 +48,18 @@ public class Post {
         this.exp = exp;
     }
 
+    public String getCompany() {
+        return company;
+    }
+
+    public void setCompany(String company) {
+        this.company = company;
+    }
+
     @Override
     public String toString() {
         return "Post{" +
+                "company='"+ company + '\'' +
                 "profile='" + profile + '\'' +
                 ", desc='" + desc + '\'' +
                 ", exp=" + exp +

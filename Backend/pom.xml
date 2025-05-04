@@ -11,7 +11,7 @@
 	<groupId>com.Sumanta</groupId>
 	<artifactId>JobListing</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>JobListing</name>
+	<aName>JobListing</aName>
 	<description>Demo project for Spring Boot</description>
 	<url/>
 	<licenses>
