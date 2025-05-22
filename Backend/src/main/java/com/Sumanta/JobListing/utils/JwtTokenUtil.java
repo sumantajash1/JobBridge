@@ -1,6 +1,7 @@
 package com.Sumanta.JobListing.utils;
 
 import com.Sumanta.JobListing.Entity.Role;
+import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.stereotype.Component;
 import io.jsonwebtoken.security.Keys;
@@ -27,5 +28,38 @@ public class JwtTokenUtil {
                         .compact();
     }
 
+    public boolean validateToken(String JwtToken) {
+        try {
+            Jwts
+                    .parserBuilder()
+                    .setSigningKey(SECRET_KEY)
+                    .build()
+                    .parseClaimsJws(JwtToken);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 
+    public String getUserIdFromToken(String jwtToken) {
+        return Jwts
+                .parserBuilder()
+                .setSigningKey(SECRET_KEY)
+                .build()
+                .parseClaimsJws(jwtToken)
+                .getBody()
+                .getSubject();
+    }
+
+    public Role getUserRoleFromToken(String jwtToken) {
+        String roleStr = Jwts
+                .parserBuilder()
+                .setSigningKey(SECRET_KEY)
+                .build()
+                .parseClaimsJws(jwtToken)
+                .getBody()
+                .get("role", String.class);
+        return Role.valueOf(roleStr);
+    }
 }
