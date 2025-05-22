@@ -4,8 +4,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection = "Applicants")
 public class Applicant {
-    // aName, dob, password, mobile no., email
-    private String aId; //generate inside service
     private String aName;
     private String aDob;
     private String password;
@@ -15,21 +13,12 @@ public class Applicant {
     public Applicant() {
     }
 
-    public Applicant(String id, String aName, String aDob, String password, String mobNo, String email) {
-        this.aId = id;
+    public Applicant(String aName, String aDob, String password, String mobNo, String email) {
         this.aName = aName;
         this.aDob = aDob;
         this.password = password;
         this.mobNo = mobNo;
         Email = email;
-    }
-
-    public String getaId() {
-        return aId;
-    }
-
-    public void setaId(String aId) {
-        this.aId = aId;
     }
 
     public String getaName() {
@@ -75,7 +64,6 @@ public class Applicant {
     @Override
     public String toString() {
         return "Applicant{" +
-                "aId='" + aId + '\'' +
                 ", aName='" + aName + '\'' +
                 ", aDob='" + aDob + '\'' +
                 ", password='" + password + '\'' +
