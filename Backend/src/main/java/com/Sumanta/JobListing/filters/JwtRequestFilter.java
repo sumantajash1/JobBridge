@@ -1,4 +1,7 @@
 package com.Sumanta.JobListing.filters;
 
-public class JwtRequestFilter {
+import org.springframework.web.filter.OncePerRequestFilter;
+
+public class JwtRequestFilter extends OncePerRequestFilter {
+
 }
