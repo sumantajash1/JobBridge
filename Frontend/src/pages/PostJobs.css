@@ -1,0 +1,64 @@
+.post-jobs-container {
+  padding: 2rem;
+  min-height: 100vh;
+  background-color: #f0f4ff;
+}
+
+.post-jobs-paper {
+  padding: 2rem;
+  border-radius: 16px;
+  background-color: white;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.post-jobs-title {
+  color: #1e3a8a;
+  text-align: center;
+  margin-bottom: 2rem;
+  font-weight: bold;
+}
+
+.job-type-switch {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+.post-jobs-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-field {
+  margin-bottom: 1rem;
+}
+
+.submit-button {
+  margin-top: 1rem;
+  padding: 12px 30px;
+  border-radius: 30px;
+  font-weight: bold;
+  font-size: 1.1rem;
+  transition: transform 0.3s ease;
+}
+
+.submit-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .post-jobs-container {
+    padding: 1rem;
+  }
+
+  .post-jobs-paper {
+    padding: 1.5rem;
+  }
+
+  .post-jobs-title {
+    font-size: 1.5rem;
+  }
+} 
