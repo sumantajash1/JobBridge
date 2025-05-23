@@ -8,14 +8,19 @@ import org.springframework.context.annotation.Configuration;
 import java.net.http.HttpRequest;
 import java.security.Security;
 
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.HttpSecurityDsl;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 @Configuration
+@EnableMethodSecurity
+@EnableWebSecurity
 public class SecurityConfig {
     @Autowired
     JwtRequestFilter filter;
@@ -25,10 +30,10 @@ public class SecurityConfig {
         httpSecurity.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/Applicant/SignUP",
-                                        "/Applicant.LogIn",
-                                        "/Company/SignUP",
-                                        "/Company/LogIn"
+                                "/Applicant/SignUp",
+                                "/Applicant/LogIn",
+                                "/Company/SignUp",
+                                "/Company/LogIn"
                         ).permitAll()
                         .requestMatchers("/Applicant/**").hasRole("Applicant")
                         .requestMatchers("/Company/**").hasRole("Company")
@@ -36,6 +41,6 @@ public class SecurityConfig {
                 ).sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class);
-                return httpSecurity.build();
+        return httpSecurity.build();
     }
 }

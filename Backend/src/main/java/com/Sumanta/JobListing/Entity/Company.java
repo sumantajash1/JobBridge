@@ -2,7 +2,7 @@ package com.Sumanta.JobListing.Entity;
 
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@Document(collection = "Companies")
+@Document(collection = "CompanyData")
 public class Company {
     private String gstNum;
     private String cName;
