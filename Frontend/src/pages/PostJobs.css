@@ -1,64 +1,402 @@
 .post-jobs-container {
-  padding: 2rem;
+  background: linear-gradient(135deg, #f0f4ff 0%, #e6eeff 100%);
   min-height: 100vh;
-  background-color: #f0f4ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
 }
 
 .post-jobs-paper {
-  padding: 2rem;
-  border-radius: 16px;
+  padding: 3rem;
+  border-radius: 24px;
   background-color: white;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 40px rgba(30, 58, 138, 0.1);
+  max-width: 900px;
+  width: 100%;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.post-jobs-paper:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 50px rgba(30, 58, 138, 0.15);
+}
+
+@media (min-width: 900px) {
+  .post-jobs-paper {
+    padding: 4rem;
+  }
 }
 
 .post-jobs-title {
+  font-weight: 800;
   color: #1e3a8a;
-  text-align: center;
+  font-size: 2.5rem;
   margin-bottom: 2rem;
-  font-weight: bold;
+  letter-spacing: -0.5px;
+  text-align: center;
 }
 
 .job-type-switch {
   display: flex;
   justify-content: center;
-  margin-bottom: 2rem;
+  margin-bottom: 3rem;
+}
+
+.job-type-switch .MuiToggleButtonGroup-root {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(30, 58, 138, 0.1);
+}
+
+.job-type-switch .MuiToggleButton-root {
+  padding: 12px 24px;
+  border: 1px solid #e2e8f0;
+  background-color: white;
+  color: #64748b;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.job-type-switch .MuiToggleButton-root:hover {
+  background-color: #f8fafc;
+  transform: translateY(-1px);
+}
+
+.job-type-switch .MuiToggleButton-root.Mui-selected {
+  background-color: #1e3a8a;
+  color: white;
+  border-color: #1e3a8a;
 }
 
 .post-jobs-form {
   display: flex;
   flex-direction: column;
+  gap: 2rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 1.5rem;
 }
 
+@media (max-width: 768px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
 .form-field {
-  margin-bottom: 1rem;
+  margin-bottom: 0;
+}
+
+.form-field .MuiTextField-root {
+  width: 100%;
+}
+
+.form-field .MuiInputLabel-root {
+  color: #64748b;
+  font-weight: 500;
+  font-size: 1rem;
+}
+
+.form-field .MuiInputLabel-root.Mui-focused {
+  color: #1e3a8a;
+}
+
+.form-field .MuiOutlinedInput-root {
+  border-radius: 12px;
+  background-color: #f8fafc;
+  transition: all 0.3s ease;
+}
+
+.form-field .MuiOutlinedInput-root:hover {
+  background-color: #f1f5f9;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(30, 58, 138, 0.08);
+}
+
+.form-field .MuiOutlinedInput-root.Mui-focused {
+  background-color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(30, 58, 138, 0.12);
+}
+
+.form-field .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline {
+  border-color: #e2e8f0;
+  transition: border-color 0.3s ease;
+}
+
+.form-field .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+  border-color: #cbd5e1;
+}
+
+.form-field .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: #1e3a8a;
+  border-width: 2px;
+}
+
+.form-field .MuiInputBase-input {
+  color: #1e293b;
+  font-size: 1rem;
+}
+
+.form-field .MuiInputBase-input::placeholder {
+  color: #94a3b8;
+  opacity: 1;
+}
+
+/* Multi-line text fields */
+.form-field .MuiOutlinedInput-multiline {
+  padding: 0;
+}
+
+.form-field .MuiOutlinedInput-multiline .MuiOutlinedInput-input {
+  padding: 16.5px 14px;
+}
+
+/* Select dropdown styling */
+.form-field .MuiSelect-root {
+  background-color: #f8fafc;
+}
+
+.form-field .MuiSelect-icon {
+  color: #64748b;
+}
+
+.form-field .MuiMenuItem-root {
+  color: #1e293b;
+  transition: background-color 0.2s ease;
+}
+
+.form-field .MuiMenuItem-root:hover {
+  background-color: #f0f4ff;
+}
+
+.form-field .MuiMenuItem-root.Mui-selected {
+  background-color: #1e3a8a;
+  color: white;
+}
+
+.form-field .MuiMenuItem-root.Mui-selected:hover {
+  background-color: #1e40af;
+}
+
+/* Chip styling for skills/tags */
+.form-field .MuiChip-root {
+  background-color: #f0f4ff;
+  color: #1e3a8a;
+  border: 1px solid #e2e8f0;
+  margin: 2px;
+  transition: all 0.2s ease;
+}
+
+.form-field .MuiChip-root:hover {
+  background-color: #e6eeff;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(30, 58, 138, 0.1);
+}
+
+.form-field .MuiChip-deleteIcon {
+  color: #64748b;
+}
+
+.form-field .MuiChip-deleteIcon:hover {
+  color: #1e3a8a;
 }
 
 .submit-button {
-  margin-top: 1rem;
-  padding: 12px 30px;
-  border-radius: 30px;
-  font-weight: bold;
+  margin-top: 2rem;
+  padding: 14px 32px;
+  border-radius: 12px;
+  font-weight: 600;
   font-size: 1.1rem;
-  transition: transform 0.3s ease;
+  background-color: #1e3a8a;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  align-self: center;
+  min-width: 200px;
 }
 
 .submit-button:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+  background-color: #1e40af;
+  box-shadow: 0 8px 20px rgba(30, 58, 138, 0.2);
+}
+
+.submit-button:active {
+  transform: translateY(0);
+}
+
+.submit-button:disabled {
+  background-color: #94a3b8;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Form sections */
+.form-section {
+  margin-bottom: 2rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.form-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.form-section-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1e3a8a;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #f0f4ff;
+}
+
+/* File upload styling */
+.file-upload-area {
+  border: 2px dashed #cbd5e1;
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+  background-color: #f8fafc;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.file-upload-area:hover {
+  border-color: #1e3a8a;
+  background-color: #f0f4ff;
+  transform: translateY(-2px);
+}
+
+.file-upload-area.dragover {
+  border-color: #1e3a8a;
+  background-color: #e6eeff;
+}
+
+.file-upload-text {
+  color: #64748b;
+  font-size: 1rem;
+  margin-top: 0.5rem;
+}
+
+.file-upload-icon {
+  color: #94a3b8;
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Success message */
+.success-message {
+  background-color: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 12px;
+  padding: 1rem;
+  margin-top: 1rem;
+  color: #166534;
+  text-align: center;
+  font-weight: 500;
+}
+
+/* Error message */
+.error-message {
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  padding: 1rem;
+  margin-top: 1rem;
+  color: #dc2626;
+  text-align: center;
+  font-weight: 500;
+}
+
+/* Loading state */
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 24px;
+  z-index: 10;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #e2e8f0;
+  border-top: 4px solid #1e3a8a;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 /* Responsive adjustments */
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .post-jobs-container {
     padding: 1rem;
   }
 
   .post-jobs-paper {
+    padding: 2rem;
+  }
+
+  .post-jobs-title {
+    font-size: 2rem;
+  }
+
+  .job-type-switch .MuiToggleButton-root {
+    padding: 10px 16px;
+    font-size: 0.9rem;
+  }
+
+  .submit-button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .post-jobs-paper {
     padding: 1.5rem;
   }
 
   .post-jobs-title {
-    font-size: 1.5rem;
+    font-size: 1.75rem;
   }
-} 
+
+  .form-section-title {
+    font-size: 1.1rem;
+  }
+}
+
+/* Focus states for accessibility */
+.form-field .MuiOutlinedInput-root:focus-within {
+  outline: 2px solid #1e3a8a;
+  outline-offset: 2px;
+}
+
+.submit-button:focus {
+  outline: 2px solid #1e3a8a;
+  outline-offset: 2px;
+}
+
+/* Smooth transitions for all interactive elements */
+* {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
