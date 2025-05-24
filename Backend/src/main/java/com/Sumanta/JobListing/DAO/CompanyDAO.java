@@ -6,6 +6,8 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface CompanyDAO extends MongoRepository<Company, String>{
+    public boolean existsByGstNum(String gstNum);
 
+    public Company findByGstNum(String gstNum);
 }
 
