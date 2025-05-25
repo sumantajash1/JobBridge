@@ -1,5 +1,6 @@
 package com.Sumanta.JobListing.controller;
 
+import com.Sumanta.JobListing.DTO.CompanyLoginRequestBody;
 import com.Sumanta.JobListing.Entity.Company;
 import com.Sumanta.JobListing.Service.CompanyService;
 import jakarta.servlet.http.HttpServletResponse;
@@ -38,9 +39,9 @@ public class CompanyController {
     }
 
     @PostMapping("/SignIn")
-    public ResponseEntity<String> SignIn(@RequestBody Company company, HttpServletResponse response) {
-        //System.out.println("Entered SignIn method of Company");
-        String serviceResponse = companyService.Login(company);
+    public ResponseEntity<String> SignIn(@RequestBody CompanyLoginRequestBody companyLoginRequestBody, HttpServletResponse response) {
+        System.out.println("Entered SignIn method of Company");
+        String serviceResponse = companyService.Login(companyLoginRequestBody);
         if(serviceResponse.equals("InvalGstNum")) {
             return ResponseEntity.ok("Invalid GST Number");
         }

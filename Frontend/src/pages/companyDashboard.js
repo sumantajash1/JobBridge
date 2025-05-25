@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { 
   Box, 
   Container, 
@@ -19,6 +19,14 @@ import './companyDashboard.css';
 
 const CompanyDashboard = () => {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Check if user is authenticated
+    const token = localStorage.getItem('companyToken');
+    if (!token) {
+      navigate('/employer/signin', { replace: true });
+    }
+  }, [navigate]);
 
   const dashboardOptions = [
     {
@@ -51,13 +59,27 @@ const CompanyDashboard = () => {
     }
   ];
 
+  const handleLogout = () => {
+    localStorage.removeItem('companyToken');
+    navigate('/employer/signin', { replace: true });
+  };
+
   return (
     <Box className="dashboard-container">
       <Container maxWidth="lg">
         <Paper elevation={3} className="dashboard-paper">
-          <Typography variant="h4" component="h1" gutterBottom className="dashboard-title">
-            Company Dashboard
-          </Typography>
+          <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+            <Typography variant="h4" component="h1" className="dashboard-title">
+              Company Dashboard
+            </Typography>
+            <Button 
+              variant="outlined" 
+              color="secondary" 
+              onClick={handleLogout}
+            >
+              Logout
+            </Button>
+          </Box>
           
           <Grid container spacing={4} className="dashboard-grid">
             {dashboardOptions.map((option, index) => (

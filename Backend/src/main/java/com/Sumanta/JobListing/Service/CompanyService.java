@@ -1,6 +1,7 @@
 package com.Sumanta.JobListing.Service;
 
 import com.Sumanta.JobListing.DAO.CompanyDAO;
+import com.Sumanta.JobListing.DTO.CompanyLoginRequestBody;
 import com.Sumanta.JobListing.Entity.Company;
 import com.Sumanta.JobListing.Entity.Role;
 import com.Sumanta.JobListing.utils.GstNumberValidator;
@@ -43,8 +44,8 @@ public class CompanyService {
         return companyDAO.findAll();
     }
 
-    public String Login(Company company) {
-        String gstNum = company.getGstNum();
+    public String Login(CompanyLoginRequestBody companyLoginRequestBody) {
+        String gstNum = companyLoginRequestBody.getGstNum();
         if(!gstNumberValidator.isGstNumValid(gstNum)) {
             return "InvalGstNum";
         }
@@ -52,7 +53,7 @@ public class CompanyService {
             return "NotFound";
         }
         Company tempCompany = companyDAO.findByGstNum(gstNum);
-        if(!passwordEncoder.matches(company.getcPassword(), tempCompany.getcPassword())) {
+        if(!passwordEncoder.matches(companyLoginRequestBody.getPassword(), tempCompany.getcPassword())) {
            return "WrongPassword";
         }
         return jwtTokenUtil.GenerateToken(gstNum, Role.Company);

@@ -116,16 +116,10 @@ const CompanySignUp = () => {
           body: JSON.stringify(companyData)
         });
 
-        console.log('Response status:', response.status);
-        
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
+        const responseText = await response.text();
+        console.log('Response:', responseText);
 
-        const data = await response.text();
-        console.log('Response data:', data);
-
-        if (data === "Invalid GST Number") {
+        if (responseText === "Invalid GST Number") {
           setErrors(prev => ({
             ...prev,
             gstin: 'Invalid GST Number'
@@ -133,7 +127,7 @@ const CompanySignUp = () => {
           return;
         }
 
-        if (data === "Company Already Exists") {
+        if (responseText === "Company Already Exists") {
           setErrors(prev => ({
             ...prev,
             gstin: 'Company with this GST number already exists'
@@ -142,12 +136,15 @@ const CompanySignUp = () => {
         }
 
         // If we get here, signup was successful and we received a JWT token
-        console.log('Signup successful, storing JWT token');
-        localStorage.setItem('jwt', data);
-        
-        // Navigate to dashboard
-        console.log('Navigating to dashboard');
-        navigate('/employer/dashboard');
+        if (responseText && responseText.length > 0) {
+          console.log('Signup successful, storing JWT token');
+          localStorage.setItem('companyToken', responseText);
+          
+          // Use window.location for hard navigation
+          window.location.href = '/employer/dashboard';
+        } else {
+          throw new Error('No token received');
+        }
       } catch (error) {
         console.error('Sign up failed:', error);
         setErrors(prev => ({
