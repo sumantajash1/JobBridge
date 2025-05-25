@@ -160,6 +160,7 @@
   margin: 0 auto;
   box-shadow: 0 8px 30px rgba(102, 126, 234, 0.3);
   min-width: 200px;
+  text-decoration: none;
 }
 
 .home-button::before {
@@ -264,22 +265,22 @@
 }
 
 .home-button.primary {
-  background: #2563eb;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
 }
 
 .home-button.primary:hover {
-  background: #1d4ed8;
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
 }
 
 .home-button.secondary {
-  background: white;
-  color: #2563eb;
-  border: 1px solid #2563eb;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
 }
 
 .home-button.secondary:hover {
-  background: #f8fafc;
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
 }
 
 .home-footer {
