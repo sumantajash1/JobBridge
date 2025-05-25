@@ -89,10 +89,75 @@ const CompanySignUp = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log('Form submitted');
+    console.log('Form data:', formData);
+    
     if (validateForm()) {
-      // Here you would typically handle authentication
-      // For now, we'll just navigate to the post job page
-      navigate('/employer/post-job');
+      console.log('Form validation passed');
+      try {
+        // Prepare data in the format matching the Company class
+        const companyData = {
+          gstNum: formData.gstin,
+          cName: formData.companyName,
+          cEmail: formData.email,
+          cContactNumber: formData.contactNumber,
+          cPassword: formData.password,
+          estd: formData.establishedYear
+        };
+        
+        console.log('Sending data to backend:', companyData);
+
+        const response = await fetch('http://localhost:8080/Company/SignUp', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          mode: 'cors',
+          body: JSON.stringify(companyData)
+        });
+
+        console.log('Response status:', response.status);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.text();
+        console.log('Response data:', data);
+
+        if (data === "Invalid GST Number") {
+          setErrors(prev => ({
+            ...prev,
+            gstin: 'Invalid GST Number'
+          }));
+          return;
+        }
+
+        if (data === "Company Already Exists") {
+          setErrors(prev => ({
+            ...prev,
+            gstin: 'Company with this GST number already exists'
+          }));
+          return;
+        }
+
+        // If we get here, signup was successful and we received a JWT token
+        console.log('Signup successful, storing JWT token');
+        localStorage.setItem('jwt', data);
+        
+        // Navigate to dashboard
+        console.log('Navigating to dashboard');
+        navigate('/employer/dashboard');
+      } catch (error) {
+        console.error('Sign up failed:', error);
+        setErrors(prev => ({
+          ...prev,
+          submit: `Failed to create account: ${error.message}`
+        }));
+      }
+    } else {
+      console.log('Form validation failed');
+      console.log('Validation errors:', errors);
     }
   };
 
@@ -205,4 +270,4 @@ const CompanySignUp = () => {
   );
 };
 
-export default CompanySignUp; 
+export default CompanySignUp;

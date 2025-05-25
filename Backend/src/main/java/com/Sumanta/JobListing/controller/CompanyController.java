@@ -16,6 +16,7 @@ import java.util.List;
 @RestController
 @EnableMethodSecurity
 @RequestMapping("/Company")
+@CrossOrigin(origins = "http://localhost:3000")
 public class CompanyController {
 
     @Autowired
@@ -23,8 +24,8 @@ public class CompanyController {
 
     @PostMapping("/SignUp")
     public ResponseEntity<String> SignUp(@RequestBody Company company, HttpServletResponse response) {
+        //System.out.println("In the sign Up method of CompanyController");
         String serviceResponse = companyService.register(company);
-
         if(serviceResponse.equals("InvalGstNum")) {
             return ResponseEntity.ok("Invalid GST Number");
         }

@@ -5,7 +5,6 @@ import './companySignIn.css';
 const CompanySignIn = () => {
   const [formData, setFormData] = useState({
     gstin: '',
-    email: '',
     password: ''
   });
 
@@ -35,13 +34,6 @@ const CompanySignIn = () => {
       newErrors.gstin = 'Please enter a valid GSTIN number';
     }
 
-    // Email validation
-    if (!formData.email) {
-      newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email address';
-    }
-
     // Password validation
     if (!formData.password) {
       newErrors.password = 'Password is required';
@@ -54,9 +46,14 @@ const CompanySignIn = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (validateForm()) {
-      // Here you would typically handle authentication
-      // For now, we'll just navigate to the post job page
-      navigate('/employer/post-job');
+      try {
+        // Here you would typically handle authentication with your backend
+        // For now, we'll just navigate to the dashboard
+        navigate('/employer/dashboard');
+      } catch (error) {
+        console.error('Sign in failed:', error);
+        // Handle sign-in error here
+      }
     }
   };
 
@@ -81,18 +78,6 @@ const CompanySignIn = () => {
               onChange={(e) => handleInputChange('gstin', e.target.value)}
             />
             {errors.gstin && <div className="error-message">{errors.gstin}</div>}
-          </div>
-
-          <div className={`form-field ${errors.email ? 'error' : ''}`}>
-            <label htmlFor="email">Company Email</label>
-            <input
-              id="email"
-              type="email"
-              placeholder="Enter your company email"
-              value={formData.email}
-              onChange={(e) => handleInputChange('email', e.target.value)}
-            />
-            {errors.email && <div className="error-message">{errors.email}</div>}
           </div>
 
           <div className={`form-field ${errors.password ? 'error' : ''}`}>

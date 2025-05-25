@@ -4,6 +4,7 @@ import Home from "./pages/Home";
 import PostJobs from "./pages/PostJobs";
 import CompanySignIn from "./pages/companySignIn";
 import CompanySignUp from "./pages/CompanySignUp";
+import CompanyDashboard from "./pages/companyDashboard";
 
 //random comment
  
@@ -14,7 +15,8 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/employer/signin" element={<CompanySignIn />} />
         <Route path="/employer/signup" element={<CompanySignUp />} />
-        <Route path="/employer/post-job" element={<PostJobs />} />
+        <Route path="/employer/dashboard" element={<CompanyDashboard />} />
+        <Route path="/post-job" element={<PostJobs />} />
         {/* <Route path="/employee/feed" element={<Feed />} /> */}
       </Routes>
     </BrowserRouter>
