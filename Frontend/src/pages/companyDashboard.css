@@ -1,79 +1,270 @@
+/* Import fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
 .dashboard-container {
   min-height: 100vh;
-  padding: 2rem 0;
-  background-color: #f5f5f5;
+  display: flex;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+  background-size: 400% 400%;
+  animation: gradientShift 8s ease infinite;
+  font-family: 'Inter', sans-serif;
 }
 
-.dashboard-paper {
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Main Content Area */
+.dashboard-main {
+  flex: 1;
   padding: 2rem;
-  background-color: white;
-  border-radius: 12px;
-}
-
-.dashboard-title {
-  margin-bottom: 2rem !important;
-  color: #1a237e;
-  font-weight: 600 !important;
-  text-align: center;
-}
-
-.dashboard-grid {
-  margin-top: 1rem;
-}
-
-.dashboard-card {
-  border-radius: 8px;
-  overflow: hidden;
-  height: 100%;
+  background: transparent;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background-color: white;
-  border: 1px solid #e0e0e0;
+  max-width: 100%;
 }
 
-.card-icon {
+/* Header Styles */
+.dashboard-header {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  padding: 1.25rem 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2.5rem;
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  position: sticky;
+  top: 2rem;
+  z-index: 10;
+  margin: 0 2rem 2.5rem 2rem;
+}
+
+.header-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-family: 'Inter', sans-serif;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+/* Dashboard Grid */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  margin: 0 2rem;
+  padding-bottom: 2rem;
+  flex: 1;
+  max-width: 100%;
+  align-content: start;
+}
+
+/* Card Styles */
+.dashboard-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  height: auto;
+  min-height: 250px;
+  max-height: 300px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.dashboard-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+  border-color: rgba(102, 126, 234, 0.3);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 1rem;
 }
 
-.dashboard-card .MuiCardContent-root {
-  padding: 1.5rem;
-}
-
-.dashboard-card .MuiTypography-h6 {
+.card-title {
+  font-size: 1.125rem;
   font-weight: 600;
-  margin-bottom: 0.5rem;
-  color: #333;
+  color: #1f2937;
+  font-family: 'Inter', sans-serif;
 }
 
-.dashboard-card .MuiTypography-body2 {
-  color: #666;
+.card-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white !important;
+}
+
+.card-icon svg {
+  color: white !important;
+  width: 24px;
+  height: 24px;
+}
+
+.card-content {
+  flex-grow: 1;
+  margin-bottom: 1.5rem;
+  min-height: 80px;
+}
+
+.card-description {
+  color: #6b7280;
+  font-size: 0.875rem;
   line-height: 1.5;
+  font-family: 'Inter', sans-serif;
 }
 
-.dashboard-card .MuiCardActions-root {
-  padding: 1rem 1.5rem;
-  background-color: #f8f9fa;
+.card-actions {
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(102, 126, 234, 0.1);
 }
 
-.dashboard-card .MuiButton-root {
-  text-transform: none;
+/* Button Styles */
+.dashboard-button {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
   font-weight: 500;
+  font-size: 0.875rem;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white !important;
+  border: none;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
 }
 
-/* Responsive adjustments */
-@media (max-width: 600px) {
-  .dashboard-container {
-    padding: 1rem 0;
-  }
+.dashboard-button:hover {
+  background: linear-gradient(135deg, #764ba2, #f093fb);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+  color: white !important;
+}
 
-  .dashboard-paper {
+.dashboard-button svg {
+  color: white !important;
+}
+
+/* Profile Button */
+.profile-button {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(102, 126, 234, 0.2);
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.profile-button:hover {
+  background: white;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
+  border-color: rgba(102, 126, 234, 0.3);
+}
+
+.profile-button svg {
+  color: #667eea;
+  width: 28px;
+  height: 28px;
+}
+
+/* Profile Menu */
+.profile-menu .MuiPaper-root {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  min-width: 220px;
+  padding: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  margin-top: 0.5rem;
+}
+
+.profile-menu-item {
+  padding: 0.875rem 1rem;
+  border-radius: 0.5rem;
+  transition: all 0.3s ease;
+  margin: 0.25rem 0;
+}
+
+.profile-menu-item:hover {
+  background: rgba(102, 126, 234, 0.1);
+}
+
+.profile-menu-item .MuiListItemIcon-root {
+  min-width: 40px;
+}
+
+.profile-menu-item .MuiListItemIcon-root svg {
+  color: #667eea;
+  width: 22px;
+  height: 22px;
+}
+
+.profile-menu-item .MuiListItemText-primary {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #1f2937;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .dashboard-main {
     padding: 1rem;
   }
-
-  .dashboard-title {
-    font-size: 1.75rem !important;
-    margin-bottom: 1.5rem !important;
+  
+  .dashboard-header {
+    margin: 0 0 1.5rem 0;
+    padding: 1rem;
+    position: relative;
+    top: 0;
   }
-} 
+  
+  .dashboard-grid {
+    margin: 0;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .profile-button {
+    padding: 0.5rem;
+  }
+  
+  .profile-button svg {
+    width: 24px;
+    height: 24px;
+  }
+}

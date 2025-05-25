@@ -1,24 +1,32 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   Box, 
-  Container, 
   Typography, 
   Grid, 
   Card, 
   CardContent, 
   CardActions, 
   Button,
-  Paper
+  IconButton,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  ListItemText
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
 import HistoryIcon from '@mui/icons-material/History';
 import PeopleIcon from '@mui/icons-material/People';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import PersonIcon from '@mui/icons-material/Person';
+import LogoutIcon from '@mui/icons-material/Logout';
 import './companyDashboard.css';
 
 const CompanyDashboard = () => {
   const navigate = useNavigate();
+  const [anchorEl, setAnchorEl] = useState(null);
+  const open = Boolean(anchorEl);
 
   useEffect(() => {
     // Check if user is authenticated
@@ -30,102 +38,125 @@ const CompanyDashboard = () => {
 
   const dashboardOptions = [
     {
-      title: 'Create New Job Post',
+      title: 'Post a new Job',
       description: 'Post a new job opening and attract potential candidates',
-      icon: <AddCircleOutlineIcon sx={{ fontSize: 40 }} />,
-      path: '/post-job',
-      color: '#2196f3'
+      icon: <AddCircleOutlineIcon sx={{ fontSize: 24 }} />,
+      path: '/PostJobs',
+      color: '#3b82f6',
+      buttonText: 'Create New Job'
     },
     {
       title: 'Active Job Posts',
       description: 'View and manage your currently active job listings',
-      icon: <WorkOutlineIcon sx={{ fontSize: 40 }} />,
+      icon: <WorkOutlineIcon sx={{ fontSize: 24 }} />,
       path: '/active-jobs',
-      color: '#4caf50'
+      color: '#3b82f6'
     },
     {
       title: 'Previous Job Posts',
       description: 'Access your historical job postings and their results',
-      icon: <HistoryIcon sx={{ fontSize: 40 }} />,
+      icon: <HistoryIcon sx={{ fontSize: 24 }} />,
       path: '/previous-jobs',
-      color: '#ff9800'
+      color: '#3b82f6'
     },
     {
       title: 'Selected Applicants',
       description: 'View all candidates who have been selected for positions',
-      icon: <PeopleIcon sx={{ fontSize: 40 }} />,
+      icon: <PeopleIcon sx={{ fontSize: 24 }} />,
       path: '/selected-applicants',
-      color: '#9c27b0'
+      color: '#3b82f6'
     }
   ];
 
+  const handleProfileClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleViewProfile = () => {
+    handleClose();
+    navigate('/company-profile');
+  };
+
   const handleLogout = () => {
+    handleClose();
     localStorage.removeItem('companyToken');
     navigate('/employer/signin', { replace: true });
   };
 
   return (
     <Box className="dashboard-container">
-      <Container maxWidth="lg">
-        <Paper elevation={3} className="dashboard-paper">
-          <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-            <Typography variant="h4" component="h1" className="dashboard-title">
-              Company Dashboard
-            </Typography>
-            <Button 
-              variant="outlined" 
-              color="secondary" 
-              onClick={handleLogout}
+      {/* Main Content */}
+      <Box className="dashboard-main">
+        {/* Header */}
+        <Box className="dashboard-header">
+          <Typography className="header-title">Company Dashboard</Typography>
+
+          <Box className="header-actions">
+            {/* Profile Button */}
+            <IconButton
+              onClick={handleProfileClick}
+              className="profile-button"
             >
-              Logout
-            </Button>
+              <AccountCircleIcon />
+            </IconButton>
+
+            {/* Profile Menu */}
+            <Menu
+              anchorEl={anchorEl}
+              open={open}
+              onClose={handleClose}
+              className="profile-menu"
+            >
+              <MenuItem onClick={handleViewProfile} className="profile-menu-item">
+                <ListItemIcon>
+                  <PersonIcon fontSize="small" />
+                </ListItemIcon>
+                <ListItemText>View Profile</ListItemText>
+              </MenuItem>
+              <MenuItem onClick={handleLogout} className="profile-menu-item">
+                <ListItemIcon>
+                  <LogoutIcon fontSize="small" />
+                </ListItemIcon>
+                <ListItemText>Logout</ListItemText>
+              </MenuItem>
+            </Menu>
           </Box>
-          
-          <Grid container spacing={4} className="dashboard-grid">
-            {dashboardOptions.map((option, index) => (
-              <Grid item xs={12} sm={6} md={6} key={index}>
-                <Card 
-                  className="dashboard-card"
-                  sx={{ 
-                    height: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    transition: 'transform 0.2s',
-                    '&:hover': {
-                      transform: 'translateY(-5px)',
-                      boxShadow: 3
-                    }
-                  }}
+        </Box>
+
+        {/* Dashboard Content */}
+        <Box className="dashboard-grid">
+          {dashboardOptions.map((option, index) => (
+            <Card key={index} className="dashboard-card">
+              <CardContent>
+                <Box className="card-header">
+                  <Typography className="card-title">{option.title}</Typography>
+                  <Box className="card-icon" sx={{ color: option.color }}>
+                    {option.icon}
+                  </Box>
+                </Box>
+                <Typography className="card-description">
+                  {option.description}
+                </Typography>
+              </CardContent>
+              <CardActions className="card-actions">
+                <Button
+                  className="dashboard-button"
+                  onClick={() => navigate(option.path)}
+                  startIcon={option.icon}
                 >
-                  <CardContent sx={{ flexGrow: 1 }}>
-                    <Box className="card-icon" sx={{ color: option.color }}>
-                      {option.icon}
-                    </Box>
-                    <Typography variant="h6" component="h2" gutterBottom>
-                      {option.title}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {option.description}
-                    </Typography>
-                  </CardContent>
-                  <CardActions>
-                    <Button 
-                      size="small" 
-                      color="primary"
-                      onClick={() => navigate(option.path)}
-                      fullWidth
-                    >
-                      View Details
-                    </Button>
-                  </CardActions>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
-        </Paper>
-      </Container>
+                  {option.buttonText || 'View Details'}
+                </Button>
+              </CardActions>
+            </Card>
+          ))}
+        </Box>
+      </Box>
     </Box>
   );
 };
 
-export default CompanyDashboard; 
+export default CompanyDashboard;

@@ -16,7 +16,7 @@ function App() {
         <Route path="/employer/signin" element={<CompanySignIn />} />
         <Route path="/employer/signup" element={<CompanySignUp />} />
         <Route path="/employer/dashboard" element={<CompanyDashboard />} />
-        <Route path="/post-job" element={<PostJobs />} />
+        <Route path="/PostJobs" element={<PostJobs />} />
         {/* <Route path="/employee/feed" element={<Feed />} /> */}
       </Routes>
     </BrowserRouter>
