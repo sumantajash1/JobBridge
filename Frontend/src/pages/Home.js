@@ -1,5 +1,5 @@
 import React from "react";
-import { Typography, Button, Box, Container, Grid, Paper } from "@mui/material";
+import { Typography, Box, Container, Grid, Paper } from "@mui/material";
 import { Link } from "react-router-dom";
 import './Home.css';
 
@@ -28,28 +28,14 @@ const Home = () => {
 
           <Grid container spacing={4} justifyContent="center">
             <Grid item xs={12} sm={6} md={5} textAlign="center">
-              <Button
-                variant="contained"
-                color="primary"
-                fullWidth
-                className="home-button"
-              >
-                <Link to="/employer/post-job" className="home-link">
-                  Hire Talent
-                </Link>
-              </Button>
+              <Link to="/employer/signin" className="home-button primary">
+                Hire Talent
+              </Link>
             </Grid>
             <Grid item xs={12} sm={6} md={5} textAlign="center">
-              <Button
-                variant="outlined"
-                color="primary"
-                fullWidth
-                className="home-button"
-              >
-                <Link to="/employee/feed" className="home-link">
-                  Find Jobs
-                </Link>
-              </Button>
+              <Link to="/employee/feed" className="home-button secondary">
+                Find Jobs
+              </Link>
             </Grid>
           </Grid>
 

@@ -262,3 +262,37 @@
     opacity: 1;
   }
 }
+
+.home-button.primary {
+  background: #2563eb;
+  color: white;
+}
+
+.home-button.primary:hover {
+  background: #1d4ed8;
+}
+
+.home-button.secondary {
+  background: white;
+  color: #2563eb;
+  border: 1px solid #2563eb;
+}
+
+.home-button.secondary:hover {
+  background: #f8fafc;
+}
+
+.home-footer {
+  text-align: center;
+  margin-top: 3rem;
+}
+
+@media (max-width: 640px) {
+  .home-paper {
+    padding: 2rem;
+  }
+  
+  .home-title {
+    font-size: 2rem;
+  }
+}
