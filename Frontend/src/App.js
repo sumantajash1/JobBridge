@@ -1,6 +1,7 @@
 import "./App.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { Home, PostJobs } from "./pages"
+import Home from "./pages/Home";
+import PostJobs from "./pages/PostJobs";
 
 //random comment
  

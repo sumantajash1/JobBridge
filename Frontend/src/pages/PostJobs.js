@@ -1,241 +1,264 @@
 import React, { useState } from 'react';
-import {
-  Box,
-  Container,
-  Paper,
-  Typography,
-  TextField,
-  Button,
-  FormControlLabel,
-  Switch,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Checkbox,
-  FormGroup,
-} from '@mui/material';
 import './PostJobs.css';
 
-const roleTypes = [
-  'Software Engineer',
-  'Hardware Engineer',
-  'Business Development',
-  'Human Resources',
-  'Data Scientist',
-  'Product Manager',
-  'UI/UX Designer',
-  'DevOps Engineer',
-  'Quality Assurance',
-  'Project Manager'
-];
-
-const PostJobs = () => {
-  const [isFullTime, setIsFullTime] = useState(true);
+const JobPostingForm = () => {
+  const [jobType, setJobType] = useState('full-time');
+  const [skills, setSkills] = useState([]);
+  const [newSkill, setNewSkill] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [isPaidInternship, setIsPaidInternship] = useState('');
   const [formData, setFormData] = useState({
-    roleName: '',
-    roleType: '',
-    skills: '',
-    technologies: '',
-    isPaid: false,
+    title: '',
+    company: '',
+    location: '',
     salary: '',
+    stipend: '',
+    experience: '',
     description: '',
-    hasDeadline: false,
-    deadline: '',
-    duration: ''
+    requirements: '',
+    benefits: '',
+    contactEmail: '',
+    contactPhone: '',
+    website: '',
+    department: '',
+    workType: 'office'
   });
 
-  const handleChange = (e) => {
-    const { name, value, checked } = e.target;
+  const handleInputChange = (field, value) => {
     setFormData(prev => ({
       ...prev,
-      [name]: name === 'isPaid' || name === 'hasDeadline' ? checked : value
+      [field]: value
     }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log(formData);
-    // Add your API call here to submit the job posting
+  const addSkill = () => {
+    if (newSkill.trim() && !skills.includes(newSkill.trim())) {
+      setSkills([...skills, newSkill.trim()]);
+      setNewSkill('');
+    }
   };
 
+  const removeSkill = (skillToRemove) => {
+    setSkills(skills.filter(skill => skill !== skillToRemove));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    
+    // Simulate API call
+    setTimeout(() => {
+      setIsLoading(false);
+      alert('Job Posted Successfully!');
+    }, 2000);
+  };
+
+  const showLocationField = formData.workType === 'office' || formData.workType === 'hybrid';
+  const isInternship = jobType === 'internship';
+  const showStipendField = isInternship && isPaidInternship === 'paid';
+
   return (
-    <Container className="post-jobs-container">
-      <Paper className="post-jobs-paper">
-        <Typography variant="h4" className="post-jobs-title">
-          Post a {isFullTime ? 'Full Time' : 'Internship'} Position
-        </Typography>
+    <div className="job-posting-card">
+      <div className="card-content">
+        <div className="header">
+          <h1 className="title">Post a New Job</h1>
+          <p className="subtitle">
+            Find the perfect candidate for your team. Create a compelling job listing that attracts top talent.
+          </p>
+        </div>
 
-        <Box className="job-type-switch">
-          <FormControlLabel
-            control={
-              <Switch
-                checked={isFullTime}
-                onChange={(e) => setIsFullTime(e.target.checked)}
-                color="primary"
-              />
-            }
-            label={isFullTime ? "Full Time" : "Internship"}
-          />
-        </Box>
-
-        <form onSubmit={handleSubmit} className="post-jobs-form">
-          <TextField
-            fullWidth
-            label="Name of the Role"
-            name="roleName"
-            value={formData.roleName}
-            onChange={handleChange}
-            required
-            className="form-field"
-          />
-
-          <FormControl fullWidth className="form-field">
-            <InputLabel>Type of Role</InputLabel>
-            <Select
-              name="roleType"
-              value={formData.roleType}
-              onChange={handleChange}
-              required
+        <div className="job-type-toggle">
+          <div className="tabs">
+            <button 
+              className={`tab ${jobType === 'full-time' ? 'active' : ''}`}
+              onClick={() => setJobType('full-time')}
             >
-              {roleTypes.map((role) => (
-                <MenuItem key={role} value={role}>
-                  {role}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+              Full-time
+            </button>
+            <button 
+              className={`tab ${jobType === 'internship' ? 'active' : ''}`}
+              onClick={() => setJobType('internship')}
+            >
+              Internship
+            </button>
+          </div>
+        </div>
 
-          <TextField
-            fullWidth
-            label="Skills Required"
-            name="skills"
-            value={formData.skills}
-            onChange={handleChange}
-            required
-            multiline
-            rows={2}
-            className="form-field"
-          />
-
-          <TextField
-            fullWidth
-            label="Technology Required"
-            name="technologies"
-            value={formData.technologies}
-            onChange={handleChange}
-            required
-            multiline
-            rows={2}
-            className="form-field"
-          />
-
-          {!isFullTime && (
-            <FormGroup className="form-field">
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    name="isPaid"
-                    checked={formData.isPaid}
-                    onChange={handleChange}
-                  />
-                }
-                label="Is this a paid position?"
-              />
-            </FormGroup>
-          )}
-
-          {formData.isPaid && !isFullTime && (
-            <TextField
-              fullWidth
-              label="Stipend"
-              name="salary"
-              value={formData.salary}
-              onChange={handleChange}
-              required
-              type="number"
-              className="form-field"
-            />
-          )}
-
-          {isFullTime && (
-            <TextField
-              fullWidth
-              label="Salary (Per year)"
-              name="salary"
-              value={formData.salary}
-              onChange={handleChange}
-              required
-              type="number"
-              className="form-field"
-            />
-          )}
-
-          {!isFullTime && (
-            <TextField
-              fullWidth
-              label="Duration of Internship"
-              name="duration"
-              value={formData.duration}
-              onChange={handleChange}
-              required
-              className="form-field"
-            />
-          )}
-
-          <TextField
-            fullWidth
-            label="Job Description"
-            name="description"
-            value={formData.description}
-            onChange={handleChange}
-            required
-            multiline
-            rows={4}
-            className="form-field"
-          />
-
-          <FormGroup className="form-field">
-            <FormControlLabel
-              control={
-                <Checkbox
-                  name="hasDeadline"
-                  checked={formData.hasDeadline}
-                  onChange={handleChange}
+        <form onSubmit={handleSubmit} className="form">
+          <div className="section basic-info">
+            <h3 className="section-title">Basic Information</h3>
+            
+            <div className="form-grid">
+              <div className="form-field">
+                <label htmlFor="title">Job Title *</label>
+                <input 
+                  id="title" 
+                  placeholder="e.g. Senior Software Engineer" 
+                  value={formData.title} 
+                  onChange={e => handleInputChange('title', e.target.value)} 
+                  required 
                 />
-              }
-              label="Set Application Deadline"
-            />
-          </FormGroup>
+              </div>
 
-          {formData.hasDeadline && (
-            <TextField
-              fullWidth
-              label="Application Deadline"
-              name="deadline"
-              type="date"
-              value={formData.deadline}
-              onChange={handleChange}
-              required
-              className="form-field"
-              InputLabelProps={{
-                shrink: true,
-              }}
-            />
-          )}
+              {isInternship ? (
+                <>
+                  <div className="form-field" data-field="internship-type">
+                    <label htmlFor="internshipType">Internship Type *</label>
+                    <select 
+                      value={isPaidInternship} 
+                      onChange={e => setIsPaidInternship(e.target.value)}
+                    >
+                      <option value="">Select internship type</option>
+                      <option value="paid">Paid</option>
+                      <option value="unpaid">Unpaid</option>
+                    </select>
+                  </div>
 
-          <Button
-            type="submit"
-            variant="contained"
-            color="primary"
-            className="submit-button"
-          >
-            Post Job
-          </Button>
+                  {showStipendField && (
+                    <div className="form-field" data-field="stipend">
+                      <label htmlFor="stipend">Stipend Amount *</label>
+                      <input 
+                        id="stipend" 
+                        placeholder="e.g. $1,500 - $2,500 per month" 
+                        value={formData.stipend} 
+                        onChange={e => handleInputChange('stipend', e.target.value)} 
+                        required
+                      />
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="form-field">
+                  <label htmlFor="salary">Salary Range</label>
+                  <input 
+                    id="salary" 
+                    placeholder="e.g. $80,000 - $120,000" 
+                    value={formData.salary} 
+                    onChange={e => handleInputChange('salary', e.target.value)} 
+                  />
+                </div>
+              )}
+              
+              <div className="form-field">
+                <label htmlFor="experience">Experience Level</label>
+                <select 
+                  value={formData.experience} 
+                  onChange={e => handleInputChange('experience', e.target.value)}
+                >
+                  <option value="">Select experience level</option>
+                  <option value="entry">Entry Level (0-2 years)</option>
+                  <option value="mid">Mid Level (2-5 years)</option>
+                  <option value="senior">Senior Level (5-8 years)</option>
+                  <option value="lead">Lead Level (8+ years)</option>
+                </select>
+              </div>
+              
+              <div className="form-field">
+                <label htmlFor="workType">Work Type *</label>
+                <select 
+                  value={formData.workType} 
+                  onChange={e => handleInputChange('workType', e.target.value)}
+                  required
+                >
+                  <option value="">Select work type</option>
+                  <option value="office">On-site</option>
+                  <option value="remote">Remote</option>
+                  <option value="hybrid">Hybrid</option>
+                </select>
+              </div>
+
+              {showLocationField && (
+                <div className="form-field">
+                  <label htmlFor="location">Location *</label>
+                  <input 
+                    id="location" 
+                    placeholder="e.g. New York, NY" 
+                    value={formData.location} 
+                    onChange={e => handleInputChange('location', e.target.value)} 
+                    required 
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="section job-details">
+            <h3 className="section-title">Job Details</h3>
+            
+            <div className="form-field">
+              <label htmlFor="description">Job Description *</label>
+              <textarea 
+                id="description" 
+                placeholder="Describe the role, responsibilities, and what makes this position exciting..." 
+                value={formData.description} 
+                onChange={e => handleInputChange('description', e.target.value)} 
+                required 
+              />
+            </div>
+            
+            <div className="form-field">
+              <label htmlFor="requirements">Requirements</label>
+              <textarea 
+                id="requirements" 
+                placeholder="List the key requirements, qualifications, and must-have skills..." 
+                value={formData.requirements} 
+                onChange={e => handleInputChange('requirements', e.target.value)} 
+              />
+            </div>
+            
+            <div className="form-field">
+              <label htmlFor="benefits">Benefits & Perks</label>
+              <textarea 
+                id="benefits" 
+                placeholder="Highlight the benefits, perks, and what makes your company great to work for..." 
+                value={formData.benefits} 
+                onChange={e => handleInputChange('benefits', e.target.value)} 
+              />
+            </div>
+          </div>
+
+          <div className="section skills">
+            <h3 className="section-title">Required Skills</h3>
+            
+            <div className="skills-input">
+              <input 
+                placeholder="Add a skill (e.g. React, Python, Marketing)" 
+                value={newSkill} 
+                onChange={e => setNewSkill(e.target.value)} 
+                onKeyPress={e => e.key === 'Enter' && (e.preventDefault(), addSkill())} 
+              />
+              <button type="button" onClick={addSkill} className="add-skill-btn">
+                Add
+              </button>
+            </div>
+            
+            {skills.length > 0 && (
+              <div className="skills-list">
+                {skills.map((skill, index) => (
+                  <span key={index} className="skill-badge">
+                    {skill}
+                    <button 
+                      type="button" 
+                      onClick={() => removeSkill(skill)} 
+                      className="remove-skill"
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="submit-section">
+            <button type="submit" disabled={isLoading} className="submit-btn">
+              {isLoading ? 'Publishing...' : 'Post Job'}
+            </button>
+          </div>
         </form>
-      </Paper>
-    </Container>
+      </div>
+    </div>
   );
 };
 
-export default PostJobs; 
+export default JobPostingForm;
