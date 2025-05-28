@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './PostJobs.css';
 
 const JobPostingForm = () => {
+  const navigate = useNavigate();
   const [jobType, setJobType] = useState('full-time');
   const [skills, setSkills] = useState([]);
   const [newSkill, setNewSkill] = useState('');
@@ -23,6 +25,14 @@ const JobPostingForm = () => {
     department: '',
     workType: 'office'
   });
+
+  useEffect(() => {
+    // Check if user is authenticated
+    const token = localStorage.getItem('companyToken');
+    if (!token) {
+      navigate('/employer/signin', { replace: true });
+    }
+  }, [navigate]);
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
@@ -46,11 +56,38 @@ const JobPostingForm = () => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      const token = localStorage.getItem('companyToken');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      const response = await fetch('http://localhost:8080/Job/Post', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          ...formData,
+          skills,
+          jobType,
+          isPaidInternship
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to post job');
+      }
+
       alert('Job Posted Successfully!');
-    }, 2000);
+      navigate('/employer/dashboard');
+    } catch (error) {
+      console.error('Error posting job:', error);
+      alert('Failed to post job. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const showLocationField = formData.workType === 'office' || formData.workType === 'hybrid';

@@ -40,7 +40,7 @@ public class CompanyController {
 
     @PostMapping("/SignIn")
     public ResponseEntity<String> SignIn(@RequestBody CompanyLoginRequestBody companyLoginRequestBody, HttpServletResponse response) {
-        System.out.println("Entered SignIn method of Company");
+        //System.out.println("Entered SignIn method of Company");
         String serviceResponse = companyService.Login(companyLoginRequestBody);
         if(serviceResponse.equals("InvalGstNum")) {
             return ResponseEntity.ok("Invalid GST Number");
