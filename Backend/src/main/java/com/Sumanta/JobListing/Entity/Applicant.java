@@ -5,20 +5,20 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document(collection = "ApplicantData")
 public class Applicant {
     private String aName;
-    private String aDob;
+    private String dob;
     private String password;
     private String mobNo;
-    private String Email;
+    private String email;
 
     public Applicant() {
     }
 
-    public Applicant(String aName, String aDob, String password, String mobNo, String email) {
+    public Applicant(String aName, String dob, String password, String mobNo, String email) {
         this.aName = aName;
-        this.aDob = aDob;
+        this.dob = dob;
         this.password = password;
         this.mobNo = mobNo;
-        Email = email;
+        this.email = email;
     }
 
     public String getaName() {
@@ -37,12 +37,12 @@ public class Applicant {
         this.password = password;
     }
 
-    public String getAdob() {
-        return aDob;
+    public String getDob() {
+        return this.dob;
     }
 
-    public void setAdob(String aDob) {
-        this.aDob = aDob;
+    public void setDob(String dob) {
+        this.dob = dob;
     }
 
     public String getMobNo() {
@@ -54,21 +54,21 @@ public class Applicant {
     }
 
     public String getEmail() {
-        return Email;
+        return email;
     }
 
     public void setEmail(String email) {
-        Email = email;
+        this.email = email;
     }
 
     @Override
     public String toString() {
         return "Applicant{" +
-                ", aName='" + aName + '\'' +
-                ", aDob='" + aDob + '\'' +
+                "aName='" + aName + '\'' +
+                ", dob='" + dob + '\'' +
                 ", password='" + password + '\'' +
                 ", mobNo='" + mobNo + '\'' +
-                ", Email='" + Email + '\'' +
+                ", email='" + email + '\'' +
                 '}';
     }
 }

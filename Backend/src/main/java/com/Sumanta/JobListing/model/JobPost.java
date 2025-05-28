@@ -2,19 +2,17 @@ package com.Sumanta.JobListing.model;
 
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 @Document(collection = "JobPost")
-public class Post {
+public class JobPost {
     private String company;
     private String profile;
     private String desc;
     private int exp;
     private String techs[];
 
-    public Post() {}
+    public JobPost() {}
 
     public String getProfile() {
         return profile;

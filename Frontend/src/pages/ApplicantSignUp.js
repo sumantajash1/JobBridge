@@ -88,10 +88,10 @@ const ApplicantSignUp = () => {
     if (validateForm()) {
       try {
         const applicantData = {
-          name: formData.name,
+          aName: formData.name,
           dob: formData.dob,
           email: formData.email,
-          mobileNumber: formData.mobileNumber,
+          mobNo: formData.mobileNumber,
           password: formData.password
         };
         
@@ -106,7 +106,7 @@ const ApplicantSignUp = () => {
 
         const responseText = await response.text();
 
-        if (responseText === "Applicant Already Exists") {
+        if (responseText === "User Already Exists") {
           setErrors(prev => ({
             ...prev,
             email: 'An account with this email already exists'
@@ -114,7 +114,14 @@ const ApplicantSignUp = () => {
           return;
         }
 
-        if (responseText && responseText.length > 0) {
+        // Get JWT token from response header
+        const jwtToken = response.headers.get('Authorization');
+        
+        if (jwtToken) {
+          localStorage.setItem('applicantToken', jwtToken);
+          window.location.href = '/applicant/dashboard';
+        } else if (responseText && responseText.length > 0) {
+          // Fallback to response body if header is not present
           localStorage.setItem('applicantToken', responseText);
           window.location.href = '/applicant/dashboard';
         } else {

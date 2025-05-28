@@ -61,10 +61,12 @@ public class SecurityConfig {
                                 "/Applicant/SignUp",
                                 "/Applicant/SignIn",
                                 "/Company/SignUp",
-                                "/Company/SignIn"
+                                "/Company/SignIn",
+                                "/Admin/SignIn"
                         ).permitAll()
                         .requestMatchers("/Applicant/**").hasRole("Applicant")
                         .requestMatchers("/Company/**").hasRole("Company")
+                        .requestMatchers("Admin/**").hasRole("Admin")
                         .anyRequest().authenticated()
                 ).sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
