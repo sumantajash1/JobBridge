@@ -33,7 +33,7 @@ const Home = () => {
               </Link>
             </Grid>
             <Grid item xs={12} sm={6} md={5} textAlign="center">
-              <Link to="/employee/feed" className="home-button secondary">
+              <Link to="/applicant/signup" className="home-button secondary">
                 Find Jobs
               </Link>
             </Grid>

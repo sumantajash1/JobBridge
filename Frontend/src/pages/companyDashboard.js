@@ -20,13 +20,13 @@ import PeopleIcon from '@mui/icons-material/People';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import PersonIcon from '@mui/icons-material/Person';
 import LogoutIcon from '@mui/icons-material/Logout';
+import JobPostingForm from './PostJobs';
 import './companyDashboard.css';
 
 // Individual component placeholders for each section
 const PostNewJob = () => (
   <Box>
-    <Typography variant="h4" gutterBottom>Post a New Job</Typography>
-    <Typography>Create a new job posting form will go here...</Typography>
+    <JobPostingForm />
   </Box>
 );
 
