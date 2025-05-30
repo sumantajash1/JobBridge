@@ -1,6 +1,7 @@
 package com.Sumanta.JobListing.Service;
 
 import com.Sumanta.JobListing.DAO.ApplicantDAO;
+import com.Sumanta.JobListing.DTO.ApplicantLoginRequestBody;
 import com.Sumanta.JobListing.Entity.Applicant;
 import com.Sumanta.JobListing.Entity.Role;
 import com.Sumanta.JobListing.utils.JwtTokenUtil;
@@ -35,5 +36,18 @@ public class ApplicantService {
             return true;
         }
         return false;
+    }
+
+    public String Login(ApplicantLoginRequestBody applicantLoginRequestBody) {
+        String mobNo = applicantLoginRequestBody.getMobileNo();
+        if(!alreadyExists(mobNo)) {
+            return "Doesn't Exist";
+        }
+        Applicant applicant = applicantDAO.findByMobNo(mobNo);
+        if(!passwordEncoder.matches(applicantLoginRequestBody.getPassword(), applicant.getPassword())) {
+            return "Wrong Password";
+        }
+        String jwtToken = jwtTokenUtil.GenerateToken(mobNo, Role.Applicant);
+        return jwtToken;
     }
 }

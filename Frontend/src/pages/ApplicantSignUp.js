@@ -91,41 +91,53 @@ const ApplicantSignUp = () => {
           aName: formData.name,
           dob: formData.dob,
           email: formData.email,
-          mobNo: formData.mobileNumber,
+          mobileNo: formData.mobileNumber,
           password: formData.password
         };
+        
+        console.log('Sending sign-up request with data:', applicantData);
         
         const response = await fetch('http://localhost:8080/Applicant/SignUp', {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Accept': '*/*',
+            'Connection': 'keep-alive'
           },
-          mode: 'cors',
           body: JSON.stringify(applicantData)
         });
 
-        const responseText = await response.text();
+        console.log('Response status:', response.status);
+        console.log('Response headers:', Object.fromEntries(response.headers.entries()));
 
-        if (responseText === "User Already Exists") {
-          setErrors(prev => ({
-            ...prev,
-            email: 'An account with this email already exists'
-          }));
+        const responseText = await response.text();
+        console.log('Raw response text:', responseText);
+
+        // Check if response is empty or invalid
+        if (!responseText) {
+          throw new Error('Empty response from server');
+        }
+
+        // Check if response is a JWT token (typically starts with "ey")
+        if (responseText.startsWith('ey')) {
+          console.log('Received valid JWT token');
+          localStorage.setItem('jwtToken', responseText);
+          navigate('/applicant/dashboard', { replace: true });
           return;
         }
 
-        // Get JWT token from response header
-        const jwtToken = response.headers.get('Authorization');
-        
-        if (jwtToken) {
-          localStorage.setItem('applicantToken', jwtToken);
-          window.location.href = '/applicant/dashboard';
-        } else if (responseText && responseText.length > 0) {
-          // Fallback to response body if header is not present
-          localStorage.setItem('applicantToken', responseText);
-          window.location.href = '/applicant/dashboard';
+        // If we get here, it's an error message
+        console.log('Received error message:', responseText);
+        if (responseText === "User Already Exists") {
+          setErrors(prev => ({
+            ...prev,
+            mobileNumber: 'An account with this mobile number already exists'
+          }));
         } else {
-          throw new Error('No token received');
+          setErrors(prev => ({
+            ...prev,
+            submit: `Sign up failed: ${responseText}`
+          }));
         }
       } catch (error) {
         console.error('Sign up failed:', error);
@@ -233,6 +245,13 @@ const ApplicantSignUp = () => {
                 Sign In
               </button>
             </p>
+            <button
+              type="button"
+              className="link-btn back-home"
+              onClick={() => navigate('/')}
+            >
+              ← Back to Home
+            </button>
           </div>
         </form>
       </div>

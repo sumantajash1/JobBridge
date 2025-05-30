@@ -134,11 +134,24 @@ const CompanySignIn = () => {
           <button type="submit" className="submit-btn" disabled={isLoading}>
             {isLoading ? 'Signing In...' : 'Sign In'}
           </button>
+          <p className="signup-link">
+            Don't have an account?{' '}
+            <button
+              type="button"
+              className="link-btn"
+              onClick={() => navigate('/employer/signup')}
+            >
+              Sign Up
+            </button>
+          </p>
+          <button
+            type="button"
+            className="link-btn back-home"
+            onClick={() => navigate('/')}
+          >
+            ← Back to Home
+          </button>
         </form>
-
-        <div className="auth-footer">
-          <p>Don't have an account? <button onClick={() => navigate('/employer/signup')} className="link-btn">Sign Up</button></p>
-        </div>
       </div>
     </div>
   );

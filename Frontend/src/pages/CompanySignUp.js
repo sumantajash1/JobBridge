@@ -258,8 +258,22 @@ const CompanySignUp = () => {
               Create Account
             </button>
             <p className="signin-link">
-              Already have an account? <button onClick={() => navigate('/employer/signin')} className="link-btn">Sign In</button>
+              Already have an account?{' '}
+              <button
+                type="button"
+                className="link-btn"
+                onClick={() => navigate('/employer/signin')}
+              >
+                Sign In
+              </button>
             </p>
+            <button
+              type="button"
+              className="link-btn back-home"
+              onClick={() => navigate('/')}
+            >
+              ← Back to Home
+            </button>
           </div>
         </form>
       </div>

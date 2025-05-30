@@ -1,9 +1,21 @@
 import React from "react";
 import { Typography, Box, Container, Grid, Paper } from "@mui/material";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import './Home.css';
 
 const Home = () => {
+  const navigate = useNavigate();
+
+  const handleHireTalentClick = (e) => {
+    e.preventDefault();
+    const companyToken = localStorage.getItem('companyToken');
+    if (companyToken) {
+      navigate('/employer/dashboard');
+    } else {
+      navigate('/employer/signin');
+    }
+  };
+
   return (
     <Box className="home-container">
       <Container maxWidth="md">
@@ -28,12 +40,12 @@ const Home = () => {
 
           <Grid container spacing={4} justifyContent="center">
             <Grid item xs={12} sm={6} md={5} textAlign="center">
-              <Link to="/employer/signin" className="home-button primary">
+              <Link to="/employer/signin" className="home-button primary" onClick={handleHireTalentClick}>
                 Hire Talent
               </Link>
             </Grid>
             <Grid item xs={12} sm={6} md={5} textAlign="center">
-              <Link to="/applicant/signup" className="home-button secondary">
+              <Link to="/applicant/signin" className="home-button secondary">
                 Find Jobs
               </Link>
             </Grid>

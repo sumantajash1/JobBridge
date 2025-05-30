@@ -1,11 +1,14 @@
 import "./App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Home from "./pages/Home";
 import PostJobs from "./pages/PostJobs";
 import CompanySignIn from "./pages/companySignIn";
 import CompanySignUp from "./pages/CompanySignUp";
 import CompanyDashboard from "./pages/companyDashboard";
 import ApplicantSignUp from "./pages/ApplicantSignUp";
+import ApplicantSignIn from "./pages/ApplicantSignIn";
+import ApplicantDashboard from "./pages/ApplicantDashboard";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 //random comment
  
@@ -19,7 +22,17 @@ function App() {
         <Route path="/employer/dashboard" element={<CompanyDashboard />} />
         <Route path="/employer/PostJobs" element={<PostJobs />} />
         <Route path="/applicant/signup" element={<ApplicantSignUp />} />
-        {/* <Route path="/employee/feed" element={<Feed />} /> */}
+        <Route path="/applicant/signin" element={<ApplicantSignIn />} />
+        <Route 
+          path="/applicant/dashboard" 
+          element={
+            <ProtectedRoute>
+              <ApplicantDashboard />
+            </ProtectedRoute>
+          } 
+        />
+        {/* Redirect any unknown routes to home */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );
