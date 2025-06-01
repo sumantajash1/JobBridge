@@ -24,17 +24,13 @@ const ApplicantDashboard = () => {
   const open = Boolean(anchorEl);
 
   useEffect(() => {
-    // Check if user is logged in
     const token = localStorage.getItem('jwtToken');
     console.log('Dashboard - Checking token:', token);
-
     if (!token) {
       console.log('Dashboard - No token found, redirecting to sign in');
       navigate('/applicant/signin');
       return;
     }
-
-    // Fetch user profile and other data
     console.log('Dashboard - Token found, fetching user data');
     fetchUserData();
   }, [navigate]);
@@ -43,8 +39,6 @@ const ApplicantDashboard = () => {
     try {
       const token = localStorage.getItem('jwtToken');
       console.log('Dashboard - Fetching data with token:', token);
-
-      // Fetch user profile
       const profileResponse = await fetch('http://localhost:8080/applicant/profile', {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -54,8 +48,6 @@ const ApplicantDashboard = () => {
       const profileData = await profileResponse.json();
       console.log('Dashboard - Profile data:', profileData);
       setProfile(profileData);
-
-      // Fetch job listings
       const jobsResponse = await fetch('http://localhost:8080/jobs', {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -65,8 +57,6 @@ const ApplicantDashboard = () => {
       const jobsData = await jobsResponse.json();
       console.log('Dashboard - Jobs data:', jobsData);
       setJobs(jobsData);
-
-      // Fetch user's applications
       const applicationsResponse = await fetch('http://localhost:8080/applicant/applications', {
         headers: {
           'Authorization': `Bearer ${token}`
