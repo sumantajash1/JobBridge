@@ -9,8 +9,6 @@ import ApplicantSignUp from "./pages/ApplicantSignUp";
 import ApplicantSignIn from "./pages/ApplicantSignIn";
 import ApplicantDashboard from "./pages/ApplicantDashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
-
-//random comment
  
 function App() {
   return (
