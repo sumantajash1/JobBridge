@@ -102,7 +102,6 @@ const ApplicantDashboard = () => {
       });
 
       if (response.ok) {
-        // Refresh applications list
         fetchUserData();
       }
     } catch (error) {
