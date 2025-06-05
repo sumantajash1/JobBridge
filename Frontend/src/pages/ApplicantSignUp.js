@@ -51,10 +51,10 @@ const ApplicantSignUp = () => {
     }
 
     // Mobile number validation
-    if (!formData.mobileNumber) {
-      newErrors.mobileNumber = 'Mobile number is required';
-    } else if (!/^[0-9]{10}$/.test(formData.mobileNumber)) {
-      newErrors.mobileNumber = 'Please enter a valid 10-digit phone number';
+    if (!formData.mobNo) {
+      newErrors.mobNo = 'Mobile number is required';
+    } else if (!/^[0-9]{10}$/.test(formData.mobNo)) {
+      newErrors.mobNo = 'Please enter a valid 10-digit phone number';
     }
 
     // Email validation
@@ -90,12 +90,10 @@ const ApplicantSignUp = () => {
         const applicantData = {
           aName: formData.name,
           dob: formData.dob,
-          mobNo: formData.mobileNumber,
+          mobNo: formData.mobNo,
           email: formData.email,
           password: formData.password
         };
-        
-        console.log('Sending sign-up request with data:', applicantData);
         
         const response = await fetch('http://localhost:8080/Applicant/SignUp', {
           method: 'POST',
@@ -104,36 +102,33 @@ const ApplicantSignUp = () => {
             'Accept': '*/*',
             'Connection': 'keep-alive'
           },
+          credentials: 'include',
           body: JSON.stringify(applicantData)
         });
 
-        console.log('Response status:', response.status);
-        console.log('Response headers:', Object.fromEntries(response.headers.entries()));
-
         const responseText = await response.text();
-        console.log('Raw response text:', responseText);
 
         // Check if response is empty or invalid
         if (!responseText) {
           throw new Error('Empty response from server');
         }
 
-        // Check if response is a JWT token (typically starts with "ey")
-        if (responseText.startsWith('ey')) {
-          console.log('Received valid JWT token');
-          localStorage.setItem('jwtToken', responseText);
+        // Get JWT token from header
+        const jwtToken = response.headers.get('jwtToken');
+        
+        // Check if we have a valid JWT token in the header
+        if (jwtToken) {
           navigate('/applicant/dashboard', { replace: true });
           return;
         }
 
         // Handle different error cases
-        console.log('Response text for error handling:', responseText);
-        if (responseText.trim() === "Phone number Already Exists") {
+        if (responseText.trim() === "PhoneExists") {
           setErrors(prev => ({
             ...prev,
-            mobileNumber: 'An account with this mobile number already exists'
+            mobNo: 'An account with this mobile number already exists'
           }));
-        } else if (responseText.trim() === "Email already exists") {
+        } else if (responseText.trim() === "EmailExists") {
           setErrors(prev => ({
             ...prev,
             email: 'An account with this email already exists'
@@ -187,16 +182,16 @@ const ApplicantSignUp = () => {
               {errors.dob && <div className="error-message">{errors.dob}</div>}
             </div>
 
-            <div className={`form-field ${errors.mobileNumber ? 'error' : ''}`}>
-              <label htmlFor="mobileNumber">Mobile Number</label>
+            <div className={`form-field ${errors.mobNo ? 'error' : ''}`}>
+              <label htmlFor="mobNo">Mobile Number</label>
               <input
-                id="mobileNumber"
+                id="mobNo"
                 type="tel"
                 placeholder="Enter your mobile number"
-                value={formData.mobileNumber}
-                onChange={(e) => handleInputChange('mobileNumber', e.target.value)}
+                value={formData.mobNo}
+                onChange={(e) => handleInputChange('mobNo', e.target.value)}
               />
-              {errors.mobileNumber && <div className="error-message">{errors.mobileNumber}</div>}
+              {errors.mobNo && <div className="error-message">{errors.mobNo}</div>}
             </div>
 
             <div className={`form-field ${errors.email ? 'error' : ''}`}>

@@ -159,7 +159,7 @@
 }
 
 .form-field.error .error-message {
-  display: block;
+  display: block !important;
 }
 
 .form-actions {

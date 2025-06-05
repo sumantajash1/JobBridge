@@ -3,8 +3,12 @@ package com.Sumanta.JobListing.controller;
 import com.Sumanta.JobListing.DTO.ApplicantLoginRequestBody;
 import com.Sumanta.JobListing.Entity.Applicant;
 import com.Sumanta.JobListing.Service.ApplicantService;
+import com.Sumanta.JobListing.utils.CookieUtil;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,30 +22,34 @@ public class ApplicantController {
     @PostMapping("/SignUp")
     public ResponseEntity<String> SignUp(@RequestBody Applicant applicant, HttpServletResponse response) {
         System.out.println("SIGNUP" + applicant);
-        String applicantServiceResponse = applicantService.register(applicant);
-        if(applicantServiceResponse.equals("PhoneExists")) {
-            return ResponseEntity.ok("Phone number Already Exists");
+        Pair<String, String> applicantServiceResponse= applicantService.register(applicant);
+        if(applicantServiceResponse.getLeft().equals("failed")) {
+            return ResponseEntity.ok(applicantServiceResponse.getRight());
         }
-        if(applicantServiceResponse.equals("EmailExists")) {
-            return ResponseEntity.ok("Email already exists");
+        if(applicantServiceResponse.getLeft().equals("failed")) {
+            return ResponseEntity.ok(applicantServiceResponse.getRight());
         }
-        String jwtToken = applicantServiceResponse;
+        String jwtToken = applicantServiceResponse.getRight();
         response.setHeader( "jwtToken", jwtToken);
-        return ResponseEntity.ok(jwtToken);
+        CookieUtil cookieUtil = new CookieUtil();
+        response.setHeader(HttpHeaders.SET_COOKIE, cookieUtil.generateCookie(jwtToken).toString());
+        return ResponseEntity.ok(applicantServiceResponse.getLeft());
     }
 
     @PostMapping("/SignIn")
     public ResponseEntity<String> SignIn(@RequestBody ApplicantLoginRequestBody applicantLoginRequestBody, HttpServletResponse response) {
         System.out.println("SIGNIN" + applicantLoginRequestBody);
-        String applicantServiceResponse = applicantService.Login(applicantLoginRequestBody);
-        if(applicantServiceResponse.equals("Doesn't Exist")) {
-            return ResponseEntity.ok(applicantServiceResponse);
+        Pair<String, String> applicantServiceResponse = applicantService.Login(applicantLoginRequestBody);
+        if(applicantServiceResponse.getLeft().equals("failed")) {
+            return ResponseEntity.ok(applicantServiceResponse.getRight());
         }
-        if(applicantServiceResponse.equals("Wrong Password")) {
-            return ResponseEntity.ok(applicantServiceResponse);
+        if(applicantServiceResponse.getLeft().equals("failed")) {
+            return ResponseEntity.ok(applicantServiceResponse.getRight());
         }
-        String jwtToken = applicantServiceResponse;
-        response.setHeader("jwtToken", applicantServiceResponse);
-        return ResponseEntity.ok(jwtToken);
+        String jwtToken = applicantServiceResponse.getRight();
+        response.setHeader("jwtToken", jwtToken);
+        CookieUtil cookieUtil = new CookieUtil();
+        response.setHeader(HttpHeaders.SET_COOKIE, cookieUtil.generateCookie(jwtToken).toString());
+        return ResponseEntity.ok(applicantServiceResponse.getLeft());
     }
 }

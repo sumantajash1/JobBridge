@@ -5,6 +5,7 @@ import com.Sumanta.JobListing.DTO.ApplicantLoginRequestBody;
 import com.Sumanta.JobListing.Entity.Applicant;
 import com.Sumanta.JobListing.Entity.Role;
 import com.Sumanta.JobListing.utils.JwtTokenUtil;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -19,19 +20,19 @@ public class ApplicantService {
     PasswordEncoder passwordEncoder;
 
 
-    public String register(Applicant applicant) {
+    public Pair<String, String> register(Applicant applicant) {
         //System.out.println(applicant);
         String mobNo = applicant.getMobNo();
         if(alreadyExists(mobNo, applicant.getEmail()).equals("phone")) {
-            return "PhoneExists";
+            return Pair.of("failed", "PhoneExists");
         }
         if(alreadyExists(mobNo, applicant.getEmail()).equals("email")) {
-            return "EmailExists";
+            return Pair.of("failed", "EmailExists");
         }
         applicant.setPassword(passwordEncoder.encode(applicant.getPassword()));
         applicantDAO.save(applicant);
         String jwtToken = jwtTokenUtil.GenerateToken(mobNo, Role.Applicant);
-        return jwtToken;
+        return Pair.of(applicant.getaName(), jwtToken);
     }
 
     private String alreadyExists(String mobNo, String email) {
@@ -51,16 +52,16 @@ public class ApplicantService {
         return false;
     }
 
-    public String Login(ApplicantLoginRequestBody applicantLoginRequestBody) {
+    public Pair<String, String> Login(ApplicantLoginRequestBody applicantLoginRequestBody) {
         String mobNo = applicantLoginRequestBody.getMobileNo();
         if(!doesExists(mobNo)) {
-            return "Doesn't Exist";
+            return Pair.of("failed", "Doesn't Exist");
         }
         Applicant applicant = applicantDAO.findByMobNo(mobNo);
         if(!passwordEncoder.matches(applicantLoginRequestBody.getPassword(), applicant.getPassword())) {
-            return "Wrong Password";
+            return Pair.of("failed", "Wrong Password");
         }
         String jwtToken = jwtTokenUtil.GenerateToken(mobNo, Role.Applicant);
-        return jwtToken;
+        return Pair.of(applicant.getaName(), jwtToken);
     }
 }
