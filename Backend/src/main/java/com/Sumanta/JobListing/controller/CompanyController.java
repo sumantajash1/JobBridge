@@ -22,13 +22,23 @@ public class CompanyController {
 
     @PostMapping("/SignUp")
     public ResponseEntity<String> SignUp(@RequestBody Company company, HttpServletResponse response) {
+        System.out.println(company);
         //System.out.println("In the sign Up method of CompanyController");
         String serviceResponse = companyService.register(company);
         if(serviceResponse.equals("InvalGstNum")) {
             return ResponseEntity.ok("Invalid GST Number");
         }
-        if(serviceResponse.equals("Exists")) {
-            return ResponseEntity.ok("Company Already Exists");
+        if(serviceResponse.equals("gstExists")) {
+            return ResponseEntity.ok("gst number already exists");
+        }
+        if(serviceResponse.equals("contactNumberExists")) {
+            return ResponseEntity.ok("contact number already exists");
+        }
+        if(serviceResponse.equals("emailExists")) {
+            return ResponseEntity.ok("email already exists");
+        }
+        if(serviceResponse.equals("nameExists")) {
+            return ResponseEntity.ok("name already exists");
         }
         String jwtToken = serviceResponse;
         response.setHeader("jwt", jwtToken);
@@ -53,10 +63,4 @@ public class CompanyController {
         return ResponseEntity.ok(jwtToken);
     }
 
-    @GetMapping("fetchAllCompanies")
-    @PreAuthorize("hasRole('Company')")
-    public ResponseEntity<List<Company>> fetchAllCompanies(HttpServletResponse response) {
-        List<Company> allCompanies = companyService.fetchAll();
-        return ResponseEntity.ok(allCompanies);
-    }
 }

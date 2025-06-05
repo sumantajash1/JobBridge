@@ -5,38 +5,22 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document(collection = "CompanyData")
 public class Company {
     private String gstNum;
-    private String cName;
-    private String cEmail;
-    private String cContactNumber;
-    private String cPassword;
+    private String companyName;
+    private String companyEmail;
+    private String companyContactNum;
+    private String companyPassword;
     private String estd;
 
     public Company() {
     }
 
-    public Company(String gstNum, String cName, String cPassword, String estd, String cEmail, String cContactNumber) {
-        this.cEmail = cEmail;
-        this.cContactNumber = cContactNumber;
+    public Company(String gstNum, String companyName, String companyEmail, String companyPassword, String companyContactNum, String estd) {
         this.gstNum = gstNum;
-        this.cName = cName;
-        this.cPassword = cPassword;
+        this.companyName = companyName;
+        this.companyEmail = companyEmail;
+        this.companyPassword = companyPassword;
+        this.companyContactNum = companyContactNum;
         this.estd = estd;
-    }
-
-    public String getcEmail() {
-        return cEmail;
-    }
-
-    public void setcEmail(String cEmail) {
-        this.cEmail = cEmail;
-    }
-
-    public String getcContactNumber() {
-        return cContactNumber;
-    }
-
-    public void setcContactNumber(String cContactNumber) {
-        this.cContactNumber = cContactNumber;
     }
 
     public String getGstNum() {
@@ -47,20 +31,36 @@ public class Company {
         this.gstNum = gstNum;
     }
 
-    public String getcName() {
-        return cName;
+    public String getCompanyName() {
+        return companyName;
     }
 
-    public void setcName(String cName) {
-        this.cName = cName;
+    public void setCompanyName(String companyName) {
+        this.companyName = companyName;
     }
 
-    public String getcPassword() {
-        return cPassword;
+    public String getCompanyEmail() {
+        return companyEmail;
     }
 
-    public void setcPassword(String cPassword) {
-        this.cPassword = cPassword;
+    public void setCompanyEmail(String companyEmail) {
+        this.companyEmail = companyEmail;
+    }
+
+    public String getCompanyContactNum() {
+        return companyContactNum;
+    }
+
+    public void setCompanyContactNum(String companyContactNum) {
+        this.companyContactNum = companyContactNum;
+    }
+
+    public String getCompanyPassword() {
+        return companyPassword;
+    }
+
+    public void setCompanyPassword(String companyPassword) {
+        this.companyPassword = companyPassword;
     }
 
     public String getEstd() {
@@ -75,10 +75,10 @@ public class Company {
     public String toString() {
         return "Company{" +
                 "gstNum='" + gstNum + '\'' +
-                ", cName='" + cName + '\'' +
-                ", cEmail='" + cEmail + '\'' +
-                ", cContactNumber='" + cContactNumber + '\'' +
-                ", cPassword='" + cPassword + '\'' +
+                ", companyName='" + companyName + '\'' +
+                ", companyEmail='" + companyEmail + '\'' +
+                ", companyContactNum='" + companyContactNum + '\'' +
+                ", companyPassword='" + companyPassword + '\'' +
                 ", estd='" + estd + '\'' +
                 '}';
     }

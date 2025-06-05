@@ -9,5 +9,11 @@ public interface CompanyDAO extends MongoRepository<Company, String>{
     public boolean existsByGstNum(String gstNum);
 
     public Company findByGstNum(String gstNum);
+
+    public boolean existsByCompanyName(String companyName);
+
+    public boolean existsByCompanyContactNum(String companyContactNum);
+
+    public boolean existsByCompanyEmail(String companyEmail);
 }
 

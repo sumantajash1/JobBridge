@@ -28,20 +28,14 @@ public class CompanyService {
         if(!gstNumberValidator.isGstNumValid(company.getGstNum())) {
             return "InvalGstNum";
         }
-        if(doesExist(company.getGstNum())) {
-            return "Exists";
+        String existsResponse = alreadyExists(company);
+        System.out.println(existsResponse);
+        if(!existsResponse.equals("NO")) {
+            return existsResponse;
         }
-        company.setcPassword(passwordEncoder.encode(company.getcPassword()));
+        company.setCompanyPassword(passwordEncoder.encode(company.getCompanyPassword()));
         companyDAO.save(company);
         return jwtTokenUtil.GenerateToken(company.getGstNum(), Role.Company);
-    }
-
-    public boolean doesExist(String gstNum) {
-        return companyDAO.existsByGstNum(gstNum);
-    }
-
-    public List<Company> fetchAll() {
-        return companyDAO.findAll();
     }
 
     public String Login(CompanyLoginRequestBody companyLoginRequestBody) {
@@ -49,13 +43,31 @@ public class CompanyService {
         if(!gstNumberValidator.isGstNumValid(gstNum)) {
             return "InvalGstNum";
         }
-        if(!doesExist(gstNum)) {
+        if(!companyDAO.existsByGstNum(gstNum)) {
             return "NotFound";
         }
         Company tempCompany = companyDAO.findByGstNum(gstNum);
-        if(!passwordEncoder.matches(companyLoginRequestBody.getPassword(), tempCompany.getcPassword())) {
-           return "WrongPassword";
+        if(!passwordEncoder.matches(companyLoginRequestBody.getPassword(), tempCompany.getCompanyPassword())) {
+            return "WrongPassword";
         }
         return jwtTokenUtil.GenerateToken(gstNum, Role.Company);
     }
+
+    private String alreadyExists(Company company) {
+        if (companyDAO.existsByGstNum(company.getGstNum())) {
+            return "gstExists";
+        }
+        if (companyDAO.existsByCompanyName(company.getCompanyName())) {
+            System.out.println(company.getCompanyName());
+            return "nameExists";
+        }
+        if (companyDAO.existsByCompanyContactNum(company.getCompanyContactNum())) {
+            return "contactNumberExists";
+        }
+        if (companyDAO.existsByCompanyEmail(company.getCompanyEmail())) {
+            return "emailExists";
+        }
+        return "NO";
+    }
+
 }

@@ -98,10 +98,10 @@ const CompanySignUp = () => {
         // Prepare data in the format matching the Company class
         const companyData = {
           gstNum: formData.gstin,
-          cName: formData.companyName,
-          cEmail: formData.email,
-          cContactNumber: formData.contactNumber,
-          cPassword: formData.password,
+          companyName: formData.companyName,
+          companyEmail: formData.email,
+          companyContactNum: formData.contactNumber,
+          companyPassword: formData.password,
           estd: formData.establishedYear
         };
         
@@ -119,24 +119,34 @@ const CompanySignUp = () => {
         const responseText = await response.text();
         console.log('Response:', responseText);
 
+        // Handle different error cases
         if (responseText === "Invalid GST Number") {
           setErrors(prev => ({
             ...prev,
-            gstin: 'Invalid GST Number'
+            gstin: 'Invalid GST Number format'
           }));
-          return;
-        }
-
-        if (responseText === "Company Already Exists") {
+        } else if (responseText === "gst number already exists") {
           setErrors(prev => ({
             ...prev,
-            gstin: 'Company with this GST number already exists'
+            gstin: 'A company with this GST number already exists'
           }));
-          return;
-        }
-
-        // If we get here, signup was successful and we received a JWT token
-        if (responseText && responseText.length > 0) {
+        } else if (responseText === "contact number already exists") {
+          setErrors(prev => ({
+            ...prev,
+            contactNumber: 'A company with this contact number already exists'
+          }));
+        } else if (responseText === "email already exists") {
+          setErrors(prev => ({
+            ...prev,
+            email: 'A company with this email already exists'
+          }));
+        } else if (responseText === "name already exists") {
+          setErrors(prev => ({
+            ...prev,
+            companyName: 'A company with this name already exists'
+          }));
+        } else if (responseText && responseText.length > 0) {
+          // If we get here, signup was successful and we received a JWT token
           console.log('Signup successful, storing JWT token');
           localStorage.setItem('companyToken', responseText);
           
