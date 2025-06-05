@@ -22,8 +22,11 @@ public class ApplicantService {
     public String register(Applicant applicant) {
         //System.out.println(applicant);
         String mobNo = applicant.getMobNo();
-        if(alreadyExists(mobNo)) {
-            return "AlreadyExists";
+        if(alreadyExists(mobNo, applicant.getEmail()).equals("phone")) {
+            return "PhoneExists";
+        }
+        if(alreadyExists(mobNo, applicant.getEmail()).equals("email")) {
+            return "EmailExists";
         }
         applicant.setPassword(passwordEncoder.encode(applicant.getPassword()));
         applicantDAO.save(applicant);
@@ -31,8 +34,18 @@ public class ApplicantService {
         return jwtToken;
     }
 
-    public boolean alreadyExists(String mobNo) {
+    private String alreadyExists(String mobNo, String email) {
         if(applicantDAO.existsByMobNo(mobNo)) {
+            return "phone";
+        }
+        if(applicantDAO.existsByEmail(email)) {
+            return "email";
+        }
+        return "No";
+    }
+
+    private boolean doesExists(String mobileNo) {
+        if(applicantDAO.existsByMobNo(mobileNo)) {
             return true;
         }
         return false;
@@ -40,7 +53,7 @@ public class ApplicantService {
 
     public String Login(ApplicantLoginRequestBody applicantLoginRequestBody) {
         String mobNo = applicantLoginRequestBody.getMobileNo();
-        if(!alreadyExists(mobNo)) {
+        if(!doesExists(mobNo)) {
             return "Doesn't Exist";
         }
         Applicant applicant = applicantDAO.findByMobNo(mobNo);

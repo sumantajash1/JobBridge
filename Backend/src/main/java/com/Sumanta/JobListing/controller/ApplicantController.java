@@ -19,8 +19,11 @@ public class ApplicantController {
     public ResponseEntity<String> SignUp(@RequestBody Applicant applicant, HttpServletResponse response) {
         System.out.println("SIGNUP" + applicant);
         String applicantServiceResponse = applicantService.register(applicant);
-        if(applicantServiceResponse.equals("AlreadyExists")) {
-            return ResponseEntity.ok("User Already Exists");
+        if(applicantServiceResponse.equals("PhoneExists")) {
+            return ResponseEntity.ok("Phone number Already Exists");
+        }
+        if(applicantServiceResponse.equals("EmailExists")) {
+            return ResponseEntity.ok("Email already exists");
         }
         String jwtToken = applicantServiceResponse;
         response.setHeader( "jwtToken", jwtToken);

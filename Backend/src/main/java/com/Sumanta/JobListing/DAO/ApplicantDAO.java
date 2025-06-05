@@ -10,4 +10,6 @@ public interface ApplicantDAO extends MongoRepository<Applicant, String> {
     public Applicant findByMobNo(String mobNo);
 
     public boolean existsByMobNo(String mobNo);
+
+    public boolean existsByEmail(String email);
 }

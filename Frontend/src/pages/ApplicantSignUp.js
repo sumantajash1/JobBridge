@@ -8,7 +8,7 @@ const ApplicantSignUp = () => {
     dob: '',
     password: '',
     confirmPassword: '',
-    mobileNumber: '',
+    mobNo: '',
     email: ''
   });
 
@@ -90,8 +90,8 @@ const ApplicantSignUp = () => {
         const applicantData = {
           aName: formData.name,
           dob: formData.dob,
+          mobNo: formData.mobileNumber,
           email: formData.email,
-          mobileNo: formData.mobileNumber,
           password: formData.password
         };
         
@@ -126,12 +126,17 @@ const ApplicantSignUp = () => {
           return;
         }
 
-        // If we get here, it's an error message
-        console.log('Received error message:', responseText);
-        if (responseText === "User Already Exists") {
+        // Handle different error cases
+        console.log('Response text for error handling:', responseText);
+        if (responseText.trim() === "Phone number Already Exists") {
           setErrors(prev => ({
             ...prev,
             mobileNumber: 'An account with this mobile number already exists'
+          }));
+        } else if (responseText.trim() === "Email already exists") {
+          setErrors(prev => ({
+            ...prev,
+            email: 'An account with this email already exists'
           }));
         } else {
           setErrors(prev => ({
