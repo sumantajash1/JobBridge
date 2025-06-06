@@ -1,185 +1,174 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './ApplicantSignIn.css';
 
 const ApplicantSignIn = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
   const [formData, setFormData] = useState({
     mobileNo: '',
     password: ''
   });
+  const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    const token = localStorage.getItem('jwtToken');
-    if (token) {
-      const from = location.state?.from?.pathname || '/applicant/dashboard';
-      navigate(from, { replace: true });
+  const handleInputChange = (field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+    if (errors[field]) {
+      setErrors(prev => ({
+        ...prev,
+        [field]: ''
+      }));
     }
-  }, [navigate, location]);
+  };
 
   const validateForm = () => {
-    console.log('Validating form with data:', formData);
     const newErrors = {};
+    
+    // Mobile number validation
     if (!formData.mobileNo) {
       newErrors.mobileNo = 'Mobile number is required';
     } else if (!/^[0-9]{10}$/.test(formData.mobileNo)) {
       newErrors.mobileNo = 'Please enter a valid 10-digit mobile number';
     }
+
+    // Password validation
     if (!formData.password) {
       newErrors.password = 'Password is required';
     }
-    console.log('Validation errors:', newErrors);
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    console.log('Handling change for:', name, 'value:', value);
-    if (name === 'mobileNo' && !/^\d*$/.test(value)) {
-      return;
-    }
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-    if (errors[name]) {
-      setErrors(prev => ({
-        ...prev,
-        [name]: ''
-      }));
-    }
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Form submitted');
-    
     if (validateForm()) {
-      console.log('Form is valid, proceeding with sign in');
+      setIsLoading(true);
       try {
-        const requestBody = {
-          mobileNo: formData.mobileNo,
-          password: formData.password
-        };
-        console.log('Sending request with body:', requestBody);
-
         const response = await fetch('http://localhost:8080/Applicant/SignIn', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Accept': '*/*',
-            'Connection': 'keep-alive'
           },
-          body: JSON.stringify(requestBody)
+          credentials: 'include',
+          body: JSON.stringify({
+            mobileNo: formData.mobileNo,
+            password: formData.password
+          })
         });
 
-        console.log('Response received:', response.status);
         const responseText = await response.text();
-        console.log('Response text:', responseText);
+        console.log('Response:', responseText);
+        
+        // Get JWT token from header
+        const jwtToken = response.headers.get('jwtToken');
+        console.log('JWT Token:', jwtToken);
 
-        if (responseText.startsWith('ey')) {
-          console.log('Valid token received, storing and redirecting');
-          localStorage.setItem('jwtToken', responseText);
-          navigate('/applicant/dashboard', { replace: true });
-        } else if (responseText === "Doesn't Exist") {
-          console.log('Account not found');
+        if (responseText === "Doesn't Exist") {
           setErrors(prev => ({
             ...prev,
             mobileNo: 'No account found with this mobile number'
           }));
         } else if (responseText === "Wrong Password") {
-          console.log('Wrong password');
           setErrors(prev => ({
             ...prev,
             password: 'Incorrect password'
           }));
+        } else if (responseText) {
+          // If we get a name in response, it means login was successful
+          console.log('Login successful, redirecting...');
+          // Store the user's name
+          localStorage.setItem('userName', responseText);
+          
+          // Force redirect to dashboard
+          window.location.replace('/applicant/dashboard');
+          return;
+        } else {
+          throw new Error('Invalid response from server');
         }
       } catch (error) {
-        console.error('Sign in error:', error);
+        console.error('Sign in failed:', error);
         setErrors(prev => ({
           ...prev,
-          submit: 'Failed to sign in. Please try again.'
+          submit: error.message || 'Failed to sign in. Please try again.'
         }));
+      } finally {
+        setIsLoading(false);
       }
-    } else {
-      console.log('Form validation failed');
     }
   };
 
   return (
-    <div className="signin-container">
-      <div className="signin-card">
-        <div className="signin-header">
-          <h1>Welcome Back!</h1>
-          <p>Sign in to continue your job search</p>
+    <div className="auth-container">
+      <div className="auth-card">
+        <div className="auth-header">
+          <h1 className="auth-title">Welcome Back</h1>
+          <p className="auth-subtitle">
+            Sign in to find your dream job
+          </p>
         </div>
 
-        <form className="signin-form" onSubmit={handleSubmit}>
-          <div className="form-field-container">
-            <div className={`form-field ${errors.mobileNo ? 'error' : ''}`}>
-              <label htmlFor="mobileNo">Mobile Number</label>
-              <input
-                type="tel"
-                id="mobileNo"
-                name="mobileNo"
-                value={formData.mobileNo}
-                onChange={handleChange}
-                placeholder="Enter your 10-digit mobile number"
-                maxLength="10"
-                pattern="[0-9]*"
-                inputMode="numeric"
-              />
-              {errors.mobileNo && <div className="error-message">{errors.mobileNo}</div>}
-            </div>
-
-            <div className={`form-field ${errors.password ? 'error' : ''}`}>
-              <label htmlFor="password">Password</label>
-              <input
-                type="password"
-                id="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder="Enter your password"
-              />
-              {errors.password && <div className="error-message">{errors.password}</div>}
-            </div>
+        <form onSubmit={handleSubmit} className="auth-form">
+          <div className={`form-field ${errors.mobileNo ? 'error' : ''}`}>
+            <label htmlFor="mobileNo">Mobile Number</label>
+            <input
+              id="mobileNo"
+              type="tel"
+              placeholder="Enter your mobile number"
+              value={formData.mobileNo}
+              onChange={(e) => handleInputChange('mobileNo', e.target.value)}
+              maxLength="10"
+              pattern="[0-9]*"
+              inputMode="numeric"
+            />
+            {errors.mobileNo && <div className="error-message">{errors.mobileNo}</div>}
           </div>
 
-          {errors.submit && <div className="submit-error">{errors.submit}</div>}
+          <div className={`form-field ${errors.password ? 'error' : ''}`}>
+            <label htmlFor="password">Password</label>
+            <input
+              id="password"
+              type="password"
+              placeholder="Enter your password"
+              value={formData.password}
+              onChange={(e) => handleInputChange('password', e.target.value)}
+            />
+            {errors.password && <div className="error-message">{errors.password}</div>}
+          </div>
 
-          <div className="form-actions">
-            <button 
-              type="submit" 
-              className="submit-btn"
-            >
-              Sign In
-            </button>
-            <p className="signup-link">
-              Don't have an account?{' '}
-              <button
-                type="button"
-                className="link-btn"
-                onClick={() => navigate('/applicant/signup')}
-              >
-                Sign Up
-              </button>
-            </p>
+          {errors.submit && (
+            <div className="error-message" style={{ textAlign: 'center', marginBottom: '1rem' }}>
+              {errors.submit}
+            </div>
+          )}
+
+          <button type="submit" className="submit-btn" disabled={isLoading}>
+            {isLoading ? 'Signing In...' : 'Sign In'}
+          </button>
+          <p className="signup-link">
+            Don't have an account?{' '}
             <button
               type="button"
-              className="link-btn back-home"
-              onClick={() => navigate('/')}
+              className="link-btn"
+              onClick={() => navigate('/applicant/signup')}
             >
-              ← Back to Home
+              Sign Up
             </button>
-          </div>
+          </p>
+          <button
+            type="button"
+            className="link-btn back-home"
+            onClick={() => navigate('/')}
+          >
+            ← Back to Home
+          </button>
         </form>
       </div>
     </div>
   );
 };
 
-export default ApplicantSignIn; 
+export default ApplicantSignIn;

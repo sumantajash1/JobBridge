@@ -23,8 +23,16 @@ const ApplicantDashboard = () => {
 
   const open = Boolean(anchorEl);
 
+  // Function to get cookie value by name
+  const getCookie = (name) => {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+    return null;
+  };
+
   useEffect(() => {
-    const token = localStorage.getItem('jwtToken');
+    const token = getCookie('jwtToken');
     console.log('Dashboard - Checking token:', token);
     if (!token) {
       console.log('Dashboard - No token found, redirecting to sign in');
@@ -32,35 +40,39 @@ const ApplicantDashboard = () => {
       return;
     }
     console.log('Dashboard - Token found, fetching user data');
-    fetchUserData();
+    fetchUserData(token);
   }, [navigate]);
 
-  const fetchUserData = async () => {
+  const fetchUserData = async (token) => {
     try {
-      const token = localStorage.getItem('jwtToken');
       console.log('Dashboard - Fetching data with token:', token);
       const profileResponse = await fetch('http://localhost:8080/applicant/profile', {
         headers: {
           'Authorization': `Bearer ${token}`
-        }
+        },
+        credentials: 'include'
       });
       console.log('Dashboard - Profile response status:', profileResponse.status);
       const profileData = await profileResponse.json();
       console.log('Dashboard - Profile data:', profileData);
       setProfile(profileData);
+
       const jobsResponse = await fetch('http://localhost:8080/jobs', {
         headers: {
           'Authorization': `Bearer ${token}`
-        }
+        },
+        credentials: 'include'
       });
       console.log('Dashboard - Jobs response status:', jobsResponse.status);
       const jobsData = await jobsResponse.json();
       console.log('Dashboard - Jobs data:', jobsData);
       setJobs(jobsData);
+
       const applicationsResponse = await fetch('http://localhost:8080/applicant/applications', {
         headers: {
           'Authorization': `Bearer ${token}`
-        }
+        },
+        credentials: 'include'
       });
       console.log('Dashboard - Applications response status:', applicationsResponse.status);
       const applicationsData = await applicationsResponse.json();
@@ -86,23 +98,26 @@ const ApplicantDashboard = () => {
 
   const handleLogout = () => {
     handleClose();
-    localStorage.removeItem('jwtToken');
+    // Clear the JWT cookie
+    document.cookie = 'jwtToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
     navigate('/applicant/signin');
   };
 
   const handleApplyJob = async (jobId) => {
     try {
+      const token = getCookie('jwtToken');
       const response = await fetch('http://localhost:8080/applicant/apply', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('jwtToken')}`
+          'Authorization': `Bearer ${token}`
         },
+        credentials: 'include',
         body: JSON.stringify({ jobId })
       });
 
       if (response.ok) {
-        fetchUserData();
+        fetchUserData(token);
       }
     } catch (error) {
       console.error('Error applying for job:', error);

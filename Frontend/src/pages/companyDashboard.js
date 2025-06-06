@@ -58,6 +58,13 @@ const Dashboard = () => (
   </Box>
 );
 
+const getCookie = (name) => {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+  return null;
+};
+
 const CompanyDashboard = () => {
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState(null);
@@ -66,7 +73,7 @@ const CompanyDashboard = () => {
 
   useEffect(() => {
     // Check if user is authenticated
-    const token = localStorage.getItem('companyToken');
+    const token = getCookie('jwtToken');
     if (!token) {
       navigate('/employer/signin', { replace: true });
     }
@@ -114,7 +121,7 @@ const CompanyDashboard = () => {
 
   const handleLogout = () => {
     handleClose();
-    localStorage.removeItem('companyToken');
+    document.cookie = 'jwtToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
     navigate('/employer/signin', { replace: true });
   };
 

@@ -63,17 +63,24 @@ const CompanySignIn = () => {
         console.log('Response:', responseText);
         
         if (responseText === "Invalid GST Number" || 
-            responseText === "Company is not found, please register" || 
-            responseText === "Password is Wrong") {
-          throw new Error(responseText);
+            responseText === "Company is not found, please register") {
+          setErrors(prev => ({
+            ...prev,
+            gstNum: responseText
+          }));
+          return;
+        } else if (responseText === "Password is Wrong") {
+          setErrors(prev => ({
+            ...prev,
+            password: responseText
+          }));
+          return;
         }
 
-        // Store the JWT token from response body
+        // Only proceed with token storage and redirection if we have a valid response
         if (responseText && responseText.length > 0) {
           localStorage.setItem('companyToken', responseText);
           console.log('Token stored successfully');
-          
-          // Use window.location for hard navigation
           window.location.href = '/employer/dashboard';
         } else {
           throw new Error('No token received');

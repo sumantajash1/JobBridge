@@ -106,34 +106,39 @@ const ApplicantSignUp = () => {
           body: JSON.stringify(applicantData)
         });
 
+        console.log('Response status:', response.status);
         const responseText = await response.text();
+        console.log('Response text:', responseText);
 
         // Check if response is empty or invalid
         if (!responseText) {
           throw new Error('Empty response from server');
         }
 
-        // Get JWT token from header
-        const jwtToken = response.headers.get('jwtToken');
-        
-        // Check if we have a valid JWT token in the header
-        if (jwtToken) {
-          navigate('/applicant/dashboard', { replace: true });
+        // Check if response is a JWT token (starts with 'ey')
+        if (responseText.startsWith('ey')) {
+          console.log('JWT token received, storing and redirecting...');
+          localStorage.setItem('jwtToken', responseText);
+          console.log('Token stored, redirecting to dashboard...');
+          window.location.replace('/applicant/dashboard');
           return;
         }
 
         // Handle different error cases
         if (responseText.trim() === "PhoneExists") {
+          console.log('Phone number exists error');
           setErrors(prev => ({
             ...prev,
             mobNo: 'An account with this mobile number already exists'
           }));
         } else if (responseText.trim() === "EmailExists") {
+          console.log('Email exists error');
           setErrors(prev => ({
             ...prev,
             email: 'An account with this email already exists'
           }));
         } else {
+          console.log('Other error:', responseText);
           setErrors(prev => ({
             ...prev,
             submit: `Sign up failed: ${responseText}`
