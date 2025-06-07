@@ -23,7 +23,6 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import JobPostingForm from './PostJobs';
 import './companyDashboard.css';
 
-// Individual component placeholders for each section
 const PostNewJob = () => (
   <Box>
     <JobPostingForm />
