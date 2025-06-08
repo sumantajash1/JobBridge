@@ -110,12 +110,10 @@ const ApplicantSignUp = () => {
         const responseText = await response.text();
         console.log('Response text:', responseText);
 
-        // Check if response is empty or invalid
         if (!responseText) {
           throw new Error('Empty response from server');
         }
 
-        // Check if response is a JWT token (starts with 'ey')
         if (responseText.startsWith('ey')) {
           console.log('JWT token received, storing and redirecting...');
           localStorage.setItem('jwtToken', responseText);
