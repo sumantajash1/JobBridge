@@ -122,7 +122,6 @@ const ApplicantSignUp = () => {
           return;
         }
 
-        // Handle different error cases
         if (responseText.trim() === "PhoneExists") {
           console.log('Phone number exists error');
           setErrors(prev => ({
