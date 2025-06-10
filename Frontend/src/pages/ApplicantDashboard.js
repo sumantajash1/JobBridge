@@ -9,18 +9,7 @@ import { Menu, MenuItem, ListItemIcon, ListItemText } from '@mui/material';
 const ApplicantDashboard = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('jobs');
-  const [jobs, setJobs] = useState([]);
-  const [applications, setApplications] = useState([]);
-  const [profile, setProfile] = useState({
-    name: '',
-    email: '',
-    mobileNumber: '',
-    skills: [],
-    experience: '',
-    education: ''
-  });
   const [anchorEl, setAnchorEl] = useState(null);
-
   const open = Boolean(anchorEl);
 
   // Function to get cookie value by name
@@ -33,55 +22,11 @@ const ApplicantDashboard = () => {
 
   useEffect(() => {
     const token = getCookie('jwtToken');
-    console.log('Dashboard - Checking token:', token);
     if (!token) {
-      console.log('Dashboard - No token found, redirecting to sign in');
       navigate('/applicant/signin');
       return;
     }
-    console.log('Dashboard - Token found, fetching user data');
-    fetchUserData(token);
   }, [navigate]);
-
-  const fetchUserData = async (token) => {
-    try {
-      console.log('Dashboard - Fetching data with token:', token);
-      const profileResponse = await fetch('http://localhost:8080/applicant/profile', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
-        credentials: 'include'
-      });
-      console.log('Dashboard - Profile response status:', profileResponse.status);
-      const profileData = await profileResponse.json();
-      console.log('Dashboard - Profile data:', profileData);
-      setProfile(profileData);
-
-      const jobsResponse = await fetch('http://localhost:8080/jobs', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
-        credentials: 'include'
-      });
-      console.log('Dashboard - Jobs response status:', jobsResponse.status);
-      const jobsData = await jobsResponse.json();
-      console.log('Dashboard - Jobs data:', jobsData);
-      setJobs(jobsData);
-
-      const applicationsResponse = await fetch('http://localhost:8080/applicant/applications', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
-        credentials: 'include'
-      });
-      console.log('Dashboard - Applications response status:', applicationsResponse.status);
-      const applicationsData = await applicationsResponse.json();
-      console.log('Dashboard - Applications data:', applicationsData);
-      setApplications(applicationsData);
-    } catch (error) {
-      console.error('Dashboard - Error fetching user data:', error);
-    }
-  };
 
   const handleProfileClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -98,30 +43,8 @@ const ApplicantDashboard = () => {
 
   const handleLogout = () => {
     handleClose();
-    // Clear the JWT cookie
     document.cookie = 'jwtToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
     navigate('/applicant/signin');
-  };
-
-  const handleApplyJob = async (jobId) => {
-    try {
-      const token = getCookie('jwtToken');
-      const response = await fetch('http://localhost:8080/applicant/apply', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        credentials: 'include',
-        body: JSON.stringify({ jobId })
-      });
-
-      if (response.ok) {
-        fetchUserData(token);
-      }
-    } catch (error) {
-      console.error('Error applying for job:', error);
-    }
   };
 
   return (
@@ -184,79 +107,21 @@ const ApplicantDashboard = () => {
           {activeTab === 'jobs' && (
             <div className="content-section">
               <h2>Available Jobs</h2>
-              <div className="jobs-grid">
-                {jobs.map((job) => (
-                  <div key={job.id} className="job-card">
-                    <h3>{job.title}</h3>
-                    <p className="company">{job.company}</p>
-                    <p className="location">{job.location}</p>
-                    <p className="salary">{job.salary}</p>
-                    <div className="skills">
-                      {job.skills.map((skill, index) => (
-                        <span key={index} className="skill-badge">
-                          {skill}
-                        </span>
-                      ))}
-                    </div>
-                    <button
-                      className="apply-btn"
-                      onClick={() => handleApplyJob(job.id)}
-                      disabled={applications.some(app => app.jobId === job.id)}
-                    >
-                      {applications.some(app => app.jobId === job.id) ? 'Applied' : 'Apply Now'}
-                    </button>
-                  </div>
-                ))}
-              </div>
+              {/* Blank page for now */}
             </div>
           )}
 
           {activeTab === 'applications' && (
             <div className="content-section">
               <h2>My Applications</h2>
-              <div className="applications-list">
-                {applications.map((application) => (
-                  <div key={application.id} className="application-card">
-                    <h3>{application.jobTitle}</h3>
-                    <p className="company">{application.company}</p>
-                    <p className="status">Status: {application.status}</p>
-                    <p className="applied-date">Applied on: {new Date(application.appliedDate).toLocaleDateString()}</p>
-                  </div>
-                ))}
-              </div>
+              {/* Blank page for now */}
             </div>
           )}
 
           {activeTab === 'profile' && (
             <div className="content-section">
               <h2>My Profile</h2>
-              <div className="profile-card">
-                <div className="profile-section">
-                  <h3>Personal Information</h3>
-                  <p><strong>Name:</strong> {profile.name}</p>
-                  <p><strong>Email:</strong> {profile.email}</p>
-                  <p><strong>Mobile:</strong> {profile.mobileNumber}</p>
-                </div>
-                <div className="profile-section">
-                  <h3>Skills</h3>
-                  <div className="skills">
-                    {profile.skills.map((skill, index) => (
-                      <span key={index} className="skill-badge">
-                        {skill}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-                <div className="profile-section">
-                  <h3>Experience</h3>
-                  <p>{profile.experience}</p>
-                </div>
-                <div className="profile-section">
-                  <h3>Education</h3>
-                  <p>{profile.education}</p>
-                </div>
-                <button className="edit-profile-btn">Edit Profile</button>
-              </div>
+              {/* Blank page for now */}
             </div>
           )}
         </main>

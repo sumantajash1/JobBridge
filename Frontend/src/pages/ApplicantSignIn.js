@@ -60,11 +60,16 @@ const ApplicantSignIn = () => {
           })
         });
 
+        // Log all response headers for debugging
+        console.log('All Response Headers:', Object.fromEntries(response.headers.entries()));
+        
         const responseText = await response.text();
         console.log('Response:', responseText);
         
-        // Get JWT token from header
-        const jwtToken = response.headers.get('jwtToken');
+        // Get JWT token from header - try different header names
+        const jwtToken = response.headers.get('jwtToken') || 
+                        response.headers.get('JWT-Token') || 
+                        response.headers.get('Authorization');
         console.log('JWT Token:', jwtToken);
 
         if (responseText === "Doesn't Exist") {
@@ -80,11 +85,18 @@ const ApplicantSignIn = () => {
         } else if (responseText) {
           // If we get a name in response, it means login was successful
           console.log('Login successful, redirecting...');
-          // Store the user's name
-          localStorage.setItem('userName', responseText);
           
-          // Force redirect to dashboard
-          window.location.replace('/applicant/dashboard');
+          // Store the user's name and token
+          localStorage.setItem('userName', responseText);
+          if (jwtToken) {
+            localStorage.setItem('jwtToken', jwtToken);
+          }
+          
+          // Add a small delay before navigation to ensure state is updated
+          setTimeout(() => {
+            navigate('/applicant/dashboard', { replace: true });
+          }, 100);
+          
           return;
         } else {
           throw new Error('Invalid response from server');

@@ -10,6 +10,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -45,5 +46,11 @@ public class ApplicantController {
         CookieUtil cookieUtil = new CookieUtil();
         response.setHeader(HttpHeaders.SET_COOKIE, cookieUtil.generateCookie(jwtToken).toString());
         return ResponseEntity.ok(applicantServiceResponse.getLeft());
+    }
+
+    @GetMapping("/Testing")
+    @PreAuthorize("hasRole('Applicant')")
+    public String Testing() {
+        return "Inside Testing method";
     }
 }
