@@ -106,20 +106,11 @@ const ApplicantSignUp = () => {
           body: JSON.stringify(applicantData)
         });
 
-        console.log('Response status:', response.status);
         const responseText = await response.text();
         console.log('Response text:', responseText);
 
         if (!responseText) {
           throw new Error('Empty response from server');
-        }
-
-        if (responseText.startsWith('ey')) {
-          console.log('JWT token received, storing and redirecting...');
-          localStorage.setItem('jwtToken', responseText);
-          console.log('Token stored, redirecting to dashboard...');
-          window.location.replace('/applicant/dashboard');
-          return;
         }
 
         if (responseText.trim() === "PhoneExists") {
@@ -135,11 +126,9 @@ const ApplicantSignUp = () => {
             email: 'An account with this email already exists'
           }));
         } else {
-          console.log('Other error:', responseText);
-          setErrors(prev => ({
-            ...prev,
-            submit: `Sign up failed: ${responseText}`
-          }));
+          // If no error cases match, redirect to dashboard
+          console.log('Sign up successful, redirecting to dashboard...');
+          window.location.replace('/applicant/dashboard');
         }
       } catch (error) {
         console.error('Sign up failed:', error);
