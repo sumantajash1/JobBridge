@@ -26,9 +26,6 @@ public class ApplicantController {
         if(applicantServiceResponse.getLeft().equals("failed")) {
             return ResponseEntity.ok(applicantServiceResponse.getRight());
         }
-        if(applicantServiceResponse.getLeft().equals("failed")) {
-            return ResponseEntity.ok(applicantServiceResponse.getRight());
-        }
         String jwtToken = applicantServiceResponse.getRight();
         response.setHeader( "jwtToken", jwtToken);
         CookieUtil cookieUtil = new CookieUtil();
@@ -40,9 +37,6 @@ public class ApplicantController {
     public ResponseEntity<String> SignIn(@RequestBody ApplicantLoginRequestBody applicantLoginRequestBody, HttpServletResponse response) {
         System.out.println("SIGNIN" + applicantLoginRequestBody);
         Pair<String, String> applicantServiceResponse = applicantService.Login(applicantLoginRequestBody);
-        if(applicantServiceResponse.getLeft().equals("failed")) {
-            return ResponseEntity.ok(applicantServiceResponse.getRight());
-        }
         if(applicantServiceResponse.getLeft().equals("failed")) {
             return ResponseEntity.ok(applicantServiceResponse.getRight());
         }
