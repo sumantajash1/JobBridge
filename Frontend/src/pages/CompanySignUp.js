@@ -113,6 +113,7 @@ const CompanySignUp = () => {
             'Content-Type': 'application/json'
           },
           mode: 'cors',
+          credentials: 'include',
           body: JSON.stringify(companyData)
         });
 
@@ -120,40 +121,40 @@ const CompanySignUp = () => {
         console.log('Response:', responseText);
 
         // Handle different error cases
-        if (responseText === "Invalid GST Number") {
+        if (responseText === "InvalidGST") {
           setErrors(prev => ({
             ...prev,
             gstin: 'Invalid GST Number format'
           }));
-        } else if (responseText === "gst number already exists") {
+        } else if (responseText === "gstExists") {
           setErrors(prev => ({
             ...prev,
             gstin: 'A company with this GST number already exists'
           }));
-        } else if (responseText === "contact number already exists") {
+        } else if (responseText === "contactNumberExists") {
           setErrors(prev => ({
             ...prev,
             contactNumber: 'A company with this contact number already exists'
           }));
-        } else if (responseText === "email already exists") {
+        } else if (responseText === "emailExists") {
           setErrors(prev => ({
             ...prev,
             email: 'A company with this email already exists'
           }));
-        } else if (responseText === "name already exists") {
+        } else if (responseText === "nameExists") {
           setErrors(prev => ({
             ...prev,
             companyName: 'A company with this name already exists'
           }));
         } else if (responseText && responseText.length > 0) {
-          // If we get here, signup was successful and we received a JWT token
-          console.log('Signup successful, storing JWT token');
-          localStorage.setItem('companyToken', responseText);
+          // If we get here, signup was successful and we received the company name
+          console.log('Signup successful, storing company name');
+          localStorage.setItem('companyName', responseText);
           
           // Use window.location for hard navigation
           window.location.href = '/employer/dashboard';
         } else {
-          throw new Error('No token received');
+          throw new Error('No response received from server');
         }
       } catch (error) {
         console.error('Sign up failed:', error);

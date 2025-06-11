@@ -72,10 +72,36 @@ const CompanyDashboard = () => {
 
   useEffect(() => {
     // Check if user is authenticated
-    const token = getCookie('jwtToken');
+    const token = getCookie('companyToken');
     if (!token) {
+      console.log('No authentication token found, redirecting to signin');
       navigate('/employer/signin', { replace: true });
+      return;
     }
+
+    // Verify token with backend
+    const verifyToken = async () => {
+      try {
+        const response = await fetch('http://localhost:8080/Company/verify', {
+          method: 'GET',
+          credentials: 'include',
+          headers: {
+            'Accept': '*/*',
+            'Connection': 'keep-alive'
+          }
+        });
+
+        if (!response.ok) {
+          console.log('Token verification failed, redirecting to signin');
+          navigate('/employer/signin', { replace: true });
+        }
+      } catch (error) {
+        console.error('Error verifying token:', error);
+        navigate('/employer/signin', { replace: true });
+      }
+    };
+
+    verifyToken();
   }, [navigate]);
 
   const sidebarOptions = [
@@ -120,7 +146,9 @@ const CompanyDashboard = () => {
 
   const handleLogout = () => {
     handleClose();
-    document.cookie = 'jwtToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+    // Clear both the JWT token and company name
+    document.cookie = 'companyToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+    localStorage.removeItem('companyName');
     navigate('/employer/signin', { replace: true });
   };
 

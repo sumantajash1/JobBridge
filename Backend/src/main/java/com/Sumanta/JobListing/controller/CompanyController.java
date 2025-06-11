@@ -24,8 +24,7 @@ public class CompanyController {
 
     @PostMapping("/SignUp")
     public ResponseEntity<String> SignUp(@RequestBody Company company, HttpServletResponse response) {
-        System.out.println(company);
-        //System.out.println("In the sign Up method of CompanyController");
+        System.out.println("Sign Up + " + company);
         Pair<String, String> serviceResponse = companyService.register(company);
         if(serviceResponse.getLeft().equals("failed")) {
             return ResponseEntity.ok(serviceResponse.getRight());
@@ -38,10 +37,10 @@ public class CompanyController {
 
     @PostMapping("/SignIn")
     public ResponseEntity<String> SignIn(@RequestBody CompanyLoginRequestBody companyLoginRequestBody, HttpServletResponse response) {
-        //System.out.println("Entered SignIn method of Company");
+        System.out.println("SignIn + " + companyLoginRequestBody);
         Pair<String, String> companyserviceResponse = companyService.Login(companyLoginRequestBody);
-        if(companyserviceResponse.getLeft.equals("failed")) {
-            return ResponseEntity.ok(companyserviceResponse.getRight());
+        if(companyserviceResponse.getLeft().equals("failed")) {
+            return ResponseEntity.ok(companyserviceResponse.getRight    ());
         }
         String jwtToken = companyserviceResponse.getRight();
         response.setHeader("jwt", jwtToken);
