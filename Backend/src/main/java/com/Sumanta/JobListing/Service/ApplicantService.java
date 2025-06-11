@@ -24,10 +24,7 @@ public class ApplicantService {
         //System.out.println(applicant);
         String mobNo = applicant.getMobNo();
         if(alreadyExists(mobNo, applicant.getEmail()).equals("phone")) {
-            return Pair.of("failed", "PhoneExists");
-        }
-        if(alreadyExists(mobNo, applicant.getEmail()).equals("email")) {
-            return Pair.of("failed", "EmailExists");
+            return Pair.of("failed", alreadyExists(mobNo, applicant.getEmail()));
         }
         applicant.setPassword(passwordEncoder.encode(applicant.getPassword()));
         applicantDAO.save(applicant);
@@ -37,10 +34,10 @@ public class ApplicantService {
 
     private String alreadyExists(String mobNo, String email) {
         if(applicantDAO.existsByMobNo(mobNo)) {
-            return "phone";
+            return "PhoneExists";
         }
         if(applicantDAO.existsByEmail(email)) {
-            return "email";
+            return "EmailExists";
         }
         return "No";
     }

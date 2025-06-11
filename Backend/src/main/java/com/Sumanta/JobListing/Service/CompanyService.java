@@ -6,6 +6,7 @@ import com.Sumanta.JobListing.Entity.Company;
 import com.Sumanta.JobListing.Entity.Role;
 import com.Sumanta.JobListing.utils.GstNumberValidator;
 import com.Sumanta.JobListing.utils.JwtTokenUtil;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,33 +25,33 @@ public class CompanyService {
     @Autowired
     GstNumberValidator gstNumberValidator;
 
-    public String register(Company company) {
+    public Pair<String, String> register(Company company) {
         if(!gstNumberValidator.isGstNumValid(company.getGstNum())) {
-            return "InvalGstNum";
+            return Pair.of("failed", "InvalidGST");
         }
         String existsResponse = alreadyExists(company);
         System.out.println(existsResponse);
         if(!existsResponse.equals("NO")) {
-            return existsResponse;
+            return Pair.of("failed", existsResponse);
         }
         company.setCompanyPassword(passwordEncoder.encode(company.getCompanyPassword()));
         companyDAO.save(company);
-        return jwtTokenUtil.GenerateToken(company.getGstNum(), Role.Company);
+        return Pair.of("Name", company.getCompanyName());
     }
 
-    public String Login(CompanyLoginRequestBody companyLoginRequestBody) {
+    public Pair<String, String> Login(CompanyLoginRequestBody companyLoginRequestBody) {
         String gstNum = companyLoginRequestBody.getGstNum();
         if(!gstNumberValidator.isGstNumValid(gstNum)) {
-            return "InvalGstNum";
+            return Pair.of("failed", "InvalGstNum");
         }
         if(!companyDAO.existsByGstNum(gstNum)) {
-            return "NotFound";
+            return Pair.of("failed", "NotFound");
         }
         Company tempCompany = companyDAO.findByGstNum(gstNum);
         if(!passwordEncoder.matches(companyLoginRequestBody.getPassword(), tempCompany.getCompanyPassword())) {
-            return "WrongPassword";
+            return Pair.of("failed", "WrongPassword");
         }
-        return jwtTokenUtil.GenerateToken(gstNum, Role.Company);
+        return Pair.of(tempCompany.getCompanyName(), jwtTokenUtil.GenerateToken(gstNum, Role.Company));
     }
 
     private String alreadyExists(Company company) {
