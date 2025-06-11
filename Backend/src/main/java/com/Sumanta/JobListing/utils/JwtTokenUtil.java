@@ -12,7 +12,7 @@ import java.util.Date;
 import static io.jsonwebtoken.Jwts.builder;
 
 @Component
-public class JwtTokenUtil {
+public class  JwtTokenUtil {
     private SecretKey SECRET_KEY;
 
     @PostConstruct

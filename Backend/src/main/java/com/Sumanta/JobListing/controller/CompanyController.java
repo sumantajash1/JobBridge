@@ -4,11 +4,14 @@ import com.Sumanta.JobListing.DTO.CompanyLoginRequestBody;
 import com.Sumanta.JobListing.Entity.Company;
 import com.Sumanta.JobListing.Service.CompanyService;
 import com.Sumanta.JobListing.utils.CookieUtil;
+import com.Sumanta.JobListing.utils.JwtTokenUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,6 +24,8 @@ public class CompanyController {
     @Autowired
     CompanyService companyService;
     CookieUtil cookieUtil = new CookieUtil();
+    @Autowired
+    JwtTokenUtil jwtTokenUtil;
 
     @PostMapping("/SignUp")
     public ResponseEntity<String> SignUp(@RequestBody Company company, HttpServletResponse response) {
@@ -44,7 +49,13 @@ public class CompanyController {
         }
         String jwtToken = companyserviceResponse.getRight();
         response.setHeader("jwt", jwtToken);
+        response.setHeader(HttpHeaders.SET_COOKIE, jwtToken);
         return ResponseEntity.ok(companyserviceResponse.getLeft());
+    }
+
+    @GetMapping("/verifyJwtToken")
+    public ResponseEntity<String> verifyJwtToken() {
+        return ResponseEntity.ok("tokenIsValid");
     }
 
 }

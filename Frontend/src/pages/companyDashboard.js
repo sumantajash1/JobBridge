@@ -72,7 +72,7 @@ const CompanyDashboard = () => {
 
   useEffect(() => {
     // Check if user is authenticated
-    const token = getCookie('companyToken');
+    const token = getCookie('');
     if (!token) {
       console.log('No authentication token found, redirecting to signin');
       navigate('/employer/signin', { replace: true });
@@ -82,21 +82,33 @@ const CompanyDashboard = () => {
     // Verify token with backend
     const verifyToken = async () => {
       try {
-        const response = await fetch('http://localhost:8080/Company/verify', {
+        const response = await fetch('http://localhost:8080/Company/verifyJwtToken', {
           method: 'GET',
           credentials: 'include',
           headers: {
             'Accept': '*/*',
-            'Connection': 'keep-alive'
+            'Connection': 'keep-alive',
+            'Authorization': `Bearer ${token}`
           }
         });
 
-        if (!response.ok) {
-          console.log('Token verification failed, redirecting to signin');
+        if (response.status === 403) {
+          console.log('Method is forbidden, redirecting to signin');
+          document.cookie = 'jwtToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
           navigate('/employer/signin', { replace: true });
+          return;
+        }
+
+        const responseText = await response.text();
+        if (responseText !== "tokenIsValid") {
+          console.log('Token verification failed, redirecting to signin');
+          document.cookie = 'jwtToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+          navigate('/employer/signin', { replace: true });
+          return;
         }
       } catch (error) {
         console.error('Error verifying token:', error);
+        document.cookie = 'jwtToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
         navigate('/employer/signin', { replace: true });
       }
     };

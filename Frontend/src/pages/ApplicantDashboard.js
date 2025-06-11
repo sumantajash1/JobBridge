@@ -26,6 +26,33 @@ const ApplicantDashboard = () => {
       navigate('/applicant/signin');
       return;
     }
+
+    const verifyToken = async () => {
+      try {
+        const response = await fetch('http://localhost:8080/Applicant/verifyJwtToken', {
+          method: 'GET',
+          credentials: 'include',
+          headers: {
+            'Accept': '*/*',
+            'Connection': 'keep-alive',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        const responseText = await response.text();
+        if (responseText !== "ValidToken") {
+          console.log('Token verification failed, redirecting to signin');
+          document.cookie = 'jwtToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+          navigate('/applicant/signin', { replace: true });
+        }
+      } catch (error) {
+        console.error('Error verifying token:', error);
+        document.cookie = 'jwtToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+        navigate('/applicant/signin', { replace: true });
+      }
+    };
+
+    verifyToken();
   }, [navigate]);
 
   const handleProfileClick = (event) => {

@@ -70,7 +70,6 @@ const ApplicantSignIn = () => {
         const jwtToken = response.headers.get('jwtToken') || 
                         response.headers.get('JWT-Token') || 
                         response.headers.get('Authorization');
-        console.log('JWT Token:', jwtToken);
 
         if (responseText === "Doesn't Exist") {
           setErrors(prev => ({
@@ -88,9 +87,6 @@ const ApplicantSignIn = () => {
           
           // Store the user's name and token
           localStorage.setItem('userName', responseText);
-          if (jwtToken) {
-            localStorage.setItem('jwtToken', jwtToken);
-          }
           
           // Add a small delay before navigation to ensure state is updated
           setTimeout(() => {

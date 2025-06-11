@@ -31,8 +31,5 @@ public class JobListingApplication {
 		SpringApplication.run(JobListingApplication.class, args);
 	}
 
-	public void d() {
-
-	}
 
 }
