@@ -53,6 +53,7 @@ const CompanySignIn = () => {
           headers: {
             'Content-Type': 'application/json',
           },
+          credentials: 'include',
           body: JSON.stringify({
             gstNum: formData.gstNum,
             password: formData.password
@@ -79,11 +80,12 @@ const CompanySignIn = () => {
 
         // Only proceed with token storage and redirection if we have a valid response
         if (responseText && responseText.length > 0) {
-          localStorage.setItem('companyToken', responseText);
-          console.log('Token stored successfully');
+          // Store company name in localStorage
+          localStorage.setItem('companyName', responseText);
+          console.log('Company name stored successfully');
           window.location.href = '/employer/dashboard';
         } else {
-          throw new Error('No token received');
+          throw new Error('No response received from server');
         }
       } catch (error) {
         console.error('Sign in failed:', error);

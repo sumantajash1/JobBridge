@@ -72,7 +72,7 @@ const CompanyDashboard = () => {
 
   useEffect(() => {
     // Check if user is authenticated
-    const token = getCookie('');
+    const token = getCookie('jwtToken');
     if (!token) {
       console.log('No authentication token found, redirecting to signin');
       navigate('/employer/signin', { replace: true });

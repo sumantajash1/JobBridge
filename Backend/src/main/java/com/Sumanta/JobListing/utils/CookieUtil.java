@@ -1,7 +1,6 @@
 package com.Sumanta.JobListing.utils;
 
 import org.springframework.http.ResponseCookie;
-import org.springframework.stereotype.Component;
 
 public class CookieUtil {
     public static ResponseCookie generateCookie(String jwtToken) {

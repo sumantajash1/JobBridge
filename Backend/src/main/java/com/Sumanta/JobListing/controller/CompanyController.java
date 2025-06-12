@@ -45,15 +45,16 @@ public class CompanyController {
         System.out.println("SignIn + " + companyLoginRequestBody);
         Pair<String, String> companyserviceResponse = companyService.Login(companyLoginRequestBody);
         if(companyserviceResponse.getLeft().equals("failed")) {
-            return ResponseEntity.ok(companyserviceResponse.getRight    ());
+            return ResponseEntity.ok(companyserviceResponse.getRight());
         }
         String jwtToken = companyserviceResponse.getRight();
         response.setHeader("jwt", jwtToken);
-        response.setHeader(HttpHeaders.SET_COOKIE, jwtToken);
+        response.setHeader(HttpHeaders.SET_COOKIE, cookieUtil.generateCookie(jwtToken).toString());
         return ResponseEntity.ok(companyserviceResponse.getLeft());
     }
 
     @GetMapping("/verifyJwtToken")
+    @PreAuthorize("hasRole('Company')")
     public ResponseEntity<String> verifyJwtToken() {
         return ResponseEntity.ok("tokenIsValid");
     }
