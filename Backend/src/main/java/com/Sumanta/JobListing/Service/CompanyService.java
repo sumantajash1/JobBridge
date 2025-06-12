@@ -36,7 +36,7 @@ public class CompanyService {
         }
         company.setCompanyPassword(passwordEncoder.encode(company.getCompanyPassword()));
         companyDAO.save(company);
-        return Pair.of("Name", company.getCompanyName());
+        return Pair.of(company.getCompanyName(), jwtTokenUtil.GenerateToken(company.getGstNum(), Role.Company));
     }
 
     public Pair<String, String> Login(CompanyLoginRequestBody companyLoginRequestBody) {
