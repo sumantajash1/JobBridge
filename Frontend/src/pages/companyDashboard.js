@@ -82,7 +82,7 @@ const CompanyDashboard = () => {
     // Verify token with backend
     const verifyToken = async () => {
       try {
-        const response = await fetch('http://localhost:8080/Company/verifyJwtToken', {
+        const response = await fetch('http://localhost:8080/Company/verifyCompanyToken', {
           method: 'GET',
           credentials: 'include',
           headers: {
@@ -100,7 +100,7 @@ const CompanyDashboard = () => {
         }
 
         const responseText = await response.text();
-        if (responseText !== "tokenIsValid") {
+        if (responseText !== "companyTokenIsValid") {
           console.log('Token verification failed, redirecting to signin');
           document.cookie = 'jwtToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
           navigate('/employer/signin', { replace: true });

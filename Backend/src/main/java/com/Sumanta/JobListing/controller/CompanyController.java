@@ -53,10 +53,10 @@ public class CompanyController {
         return ResponseEntity.ok(companyserviceResponse.getLeft());
     }
 
-    @GetMapping("/verifyJwtToken")
+    @GetMapping("/verifyCompanyToken")
     @PreAuthorize("hasRole('Company')")
-    public ResponseEntity<String> verifyJwtToken() {
-        return ResponseEntity.ok("tokenIsValid");
+    public ResponseEntity<String> verifyCompanyToken() {
+            return ResponseEntity.ok("companyTokenIsValid");
     }
 
 }

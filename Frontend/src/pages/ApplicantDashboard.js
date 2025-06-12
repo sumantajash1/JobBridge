@@ -29,7 +29,7 @@ const ApplicantDashboard = () => {
 
     const verifyToken = async () => {
       try {
-        const response = await fetch('http://localhost:8080/Applicant/verifyJwtToken', {
+        const response = await fetch('http://localhost:8080/Applicant/verifyApplicantToken', {
           method: 'GET',
           credentials: 'include',
           headers: {
@@ -40,13 +40,11 @@ const ApplicantDashboard = () => {
         });
 
         const responseText = await response.text();
-        if (responseText !== "ValidToken") {
-          console.log('Token verification failed, redirecting to signin');
+        if (responseText !== "applicantTokenIsValid") {
           document.cookie = 'jwtToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
           navigate('/applicant/signin', { replace: true });
         }
       } catch (error) {
-        console.error('Error verifying token:', error);
         document.cookie = 'jwtToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
         navigate('/applicant/signin', { replace: true });
       }

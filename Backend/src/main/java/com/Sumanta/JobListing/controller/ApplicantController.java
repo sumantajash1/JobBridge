@@ -47,9 +47,9 @@ public class ApplicantController {
         return ResponseEntity.ok(applicantServiceResponse.getLeft());
     }
 
-    @GetMapping("/Testing")
+    @GetMapping("/verifyApplicantToken")
     @PreAuthorize("hasRole('Applicant')")
-    public String Testing() {
-        return "Inside Testing method";
+    public ResponseEntity<String> verifyApplicantToken() {
+        return ResponseEntity.ok("applicantTokenIsValid");
     }
 }
