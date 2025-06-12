@@ -127,7 +127,7 @@ const ApplicantSignUp = () => {
           }));
         } else {
           // If no error cases match, redirect to dashboard
-          console.log('Sign up successful, redirecting to dashboard...');
+          localStorage.setItem('userName', responseText);
           window.location.replace('/applicant/dashboard');
         }
       } catch (error) {

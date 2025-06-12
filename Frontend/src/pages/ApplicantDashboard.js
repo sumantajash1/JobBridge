@@ -146,7 +146,12 @@ const ApplicantDashboard = () => {
           {activeTab === 'profile' && (
             <div className="content-section">
               <h2>My Profile</h2>
-              {/* Blank page for now */}
+              <div className="profile-card">
+                <div className="profile-section">
+                  <h3>Name</h3>
+                  <p>{localStorage.getItem('userName') || 'Not available'}</p>
+                </div>
+              </div>
             </div>
           )}
         </main>

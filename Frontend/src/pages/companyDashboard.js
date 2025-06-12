@@ -153,13 +153,13 @@ const CompanyDashboard = () => {
 
   const handleViewProfile = () => {
     handleClose();
-    navigate('/company-profile');
+    setSelectedSection('profile');
   };
 
   const handleLogout = () => {
     handleClose();
     // Clear both the JWT token and company name
-    document.cookie = 'companyToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+    document.cookie = 'jwtToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
     localStorage.removeItem('companyName');
     navigate('/employer/signin', { replace: true });
   };
@@ -173,6 +173,18 @@ const CompanyDashboard = () => {
     if (selectedOption) {
       const Component = selectedOption.component;
       return <Component />;
+    }
+    if (selectedSection === 'profile') {
+      const companyName = localStorage.getItem('companyName');
+      return (
+        <Box>
+          <Typography variant="h4" gutterBottom>Company Profile</Typography>
+          <Box sx={{ mt: 3, p: 3, bgcolor: 'background.paper', borderRadius: 2, boxShadow: 1 }}>
+            <Typography variant="h6" gutterBottom>Company Name</Typography>
+            <Typography variant="body1">{companyName || 'Not available'}</Typography>
+          </Box>
+        </Box>
+      );
     }
     return <Dashboard />;
   };
