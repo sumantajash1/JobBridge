@@ -22,11 +22,10 @@ public class CompanyService {
     JwtTokenUtil jwtTokenUtil;
     @Autowired
     PasswordEncoder passwordEncoder;
-    @Autowired
-    GstNumberValidator gstNumberValidator;
 
     public Pair<String, String> register(Company company) {
-        if(!gstNumberValidator.isGstNumValid(company.getGstNum())) {
+        System.out.println(GstNumberValidator.isGstNumValid(company.getGstNum()));
+        if(!GstNumberValidator.isGstNumValid(company.getGstNum())) {
             return Pair.of("failed", "InvalidGST");
         }
         String existsResponse = alreadyExists(company);
@@ -40,8 +39,9 @@ public class CompanyService {
     }
 
     public Pair<String, String> Login(CompanyLoginRequestBody companyLoginRequestBody) {
+        System.out.println(GstNumberValidator.isGstNumValid(companyLoginRequestBody.getGstNum()));
         String gstNum = companyLoginRequestBody.getGstNum();
-        if(!gstNumberValidator.isGstNumValid(gstNum)) {
+        if(!GstNumberValidator.isGstNumValid(gstNum)) {
             return Pair.of("failed", "InvalGstNum");
         }
         if(!companyDAO.existsByGstNum(gstNum)) {
