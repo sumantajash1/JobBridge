@@ -11,17 +11,11 @@ import java.util.Date;
 
 import static io.jsonwebtoken.Jwts.builder;
 
-@Component
 public class  JwtTokenUtil {
-    private SecretKey SECRET_KEY;
+    private static final String secret = "dsdsgdskj523kj523kjkljdkghsdgsekj23523542354j23klj23klt4kwhntgewklgkljgikejtk2jtk23j5kl23j52";
+    private static final SecretKey SECRET_KEY = Keys.hmacShaKeyFor(secret.getBytes()) ;
 
-    @PostConstruct
-    public void init() {
-        String secret = "dsdsgdskj523kj523kjkljdkghsdgsekj23523542354j23klj23klt4kwhntgewklgkljgikejtk2jtk23j5kl23j52";
-        SECRET_KEY = Keys.hmacShaKeyFor(secret.getBytes());
-    }
-
-    public String GenerateToken(String userId, Role role ) {
+    public static String GenerateToken(String userId, Role role ) {
         return builder().
                         setSubject(userId)
                         .claim("role", role)
@@ -31,7 +25,7 @@ public class  JwtTokenUtil {
                         .compact();
     }
 
-    public boolean validateToken(String JwtToken) {
+    public static boolean validateToken(String JwtToken) {
         try {
             Jwts
                     .parserBuilder()
@@ -45,7 +39,7 @@ public class  JwtTokenUtil {
         }
     }
 
-    public String getUserIdFromToken(String jwtToken) {
+    public static String getUserIdFromToken(String jwtToken) {
         return Jwts
                 .parserBuilder()
                 .setSigningKey(SECRET_KEY)
@@ -55,7 +49,7 @@ public class  JwtTokenUtil {
                 .getSubject();
     }
 
-    public Role getUserRoleFromToken(String jwtToken) {
+    public static Role getUserRoleFromToken(String jwtToken) {
         String roleStr = Jwts
                 .parserBuilder()
                 .setSigningKey(SECRET_KEY)

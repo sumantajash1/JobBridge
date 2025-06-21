@@ -24,8 +24,6 @@ public class CompanyController {
     @Autowired
     CompanyService companyService;
     CookieUtil cookieUtil = new CookieUtil();
-    @Autowired
-    JwtTokenUtil jwtTokenUtil;
 
     @PostMapping("/SignUp")
     public ResponseEntity<String> SignUp(@RequestBody Company company, HttpServletResponse response) {

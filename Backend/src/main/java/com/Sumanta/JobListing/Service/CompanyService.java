@@ -19,8 +19,6 @@ public class CompanyService {
     @Autowired
     CompanyDAO companyDAO;
     @Autowired
-    JwtTokenUtil jwtTokenUtil;
-    @Autowired
     PasswordEncoder passwordEncoder;
 
     public Pair<String, String> register(Company company) {
@@ -35,7 +33,7 @@ public class CompanyService {
         }
         company.setCompanyPassword(passwordEncoder.encode(company.getCompanyPassword()));
         companyDAO.save(company);
-        return Pair.of(company.getCompanyName(), jwtTokenUtil.GenerateToken(company.getGstNum(), Role.Company));
+        return Pair.of(company.getCompanyName(), JwtTokenUtil.GenerateToken(company.getGstNum(), Role.Company));
     }
 
     public Pair<String, String> Login(CompanyLoginRequestBody companyLoginRequestBody) {
@@ -51,7 +49,7 @@ public class CompanyService {
         if(!passwordEncoder.matches(companyLoginRequestBody.getPassword(), tempCompany.getCompanyPassword())) {
             return Pair.of("failed", "WrongPassword");
         }
-        return Pair.of(tempCompany.getCompanyName(), jwtTokenUtil.GenerateToken(gstNum, Role.Company));
+        return Pair.of(tempCompany.getCompanyName(), JwtTokenUtil.GenerateToken(gstNum, Role.Company));
     }
 
     private String alreadyExists(Company company) {

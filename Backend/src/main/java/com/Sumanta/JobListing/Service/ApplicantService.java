@@ -15,8 +15,6 @@ public class ApplicantService {
     @Autowired
     ApplicantDAO applicantDAO;
     @Autowired
-    JwtTokenUtil jwtTokenUtil;
-    @Autowired
     PasswordEncoder passwordEncoder;
 
 
@@ -28,7 +26,7 @@ public class ApplicantService {
         }
         applicant.setPassword(passwordEncoder.encode(applicant.getPassword()));
         applicantDAO.save(applicant);
-        String jwtToken = jwtTokenUtil.GenerateToken(mobNo, Role.Applicant);
+        String jwtToken = JwtTokenUtil.GenerateToken(mobNo, Role.Applicant);
         return Pair.of(applicant.getaName(), jwtToken);
     }
 
@@ -58,7 +56,7 @@ public class ApplicantService {
         if(!passwordEncoder.matches(applicantLoginRequestBody.getPassword(), applicant.getPassword())) {
             return Pair.of("failed", "Wrong Password");
         }
-        String jwtToken = jwtTokenUtil.GenerateToken(mobNo, Role.Applicant);
+        String jwtToken = JwtTokenUtil.GenerateToken(mobNo, Role.Applicant);
         return Pair.of(applicant.getaName(), jwtToken);
     }
 }

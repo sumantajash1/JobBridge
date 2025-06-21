@@ -19,8 +19,6 @@ import java.util.Collections;
 
 @Component
 public class JwtRequestFilter extends OncePerRequestFilter {
-    @Autowired
-    private JwtTokenUtil tokenUtil;
 
     @Override
     public void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -30,9 +28,9 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             return;
         }
         String JwtToken = header.substring(7);
-        if(JwtToken != null && tokenUtil.validateToken(JwtToken)) {
-            String userID = tokenUtil.getUserIdFromToken(JwtToken);
-            Role role = tokenUtil.getUserRoleFromToken(JwtToken);
+        if(JwtToken != null && JwtTokenUtil.validateToken(JwtToken)) {
+            String userID = JwtTokenUtil.getUserIdFromToken(JwtToken);
+            Role role = JwtTokenUtil.getUserRoleFromToken(JwtToken);
             Collection<SimpleGrantedAuthority> authorities = Collections.singleton(
                 new SimpleGrantedAuthority("ROLE_" + role.name())
             );
