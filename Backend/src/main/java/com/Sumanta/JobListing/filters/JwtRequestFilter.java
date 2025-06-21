@@ -4,9 +4,11 @@ import com.Sumanta.JobListing.Entity.Role;
 import com.Sumanta.JobListing.utils.JwtTokenUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpCookie;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -28,6 +30,17 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             return;
         }
         String JwtToken = header.substring(7);
+        if(JwtToken == null || JwtToken.isEmpty()) {
+           Cookie[] cookies = request.getCookies();
+           if(cookies != null) {
+               for(Cookie cookie : cookies) {
+                   if(cookie.getName().equals("jwtToken")) {
+                       JwtToken = cookie.getValue();
+                       break;
+                   }
+               }
+           }
+        }
         if(JwtToken != null && JwtTokenUtil.validateToken(JwtToken)) {
             String userID = JwtTokenUtil.getUserIdFromToken(JwtToken);
             Role role = JwtTokenUtil.getUserRoleFromToken(JwtToken);
