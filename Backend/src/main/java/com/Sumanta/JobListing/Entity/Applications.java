@@ -1,6 +1,4 @@
-package com.Sumanta.JobListing.model;
-
-import org.springframework.data.mongodb.core.mapping.Document;
+package com.Sumanta.JobListing.Entity;
 
 public class Applications {
     private String sNO;

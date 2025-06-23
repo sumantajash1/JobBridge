@@ -2,6 +2,7 @@ package com.Sumanta.JobListing.controller;
 
 import com.Sumanta.JobListing.DTO.CompanyLoginRequestBody;
 import com.Sumanta.JobListing.Entity.Company;
+import com.Sumanta.JobListing.Entity.JobPost;
 import com.Sumanta.JobListing.Service.CompanyService;
 import com.Sumanta.JobListing.utils.CookieUtil;
 import com.Sumanta.JobListing.utils.JwtTokenUtil;
@@ -55,6 +56,17 @@ public class CompanyController {
     @PreAuthorize("hasRole('Company')")
     public ResponseEntity<String> verifyCompanyToken() {
             return ResponseEntity.ok("companyTokenIsValid");
+    }
+
+    @PostMapping("/postJob")
+    @PreAuthorize("hasRole('Company')")
+    public ResponseEntity<String> postJob(@RequestBody JobPost jobPost) {
+       Pair<String, String> companyServiceResponse = companyService.postJob(jobPost);
+       if(companyServiceResponse.getLeft().equals("failed")) {
+          return ResponseEntity.ok(companyServiceResponse.getRight());
+       }
+       String jobId = companyServiceResponse.getRight();
+       return ResponseEntity.ok(jobId);
     }
 
 }

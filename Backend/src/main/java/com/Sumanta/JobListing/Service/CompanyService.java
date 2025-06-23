@@ -1,8 +1,10 @@
 package com.Sumanta.JobListing.Service;
 
 import com.Sumanta.JobListing.DAO.CompanyDAO;
+import com.Sumanta.JobListing.DAO.JobDao;
 import com.Sumanta.JobListing.DTO.CompanyLoginRequestBody;
 import com.Sumanta.JobListing.Entity.Company;
+import com.Sumanta.JobListing.Entity.JobPost;
 import com.Sumanta.JobListing.Entity.Role;
 import com.Sumanta.JobListing.utils.GstNumberValidator;
 import com.Sumanta.JobListing.utils.JwtTokenUtil;
@@ -20,6 +22,8 @@ public class CompanyService {
     CompanyDAO companyDAO;
     @Autowired
     PasswordEncoder passwordEncoder;
+    @Autowired
+    private JobDao jobDao;
 
     public Pair<String, String> register(Company company) {
         System.out.println(GstNumberValidator.isGstNumValid(company.getGstNum()));
@@ -69,4 +73,13 @@ public class CompanyService {
         return "NO";
     }
 
+    public Pair<String, String> postJob(JobPost jobPost) {
+        if(jobDao.existsByJobTitle(jobPost.getJobTitle())) {
+            return Pair.of("failed", "A Job Post with this Title Already Exists, Please consider editing that Job Post");
+        }
+        jobDao.save(jobPost);
+        JobPost tempjobPost = jobDao.findByJobTitle(jobPost.getJobTitle());
+        if(tempjobPost.equals(null)) System.out.println("null tempJobPost");
+        return Pair.of("Job ID : ", jobPost.getJobId());
+    }
 }
