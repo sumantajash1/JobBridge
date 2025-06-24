@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.*;
 public class ApplicantController {
     @Autowired
     ApplicantService applicantService;
-    CookieUtil cookieUtil = new CookieUtil();
 
     @PostMapping("/SignUp")
     public ResponseEntity<String> SignUp(@RequestBody Applicant applicant, HttpServletResponse response) {
@@ -30,7 +29,7 @@ public class ApplicantController {
         }
         String jwtToken = applicantServiceResponse.getRight();
         response.setHeader( "jwtToken", jwtToken);
-        response.setHeader(HttpHeaders.SET_COOKIE, cookieUtil.generateCookie(jwtToken).toString());
+        response.setHeader(HttpHeaders.SET_COOKIE, CookieUtil.generateCookie(jwtToken).toString());
         return ResponseEntity.ok(applicantServiceResponse.getLeft());
     }
 
@@ -43,7 +42,7 @@ public class ApplicantController {
         }
         String jwtToken = applicantServiceResponse.getRight();
         response.setHeader("jwtToken", jwtToken);
-        response.setHeader(HttpHeaders.SET_COOKIE, cookieUtil.generateCookie(jwtToken).toString());
+        response.setHeader(HttpHeaders.SET_COOKIE, CookieUtil.generateCookie(jwtToken).toString());
         return ResponseEntity.ok(applicantServiceResponse.getLeft());
     }
 
