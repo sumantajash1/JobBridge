@@ -27,7 +27,7 @@ public class ApplicantService {
         applicant.setPassword(passwordEncoder.encode(applicant.getPassword()));
         applicantDAO.save(applicant);
         String jwtToken = JwtTokenUtil.GenerateToken(mobNo, Role.Applicant);
-        return Pair.of(applicant.getaName(), jwtToken);
+        return Pair.of(applicant.getAName(), jwtToken);
     }
 
     private String alreadyExists(String mobNo, String email) {
@@ -44,6 +44,7 @@ public class ApplicantService {
         if(applicantDAO.existsByMobNo(mobileNo)) {
             return true;
         }
+
         return false;
     }
 
@@ -57,6 +58,6 @@ public class ApplicantService {
             return Pair.of("failed", "Wrong Password");
         }
         String jwtToken = JwtTokenUtil.GenerateToken(mobNo, Role.Applicant);
-        return Pair.of(applicant.getaName(), jwtToken);
+        return Pair.of(applicant.getAName(), jwtToken);
     }
 }
