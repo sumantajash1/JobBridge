@@ -18,8 +18,10 @@ const JobPostingForm = () => {
   const [formData, setFormData] = useState({
     jobTitle: '',
     salaryRange: '',
+    stipend: '',
     yearsOfExperience: '',
-    WorkType: 'On-site',
+    internshipTenure: '',
+    workType: 'On-site',
     location: '',
     jobDescription: '',
     requirements: '',
@@ -73,9 +75,9 @@ const JobPostingForm = () => {
         companyName,
         jobType,
         jobTitle: formData.jobTitle,
-        salaryRange: formData.salaryRange,
-        yearsOfExperience: formData.yearsOfExperience,
-        WorkType: formData.WorkType,
+        ...(jobType === 'Full Time' ? { salaryRange: formData.salaryRange, yearsOfExperience: formData.yearsOfExperience } : {}),
+        ...(jobType === 'Internship' ? { salaryRange: formData.stipend, internshipTenure: formData.internshipTenure } : {}),
+        workType: formData.workType,
         location: formData.location,
         jobDescription: formData.jobDescription,
         requrements: formData.requirements.split('\n').filter(line => line.trim() !== ''),
@@ -110,7 +112,7 @@ const JobPostingForm = () => {
     }
   };
 
-  const showLocationField = formData.WorkType === 'On-site' || formData.WorkType === 'Hybrid';
+  const showLocationField = formData.workType === 'On-site' || formData.workType === 'Hybrid';
 
   return (
     <div className="job-posting-card">
@@ -155,32 +157,61 @@ const JobPostingForm = () => {
                 />
               </div>
 
-              <div className="form-field">
-                <label htmlFor="salary">Salary Range</label>
-                <input 
-                  id="salary" 
-                  placeholder="e.g. ₹10,00,000 - ₹15,00,000" 
-                  value={formData.salaryRange} 
-                  onChange={e => handleInputChange('salaryRange', e.target.value)} 
-                />
-              </div>
-              
-              <div className="form-field">
-                <label htmlFor="experience">Years of Experience</label>
-                <input
-                  type="text"
-                  id="experience"
-                  placeholder="e.g. 5"
-                  value={formData.yearsOfExperience}
-                  onChange={e => handleInputChange('yearsOfExperience', e.target.value)}
-                />
-              </div>
-              
+              {jobType === 'Full Time' && (
+                <div className="form-field">
+                  <label htmlFor="salary">Salary Range</label>
+                  <input 
+                    id="salary" 
+                    placeholder="e.g. ₹10,00,000 - ₹15,00,000" 
+                    value={formData.salaryRange} 
+                    onChange={e => handleInputChange('salaryRange', e.target.value)} 
+                  />
+                </div>
+              )}
+
+              {jobType === 'Internship' && (
+                <div className="form-field">
+                  <label htmlFor="stipend">Stipend per month</label>
+                  <input 
+                    id="stipend" 
+                    placeholder="e.g. ₹10,000" 
+                    value={formData.stipend} 
+                    onChange={e => handleInputChange('stipend', e.target.value)} 
+                  />
+                </div>
+              )}
+
+              {jobType === 'Full Time' && (
+                <div className="form-field">
+                  <label htmlFor="experience">Years of Experience</label>
+                  <input
+                    type="text"
+                    id="experience"
+                    placeholder="e.g. 5"
+                    value={formData.yearsOfExperience}
+                    onChange={e => handleInputChange('yearsOfExperience', e.target.value)}
+                  />
+                </div>
+              )}
+
+              {jobType === 'Internship' && (
+                <div className="form-field">
+                  <label htmlFor="internshipTenure">Internship tenure</label>
+                  <input
+                    type="text"
+                    id="internshipTenure"
+                    placeholder="e.g. 6 months"
+                    value={formData.internshipTenure}
+                    onChange={e => handleInputChange('internshipTenure', e.target.value)}
+                  />
+                </div>
+              )}
+
               <div className="form-field">
                 <label htmlFor="workType">Work Type *</label>
                 <select 
-                  value={formData.WorkType} 
-                  onChange={e => handleInputChange('WorkType', e.target.value)}
+                  value={formData.workType} 
+                  onChange={e => handleInputChange('workType', e.target.value)}
                   required
                 >
                   <option value="On-site">On-site</option>

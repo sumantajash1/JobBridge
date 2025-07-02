@@ -1,6 +1,7 @@
 package com.Sumanta.JobListing.controller;
 
 import com.Sumanta.JobListing.DTO.CompanyLoginRequestBody;
+import com.Sumanta.JobListing.DTO.SingleObject;
 import com.Sumanta.JobListing.Entity.Company;
 import com.Sumanta.JobListing.Entity.JobPost;
 import com.Sumanta.JobListing.Service.CompanyService;
@@ -44,7 +45,7 @@ public class CompanyController {
         System.out.println("SignIn + " + companyLoginRequestBody);
         Pair<String, String> companyserviceResponse = companyService.Login(companyLoginRequestBody);
         if(companyserviceResponse.getLeft().equals("failed")) {
-            return ResponseEntity.ok(companyserviceResponse.getRight());
+            return ResponseEntity.badRequest().body(companyserviceResponse.getRight());
         }
         String jwtToken = companyserviceResponse.getRight();
         response.setHeader("jwt", jwtToken);
@@ -52,15 +53,17 @@ public class CompanyController {
         return ResponseEntity.ok(companyserviceResponse.getLeft());
     }
 
-    @GetMapping("/verifyCompanyToken")
+    @PostMapping("/verifyCompanyToken")
     @PreAuthorize("hasRole('Company')")
-    public ResponseEntity<String> verifyCompanyToken() {
-            return ResponseEntity.ok("companyTokenIsValid");
+    public ResponseEntity<String> verifyCompanyToken(@RequestBody SingleObject payload) {
+        System.out.println("Inside verifyCompanyToken");
+            return ResponseEntity.ok(companyService.getComapnyName(JwtTokenUtil.getUserIdFromToken(payload.getPayload())));
     }
 
     @PostMapping("/postJob")
     @PreAuthorize("hasRole('Company')")
     public ResponseEntity<String> postJob(@RequestBody JobPost jobPost) {
+       // System.out.println(jobPost);
        Pair<String, String> companyServiceResponse = companyService.postJob(jobPost);
        if(companyServiceResponse.getLeft().equals("failed")) {
           return ResponseEntity.ok(companyServiceResponse.getRight());

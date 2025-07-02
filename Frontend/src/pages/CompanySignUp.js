@@ -150,9 +150,8 @@ const CompanySignUp = () => {
           // If we get here, signup was successful and we received the company name
           console.log('Signup successful, storing company name');
           localStorage.setItem('companyName', responseText);
-          
-          // Use window.location for hard navigation
-          window.location.href = '/employer/dashboard';
+          // Use navigate for SPA navigation
+          navigate('/employer/dashboard');
         } else {
           throw new Error('No response received from server');
         }

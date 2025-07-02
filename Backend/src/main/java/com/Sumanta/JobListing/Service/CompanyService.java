@@ -82,4 +82,10 @@ public class CompanyService {
         if(tempjobPost.equals(null)) System.out.println("null tempJobPost");
         return Pair.of("Job ID : ", jobPost.getJobId());
     }
+
+    public String getComapnyName(String userId) {
+        System.out.println("User Id : " + userId);
+        Company company = companyDAO.findByGstNum(userId);
+        return company.getCompanyName();
+    }
 }

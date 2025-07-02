@@ -1,0 +1,32 @@
+.company-profile-card {
+  max-width: 400px;
+  margin: 40px auto;
+  padding: 32px 24px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+  text-align: left;
+}
+
+.company-profile-card h2 {
+  margin-bottom: 24px;
+  font-size: 2rem;
+  color: #333;
+}
+
+.profile-field {
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+}
+
+.profile-label {
+  font-weight: 600;
+  margin-right: 12px;
+  color: #555;
+}
+
+.profile-value {
+  color: #222;
+  font-size: 1.1rem;
+} 

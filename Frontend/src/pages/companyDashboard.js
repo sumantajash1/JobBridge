@@ -21,6 +21,7 @@ import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import PersonIcon from '@mui/icons-material/Person';
 import LogoutIcon from '@mui/icons-material/Logout';
 import JobPostingForm from './PostJobs';
+import CompanyProfile from './CompanyProfile';
 import './companyDashboard.css';
 
 const PostNewJob = () => (
@@ -71,49 +72,35 @@ const CompanyDashboard = () => {
   const open = Boolean(anchorEl);
 
   useEffect(() => {
-    // Check if user is authenticated
     const token = getCookie('jwtToken');
+    console.log('jwtToken from cookie:', token);
     if (!token) {
-      console.log('No authentication token found, redirecting to signin');
       navigate('/employer/signin', { replace: true });
       return;
     }
-
-    // Verify token with backend
-    const verifyToken = async () => {
-      try {
-        const response = await fetch('http://localhost:8080/Company/verifyCompanyToken', {
-          method: 'GET',
-          credentials: 'include',
-          headers: {
-            'Accept': '*/*',
-            'Connection': 'keep-alive',
-            'Authorization': `Bearer ${token}`
-          }
-        });
-
-        if (response.status === 403) {
-          console.log('Method is forbidden, redirecting to signin');
-          document.cookie = 'jwtToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-          navigate('/employer/signin', { replace: true });
-          return;
-        }
-
-        const responseText = await response.text();
-        if (responseText !== "companyTokenIsValid") {
-          console.log('Token verification failed, redirecting to signin');
-          document.cookie = 'jwtToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-          navigate('/employer/signin', { replace: true });
-          return;
-        }
-      } catch (error) {
-        console.error('Error verifying token:', error);
+    fetch('http://localhost:8080/Company/verifyCompanyToken', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      credentials: 'include',
+      body: JSON.stringify({ payload: token }),
+    })
+      .then(res => {
+        console.log('verifyCompanyToken status:', res.status);
+        if (!res.ok) throw new Error('Unauthorized');
+        return res.text(); // <-- Use .text() for plain string response
+      })
+      .then(companyName => {
+        console.log('verifyCompanyToken companyName:', companyName);
+        // You can store companyName in state if needed
+      })
+      .catch((err) => {
+        console.log('verifyCompanyToken error:', err);
         document.cookie = 'jwtToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
         navigate('/employer/signin', { replace: true });
-      }
-    };
-
-    verifyToken();
+      });
   }, [navigate]);
 
   const sidebarOptions = [
@@ -158,9 +145,7 @@ const CompanyDashboard = () => {
 
   const handleLogout = () => {
     handleClose();
-    // Clear both the JWT token and company name
     document.cookie = 'jwtToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-    localStorage.removeItem('companyName');
     navigate('/employer/signin', { replace: true });
   };
 
@@ -175,16 +160,7 @@ const CompanyDashboard = () => {
       return <Component />;
     }
     if (selectedSection === 'profile') {
-      const companyName = localStorage.getItem('companyName');
-      return (
-        <Box>
-          <Typography variant="h4" gutterBottom>Company Profile</Typography>
-          <Box sx={{ mt: 3, p: 3, bgcolor: 'background.paper', borderRadius: 2, boxShadow: 1 }}>
-            <Typography variant="h6" gutterBottom>Company Name</Typography>
-            <Typography variant="body1">{companyName || 'Not available'}</Typography>
-          </Box>
-        </Box>
-      );
+      return <CompanyProfile />;
     }
     return <Dashboard />;
   };

@@ -26,19 +26,14 @@ const CompanySignIn = () => {
 
   const validateForm = () => {
     const newErrors = {};
-    
-    // GSTIN validation
     if (!formData.gstNum) {
       newErrors.gstNum = 'GSTIN number is required';
     } else if (!/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/.test(formData.gstNum)) {
       newErrors.gstNum = 'Please enter a valid GSTIN number';
     }
-
-    // Password validation
     if (!formData.password) {
       newErrors.password = 'Password is required';
     }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -53,42 +48,30 @@ const CompanySignIn = () => {
           headers: {
             'Content-Type': 'application/json',
           },
-          credentials: 'include',
+          credentials: 'include', // Important for cookies
           body: JSON.stringify({
             gstNum: formData.gstNum,
             password: formData.password
           })
         });
 
-        const responseText = await response.text();
-        console.log('Response:', responseText);
-        
-        if (responseText === "Invalid GST Number" || 
-            responseText === "Company is not found, please register") {
+        if (!response.ok) {
+          const errorText = await response.text();
           setErrors(prev => ({
             ...prev,
-            gstNum: responseText
-          }));
-          return;
-        } else if (responseText === "Password is Wrong") {
-          setErrors(prev => ({
-            ...prev,
-            password: responseText
+            submit: errorText || 'Sign in failed. Please try again.'
           }));
           return;
         }
 
-        // Only proceed with token storage and redirection if we have a valid response
-        if (responseText && responseText.length > 0) {
-          // Store company name in localStorage
-          localStorage.setItem('companyName', responseText);
-          console.log('Company name stored successfully');
-          window.location.href = '/employer/dashboard';
-        } else {
-          throw new Error('No response received from server');
+        // Get JWT from response header if present and set as cookie
+        const jwtToken = response.headers.get('jwt');
+        if (jwtToken) {
+          document.cookie = `jwtToken=${jwtToken}; path=/;`;
         }
+        // Redirect to dashboard
+        navigate('/employer/dashboard');
       } catch (error) {
-        console.error('Sign in failed:', error);
         setErrors(prev => ({
           ...prev,
           submit: error.message || 'Failed to sign in. Please try again.'
@@ -166,4 +149,4 @@ const CompanySignIn = () => {
   );
 };
 
-export default CompanySignIn; 
+export default CompanySignIn;

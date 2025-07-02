@@ -22,7 +22,7 @@ public class JobPost {
     private String jobTitle;
     private String salaryRange;
     private String yearsOfExperience;
-    private String WorkType; // Onsite, Remote, Hybrid
+    private String workType; // Onsite, Remote, Hybrid
     private String location;
     private String jobDescription;
     private List<String> requrements;
