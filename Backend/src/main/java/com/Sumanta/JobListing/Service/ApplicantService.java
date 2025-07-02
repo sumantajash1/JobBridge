@@ -1,8 +1,10 @@
 package com.Sumanta.JobListing.Service;
 
 import com.Sumanta.JobListing.DAO.ApplicantDAO;
+import com.Sumanta.JobListing.DAO.JobDao;
 import com.Sumanta.JobListing.DTO.ApplicantLoginRequestBody;
 import com.Sumanta.JobListing.Entity.Applicant;
+import com.Sumanta.JobListing.Entity.JobPost;
 import com.Sumanta.JobListing.Entity.Role;
 import com.Sumanta.JobListing.utils.JwtTokenUtil;
 import org.apache.commons.lang3.tuple.Pair;
@@ -10,13 +12,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class ApplicantService {
     @Autowired
     ApplicantDAO applicantDAO;
     @Autowired
     PasswordEncoder passwordEncoder;
-
+    @Autowired
+    JobDao jobDao;
 
     public Pair<String, String> register(Applicant applicant) {
         //System.out.println(applicant);
@@ -59,5 +64,9 @@ public class ApplicantService {
         }
         String jwtToken = JwtTokenUtil.GenerateToken(mobNo, Role.Applicant);
         return Pair.of(applicant.getAName(), jwtToken);
+    }
+
+    public List<JobPost> fetchAllJobs() {
+       return jobDao.findAll();
     }
 }

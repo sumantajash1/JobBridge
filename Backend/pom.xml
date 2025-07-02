@@ -102,6 +102,23 @@
 			<artifactId>lombok</artifactId>
 			<version>1.18.38</version>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/com.twilio.sdk/twilio -->
+		<dependency>
+			<groupId>com.twilio.sdk</groupId>
+			<artifactId>twilio</artifactId>
+			<version>10.7.2</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/com.twilio.sdk/twilio-java-sdk -->
+		<dependency>
+			<groupId>com.twilio.sdk</groupId>
+			<artifactId>twilio-java-sdk</artifactId>
+			<version>6.3.0</version>
+		</dependency>
+		<dependency>
+		<groupId>io.github.cdimascio</groupId>
+		<artifactId>dotenv-java</artifactId>
+		<version>3.0.0</version>
+	</dependency>
 	</dependencies>
 
 	<build>

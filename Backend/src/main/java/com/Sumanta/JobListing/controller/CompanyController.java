@@ -1,10 +1,12 @@
 package com.Sumanta.JobListing.controller;
 
 import com.Sumanta.JobListing.DTO.CompanyLoginRequestBody;
+import com.Sumanta.JobListing.DTO.OtpDto;
 import com.Sumanta.JobListing.DTO.SingleObject;
 import com.Sumanta.JobListing.Entity.Company;
 import com.Sumanta.JobListing.Entity.JobPost;
 import com.Sumanta.JobListing.Service.CompanyService;
+import com.Sumanta.JobListing.Service.OtpService;
 import com.Sumanta.JobListing.utils.CookieUtil;
 import com.Sumanta.JobListing.utils.JwtTokenUtil;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,6 +28,8 @@ public class CompanyController {
     @Autowired
     CompanyService companyService;
     CookieUtil cookieUtil = new CookieUtil();
+    @Autowired
+    OtpService otpService;
 
     @PostMapping("/SignUp")
     public ResponseEntity<String> SignUp(@RequestBody Company company, HttpServletResponse response) {
@@ -51,6 +55,27 @@ public class CompanyController {
         response.setHeader("jwt", jwtToken);
         response.setHeader(HttpHeaders.SET_COOKIE, cookieUtil.generateCookie(jwtToken).toString());
         return ResponseEntity.ok(companyserviceResponse.getLeft());
+    }
+
+    @GetMapping("/generateOtp/{gstNum}")
+    public ResponseEntity<String> getOtp(@PathVariable("gstNum") String gstNum) {
+        String serviceResponse = otpService.generateOtp(gstNum);
+        if(serviceResponse.equals("UserNotExist")) {
+            return ResponseEntity.badRequest().body(serviceResponse);
+        }
+        if(serviceResponse.equals("OtpNotGenerated")) {
+            return ResponseEntity.badRequest().body("OTP couldn't be generated");
+        }
+        return ResponseEntity.ok(serviceResponse);
+    }
+
+    @PostMapping("/verifyOtp")
+    public ResponseEntity<String> verifyOtp(@RequestBody OtpDto obj) {
+        String otpServiceResponse = otpService.verifyOtp(obj.getMobileNum(), obj.getOtp());
+        if(otpServiceResponse.equals("RIGHT")) {
+            return ResponseEntity.ok("OTP Verified");
+        }
+        return ResponseEntity.badRequest().body("Wrong Otp");
     }
 
     @PostMapping("/verifyCompanyToken")

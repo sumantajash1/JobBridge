@@ -117,6 +117,15 @@ const CompanySignIn = () => {
             {errors.password && <div className="error-message">{errors.password}</div>}
           </div>
 
+          <button
+            type="button"
+            className="link-btn forgot-password"
+            style={{ marginBottom: '1rem', color: '#007bff', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+            onClick={() => navigate('/employer/forgotpassword')}
+          >
+            Forgot Password?
+          </button>
+
           {errors.submit && (
             <div className="error-message" style={{ textAlign: 'center', marginBottom: '1rem' }}>
               {errors.submit}
