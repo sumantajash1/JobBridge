@@ -16,6 +16,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class CompanyService {
@@ -43,15 +44,16 @@ public class CompanyService {
     }
 
     public Pair<String, String> Login(CompanyLoginRequestBody companyLoginRequestBody) {
-        System.out.println(GstNumberValidator.isGstNumValid(companyLoginRequestBody.getGstNum()));
+        //System.out.println(GstNumberValidator.isGstNumValid(companyLoginRequestBody.getGstNum()));
         String gstNum = companyLoginRequestBody.getGstNum();
         if(!GstNumberValidator.isGstNumValid(gstNum)) {
             return Pair.of("failed", "InvalGstNum");
         }
-        if(!companyDAO.existsByGstNum(gstNum)) {
+       if(!companyDAO.existsById(gstNum)) {
+            System.out.println("doesn't exist by id");
             return Pair.of("failed", "NotFound");
         }
-        Company tempCompany = companyDAO.findByGstNum(gstNum);
+        Company tempCompany = companyDAO.findById(gstNum).get();
         if(!passwordEncoder.matches(companyLoginRequestBody.getPassword(), tempCompany.getCompanyPassword())) {
             return Pair.of("failed", "WrongPassword");
         }
