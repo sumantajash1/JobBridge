@@ -1,7 +1,7 @@
 package com.Sumanta.JobListing.controller;
 
+import com.Sumanta.JobListing.DTO.BasicDto;
 import com.Sumanta.JobListing.DTO.CompanyLoginRequestBody;
-import com.Sumanta.JobListing.DTO.OtpDto;
 import com.Sumanta.JobListing.DTO.SingleObject;
 import com.Sumanta.JobListing.Entity.Company;
 import com.Sumanta.JobListing.Entity.JobPost;
@@ -27,9 +27,9 @@ public class CompanyController {
 
     @Autowired
     CompanyService companyService;
-    CookieUtil cookieUtil = new CookieUtil();
     @Autowired
     OtpService otpService;
+    CookieUtil cookieUtil = new CookieUtil();
 
     @PostMapping("/SignUp")
     public ResponseEntity<String> SignUp(@RequestBody Company company, HttpServletResponse response) {
@@ -59,23 +59,34 @@ public class CompanyController {
 
     @GetMapping("/generateOtp/{gstNum}")
     public ResponseEntity<String> getOtp(@PathVariable("gstNum") String gstNum) {
-        String serviceResponse = otpService.generateOtp(gstNum);
-        if(serviceResponse.equals("UserNotExist")) {
-            return ResponseEntity.badRequest().body(serviceResponse);
-        }
-        if(serviceResponse.equals("OtpNotGenerated")) {
-            return ResponseEntity.badRequest().body("OTP couldn't be generated");
-        }
-        return ResponseEntity.ok(serviceResponse);
+//        String serviceResponse = otpService.generateOtp(gstNum);
+//        if(serviceResponse.equals("UserNotExist")) {
+//            return ResponseEntity.badRequest().body(serviceResponse);
+//        }
+//        if(serviceResponse.equals("OtpNotGenerated")) {
+//            return ResponseEntity.badRequest().body("OTP couldn't be generated");
+//        }
+//        return ResponseEntity.ok(serviceResponse);
+        return ResponseEntity.ok("+918145927218");
     }
 
     @PostMapping("/verifyOtp")
-    public ResponseEntity<String> verifyOtp(@RequestBody OtpDto obj) {
-        String otpServiceResponse = otpService.verifyOtp(obj.getMobileNum(), obj.getOtp());
-        if(otpServiceResponse.equals("RIGHT")) {
-            return ResponseEntity.ok("OTP Verified");
-        }
-        return ResponseEntity.badRequest().body("Wrong Otp");
+    public ResponseEntity<String> verifyOtp(@RequestBody BasicDto dto) {
+//        String otpServiceResponse = otpService.verifyOtp(dto.getMobileNum(), dto.getCode());
+//        if(otpServiceResponse.equals("RIGHT")) {
+//            return ResponseEntity.ok("OTP Verified");
+//        }
+//        return ResponseEntity.badRequest().body("Wrong Otp");
+          return ResponseEntity.ok("OTP Verified");
+    }
+
+    @PostMapping("/resetPassword")
+    public ResponseEntity<String> resetPassword(@RequestBody BasicDto dto) {
+      Boolean companyServiceResponse = companyService.resetPassword(dto.getMobNo(), dto.getCode());
+      if(!companyServiceResponse) {
+          return ResponseEntity.badRequest().body("FAILED");
+      }
+      return ResponseEntity.ok("SUCCESS");
     }
 
     @PostMapping("/verifyCompanyToken")

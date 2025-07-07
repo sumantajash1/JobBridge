@@ -7,6 +7,9 @@ const ForgotPassword = () => {
   const [otpSentMsg, setOtpSentMsg] = useState('');
   const [showOtpInput, setShowOtpInput] = useState(false);
   const [otp, setOtp] = useState('');
+  const [isOtpVerified, setIsOtpVerified] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -26,8 +29,10 @@ const ForgotPassword = () => {
         }
         return;
       }
-      const msg = await response.text();
-      setOtpSentMsg(msg);
+      const mobNO = await response.text();
+      console.log(mobNO);
+      localStorage.setItem('mobileNumber', mobNO);
+      setOtpSentMsg('OTP sent to registered mobile number: ' + mobNO);
       setShowOtpInput(true);
     } catch (err) {
       setError('Network error. Please try again.');
@@ -36,6 +41,62 @@ const ForgotPassword = () => {
 
   const handleOtpChange = (e) => {
     setOtp(e.target.value);
+  };
+
+  const handleOtpVerify = async () => {
+    const mobileNum = localStorage.getItem('mobileNumber');
+    if (!mobileNum || !otp) {
+      setError('Please enter the OTP.');
+      return;
+    }
+    setError('');
+    try {
+      const response = await fetch('http://localhost:8080/Company/verifyOtp', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          mobileNum,
+          otp,
+        }),
+      });
+      if (!response.ok) {
+        setError('Invalid OTP or verification failed.');
+        return;
+      }
+      const result = await response.text();
+      setOtpSentMsg('OTP verified successfully');
+      setIsOtpVerified(true); // Disable the button
+    } catch (err) {
+      setError('Network error. Please try again.');
+    }
+  };
+
+  const handlePasswordReset = async () => {
+    if (!newPassword || !confirmPassword) {
+      setError('Please fill in both password fields.');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
+    const mobileNum = localStorage.getItem('mobileNumber');
+    try {
+      const response = await fetch('http://localhost:8080/Company/resetPassword', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mobileNum, newPassword }),
+      });
+      if (!response.ok) {
+        setError('Password reset failed.');
+        return;
+      }
+      setOtpSentMsg('Password reset successful!');
+    } catch (err) {
+      setError('Network error. Please try again.');
+    }
   };
 
   return (
@@ -67,15 +128,39 @@ const ForgotPassword = () => {
               onChange={handleOtpChange}
               className="forgot-password-input"
               maxLength={6}
+              disabled={isOtpVerified}
             />
             <button
               type="button"
               className="forgot-password-submit-btn"
               style={{ marginTop: '1rem' }}
-              // onClick={handleOtpVerify} // To be implemented
+              onClick={handleOtpVerify}
+              disabled={isOtpVerified}
             >
               Verify OTP
             </button>
+            {isOtpVerified && (
+              <div className="password-reset-section" style={{ marginTop: '2rem' }}>
+                <input
+                  type="password"
+                  placeholder="New Password"
+                  value={newPassword}
+                  onChange={e => setNewPassword(e.target.value)}
+                  className="forgot-password-input"
+                  style={{ marginBottom: '1rem' }}
+                />
+                <input
+                  type="password"
+                  placeholder="Confirm New Password"
+                  value={confirmPassword}
+                  onChange={e => setConfirmPassword(e.target.value)}
+                  className="forgot-password-input"
+                />
+                <button onClick={handlePasswordReset} className="forgot-password-submit-btn">
+                  Reset Password
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>

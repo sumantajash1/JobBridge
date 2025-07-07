@@ -90,4 +90,16 @@ public class CompanyService {
         return company.getCompanyName();
     }
 
+    public Boolean resetPassword(String mobNo, String password) {
+        try {
+            Company company = companyDAO.findByCompanyContactNum(mobNo);
+            System.out.println(company);
+            company.setCompanyPassword(passwordEncoder.encode(password));
+            companyDAO.save(company);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
 }

@@ -66,6 +66,7 @@ public class SecurityConfig {
                                 "/Company/SignIn",
                                 "Company/generateOtp/**",
                                 "Company/verifyOtp",
+                                "Company/resetPassword",
                                 "/Admin/SignIn"
                         ).permitAll()
                         .requestMatchers("/Applicant/**").hasRole("Applicant")

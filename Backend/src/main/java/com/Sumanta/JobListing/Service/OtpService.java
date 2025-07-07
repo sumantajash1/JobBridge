@@ -41,15 +41,17 @@ public class OtpService {
             return "OtpNotGenerated";
         }
         System.out.println("Otp Generated Successfully");
-        return "SUCCESS";
+        return mobNo;
     }
 
     public String verifyOtp(String mobileNum, String otp) {
+        System.out.println("verifyOTPService - " + mobileNum + " OTP -> " + otp);
+
         Twilio.init(ACCOUNT_SID, AUTH_TOKEN);
         try{
             VerificationCheck verificationCheck = VerificationCheck
                     .creator(SERVICE_SID)
-                    .setTo("+91"+mobileNum)
+                    .setTo(mobileNum)
                     .setCode(otp)
                     .create();
             System.out.println(verificationCheck.getStatus());
