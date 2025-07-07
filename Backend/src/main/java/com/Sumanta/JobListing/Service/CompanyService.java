@@ -27,16 +27,17 @@ public class CompanyService {
     private JobDao jobDao;
 
     public Pair<String, String> register(Company company) {
-        System.out.println(GstNumberValidator.isGstNumValid(company.getGstNum()));
+       // System.out.println(GstNumberValidator.isGstNumValid(company.getGstNum()));
         if(!GstNumberValidator.isGstNumValid(company.getGstNum())) {
             return Pair.of("failed", "InvalidGST");
         }
         String existsResponse = alreadyExists(company);
-        System.out.println(existsResponse);
+        //System.out.println(existsResponse);
         if(!existsResponse.equals("NO")) {
             return Pair.of("failed", existsResponse);
         }
         company.setCompanyPassword(passwordEncoder.encode(company.getCompanyPassword()));
+        company.setCompanyContactNum("+91"+company.getCompanyContactNum());
         companyDAO.save(company);
         return Pair.of(company.getCompanyName(), JwtTokenUtil.GenerateToken(company.getGstNum(), Role.Company));
     }

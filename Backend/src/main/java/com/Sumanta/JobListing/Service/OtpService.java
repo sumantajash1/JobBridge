@@ -61,4 +61,24 @@ public class OtpService {
         }
         return "RIGHT";
     }
+
+    public String generateOtpbyMobNo(String mobNo) {
+        mobNo = "+91" + mobNo;
+        Twilio.init(ACCOUNT_SID, AUTH_TOKEN);
+        try {
+            Verification verification = Verification.creator(
+                    SERVICE_SID,
+                    mobNo,
+                    "sms"
+            ).create();
+            System.out.println(verification.getStatus());
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Otp couldn't be generated");
+            return "OtpNotGenerated";
+        }
+        System.out.println("Otp Generated Successfully");
+        return mobNo;
+    }
+
 }

@@ -10,6 +10,7 @@ import ApplicantSignIn from "./pages/ApplicantSignIn";
 import ApplicantDashboard from "./pages/ApplicantDashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ForgotPassword from "./pages/forgotPassword";
+import CompanyProfile from "./pages/CompanyProfile";
  
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
         <Route path="/employer/signup" element={<CompanySignUp />} />
         <Route path="/employer/dashboard" element={<CompanyDashboard />} />
         <Route path="/employer/PostJobs" element={<PostJobs />} />
+        <Route path="/employer/profile" element={<CompanyProfile />} />
         <Route path="/employer/forgotpassword" element={<ForgotPassword />} />
         <Route path="/applicant/signup" element={<ApplicantSignUp />} />
         <Route path="/applicant/signin" element={<ApplicantSignIn />} />

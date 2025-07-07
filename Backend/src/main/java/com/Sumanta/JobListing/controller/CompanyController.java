@@ -70,6 +70,18 @@ public class CompanyController {
         return ResponseEntity.ok("+918145927218");
     }
 
+    @GetMapping("/generateOtpByMobNo/{mobNo}")
+    public ResponseEntity<String> getOtpbyMobNo(@PathVariable("mobNo") String mobNo) {
+       String serviceResponse = otpService.generateOtpbyMobNo(mobNo);
+        if(serviceResponse.equals("UserNotExist")) {
+            return ResponseEntity.badRequest().body(serviceResponse);
+        }
+        if(serviceResponse.equals("OtpNotGenerated")) {
+            return ResponseEntity.badRequest().body("OTP couldn't be generated");
+        }
+        return ResponseEntity.ok(serviceResponse);
+    }
+
     @PostMapping("/verifyOtp")
     public ResponseEntity<String> verifyOtp(@RequestBody BasicDto dto) {
 //        String otpServiceResponse = otpService.verifyOtp(dto.getMobileNum(), dto.getCode());

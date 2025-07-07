@@ -65,6 +65,7 @@ public class SecurityConfig {
                                 "/Company/SignUp",
                                 "/Company/SignIn",
                                 "Company/generateOtp/**",
+                                "Company/generateOtpByMobNo/**",
                                 "Company/verifyOtp",
                                 "Company/resetPassword",
                                 "/Admin/SignIn"

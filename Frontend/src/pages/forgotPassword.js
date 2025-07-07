@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './forgotPassword.css';
 
 const ForgotPassword = () => {
@@ -10,6 +11,7 @@ const ForgotPassword = () => {
   const [isOtpVerified, setIsOtpVerified] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -87,13 +89,17 @@ const ForgotPassword = () => {
       const response = await fetch('http://localhost:8080/Company/resetPassword', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mobileNum, newPassword }),
+        body: JSON.stringify({ mobNo : mobileNum , code : newPassword}),
       });
       if (!response.ok) {
         setError('Password reset failed.');
         return;
       }
       setOtpSentMsg('Password reset successful!');
+      // Redirect to sign-in page after successful reset
+      setTimeout(() => {
+        navigate('/employer/signin');
+      }, 1500); // Optional: short delay to show success message
     } catch (err) {
       setError('Network error. Please try again.');
     }

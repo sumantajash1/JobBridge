@@ -14,6 +14,12 @@ const CompanySignUp = () => {
   });
 
   const [errors, setErrors] = useState({});
+  const [otp, setOtp] = useState('');
+  const [otpSentMsg, setOtpSentMsg] = useState('');
+  const [isOtpSent, setIsOtpSent] = useState(false);
+  const [isMobileVerified, setIsMobileVerified] = useState(false);
+  const [otpError, setOtpError] = useState('');
+  const [otpAttempted, setOtpAttempted] = useState(false);
   const navigate = useNavigate();
 
   const handleInputChange = (field, value) => {
@@ -85,6 +91,68 @@ const CompanySignUp = () => {
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSendOtp = async () => {
+    setOtpSentMsg('');
+    setOtpError('');
+    let mobileNumber = formData.contactNumber;
+    if (mobileNumber.startsWith('+91')) {
+      mobileNumber = mobileNumber.slice(3);
+    }
+    if (!/^[0-9]{10}$/.test(mobileNumber)) {
+      setOtpError('Please enter a valid 10-digit phone number');
+      return;
+    }
+    try {
+      const response = await fetch(`http://localhost:8080/Company/generateOtpByMobNo/${mobileNumber}`, {
+        method: 'GET',
+      });
+      if (response.status === 200) {
+        setIsOtpSent(true);
+        setOtpSentMsg('OTP sent to your mobile number.');
+      } else if (response.status === 400) {
+        setOtpError("OTP couldn't be generated. Please try again.");
+      } else {
+        setOtpError('Failed to send OTP. Try again.');
+      }
+    } catch (err) {
+      setOtpError('Network error. Please try again.');
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    setOtpError('');
+    setOtpAttempted(false);
+    // Remove '+91' if present and get the 10-digit number
+    let mobileNumber = formData.contactNumber;
+    if (mobileNumber.startsWith('+91')) {
+      mobileNumber = mobileNumber.slice(3);
+    }
+    if (!otp) {
+      setOtpError('Please enter the OTP.');
+      return;
+    }
+    try {
+      const response = await fetch('http://localhost:8080/Company/verifyOtp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mobNo: mobileNumber, code: otp }),
+      });
+      setOtpAttempted(true);
+      if (response.status === 200) {
+        setIsMobileVerified(true);
+        setOtpSentMsg('Mobile number verified successfully!');
+        setOtpError('');
+      } else {
+        setIsMobileVerified(false);
+        setOtpError('OTP verification failed. Please try again.');
+      }
+    } catch (err) {
+      setIsMobileVerified(false);
+      setOtpError('Network error. Please try again.');
+      setOtpAttempted(true);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -202,16 +270,65 @@ const CompanySignUp = () => {
               {errors.companyName && <div className="error-message">{errors.companyName}</div>}
             </div>
 
-            <div className={`form-field ${errors.contactNumber ? 'error' : ''}`}>
+            <div className={`form-field ${errors.contactNumber ? 'error' : ''}`} style={{ position: 'relative' }}>
               <label htmlFor="contactNumber">Company Contact Number</label>
               <input
                 id="contactNumber"
                 type="tel"
                 placeholder="Enter company contact number"
                 value={formData.contactNumber}
-                onChange={(e) => handleInputChange('contactNumber', e.target.value)}
+                onChange={(e) => {
+                  handleInputChange('contactNumber', e.target.value);
+                  setIsMobileVerified(false);
+                  setIsOtpSent(false);
+                  setOtp('');
+                  setOtpSentMsg('');
+                  setOtpError('');
+                }}
+                disabled={isMobileVerified}
               />
+              <button
+                type="button"
+                className="custom-verify-btn"
+                style={{ marginLeft: 8, marginTop: 8 }}
+                onClick={handleSendOtp}
+                disabled={isMobileVerified || (() => { let n = formData.contactNumber; if(n.startsWith('+91')) n = n.slice(3); return !/^[0-9]{10}$/.test(n); })()}
+              >
+                {isMobileVerified ? 'Verified' : 'Verify Mobile Number'}
+              </button>
               {errors.contactNumber && <div className="error-message">{errors.contactNumber}</div>}
+              {otpSentMsg && <div className="success-message">{otpSentMsg}</div>}
+              {otpError && <div className="error-message">{otpError}</div>}
+              {isOtpSent && !isMobileVerified && (
+                <div style={{ marginTop: 8 }}>
+                  <input
+                    type="text"
+                    placeholder="Enter OTP"
+                    value={otp}
+                    onChange={e => setOtp(e.target.value)}
+                    maxLength={6}
+                    className="otp-input"
+                  />
+                  <button
+                    type="button"
+                    className="custom-verify-btn"
+                    style={{ marginLeft: 8 }}
+                    onClick={handleVerifyOtp}
+                  >
+                    Verify OTP
+                  </button>
+                </div>
+              )}
+              {isMobileVerified && (
+                <div className="verified-status" style={{ color: 'green', marginTop: 8, fontWeight: 600 }}>
+                  ✔ Mobile number verified
+                </div>
+              )}
+              {!isMobileVerified && otpError && otpAttempted && (
+                <div className="verified-status" style={{ color: 'red', marginTop: 8, fontWeight: 600 }}>
+                  ✖ Mobile number not verified
+                </div>
+              )}
             </div>
 
             <div className={`form-field ${errors.email ? 'error' : ''}`}>
@@ -264,7 +381,7 @@ const CompanySignUp = () => {
           </div>
 
           <div className="form-actions">
-            <button type="submit" className="submit-btn">
+            <button type="submit" className="submit-btn" disabled={!isMobileVerified}>
               Create Account
             </button>
             <p className="signin-link">
