@@ -59,15 +59,15 @@ public class CompanyController {
 
     @GetMapping("/generateOtp/{gstNum}")
     public ResponseEntity<String> getOtp(@PathVariable("gstNum") String gstNum) {
-//        String serviceResponse = otpService.generateOtp(gstNum);
-//        if(serviceResponse.equals("UserNotExist")) {
-//            return ResponseEntity.badRequest().body(serviceResponse);
-//        }
-//        if(serviceResponse.equals("OtpNotGenerated")) {
-//            return ResponseEntity.badRequest().body("OTP couldn't be generated");
-//        }
-//        return ResponseEntity.ok(serviceResponse);
-        return ResponseEntity.ok("+918145927218");
+        String serviceResponse = otpService.generateOtp(gstNum);
+        if(serviceResponse.equals("UserNotExist")) {
+            return ResponseEntity.badRequest().body(serviceResponse);
+        }
+        if(serviceResponse.equals("OtpNotGenerated")) {
+            return ResponseEntity.badRequest().body("OTP couldn't be generated");
+        }
+        return ResponseEntity.ok(serviceResponse);
+//        return ResponseEntity.ok("+918145927218");
     }
 
     @GetMapping("/generateOtpByMobNo/{mobNo}")
@@ -84,12 +84,12 @@ public class CompanyController {
 
     @PostMapping("/verifyOtp")
     public ResponseEntity<String> verifyOtp(@RequestBody BasicDto dto) {
-//        String otpServiceResponse = otpService.verifyOtp(dto.getMobileNum(), dto.getCode());
-//        if(otpServiceResponse.equals("RIGHT")) {
-//            return ResponseEntity.ok("OTP Verified");
-//        }
-//        return ResponseEntity.badRequest().body("Wrong Otp");
-          return ResponseEntity.ok("OTP Verified");
+        String otpServiceResponse = otpService.verifyOtp(dto.getMobNo(), dto.getCode());
+        if(otpServiceResponse.equals("RIGHT")) {
+            return ResponseEntity.ok("OTP Verified");
+        }
+        return ResponseEntity.badRequest().body("Wrong Otp");
+//          return ResponseEntity.ok("OTP Verified");
     }
 
     @PostMapping("/resetPassword")
