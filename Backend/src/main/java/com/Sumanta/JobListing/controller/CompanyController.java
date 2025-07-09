@@ -64,7 +64,6 @@ public class CompanyController {
             return ResponseEntity.badRequest().body("OTP couldn't be generated");
         }
         return ResponseEntity.ok(serviceResponse);
-//        return ResponseEntity.ok("+918145927218");
     }
 
     @GetMapping("/generateOtpByMobNo/{mobNo}")
@@ -86,7 +85,6 @@ public class CompanyController {
             return ResponseEntity.ok("OTP Verified");
         }
         return ResponseEntity.badRequest().body("Wrong Otp");
-//          return ResponseEntity.ok("OTP Verified");
     }
 
     @PostMapping("/resetPassword")

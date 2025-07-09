@@ -25,13 +25,16 @@ public class ApplicantService {
 
     public Pair<String, String> register(Applicant applicant) {
         String mobNo = applicant.getMobNo();
-        if(alreadyExists(mobNo, applicant.getEmail()).equals("phone")) {
-            return Pair.of("failed", alreadyExists(mobNo, applicant.getEmail()));
+        if(alreadyExists(mobNo, applicant.getEmail()).equals("PhoneExists")) {
+            return Pair.of("failed", "Phone number already exists");
+        }
+        if(alreadyExists(mobNo, applicant.getEmail()).equals("EmailExists")) {
+            return Pair.of("failed", "Email address already exists");
         }
         applicant.setPassword(passwordEncoder.encode(applicant.getPassword()));
         applicantDAO.save(applicant);
         String jwtToken = JwtTokenUtil.GenerateToken(mobNo, Role.Applicant);
-        return Pair.of(applicant.getAName(), jwtToken);
+        return Pair.of(applicant.getName(), jwtToken);
     }
 
     private String alreadyExists(String mobNo, String email) {
@@ -62,10 +65,20 @@ public class ApplicantService {
             return Pair.of("failed", "Wrong Password");
         }
         String jwtToken = JwtTokenUtil.GenerateToken(mobNo, Role.Applicant);
-        return Pair.of(applicant.getAName(), jwtToken);
+        return Pair.of(applicant.getName(), jwtToken);
     }
 
     public List<JobPost> fetchAllJobs() {
        return jobDao.findAll();
+    }
+
+    public String resetPassword(String mobNo, String newPassword) {
+        if (!doesExists(mobNo)) {
+            return "ApplicantNotFound";
+        }
+        Applicant applicant = applicantDAO.findByMobNo(mobNo);
+        applicant.setPassword(passwordEncoder.encode(newPassword));
+        applicantDAO.save(applicant);
+        return "PasswordResetSuccess";
     }
 }

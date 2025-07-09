@@ -64,12 +64,13 @@ public class SecurityConfig {
                                 "/Applicant/SignIn",
                                 "/Company/SignUp",
                                 "/Company/SignIn",
-                                "Company/generateOtpByGstNum/**",
-                                "Company/generateOtpByMobNo/**",
-                                "Company/verifyOtp",
-                                "Applicant/getOtp/**",
-                                "Applicant/verifyOtp",
-                                "Company/resetPassword",
+                                "/Company/generateOtpByGstNum/**",
+                                "/Company/generateOtpByMobNo/**",
+                                "/Company/verifyOtp",
+                                "/Applicant/getOtp/**",
+                                "/Applicant/verifyOtp",
+                                "/Company/resetPassword",
+                                "/Applicant/resetPassword",
                                 "/Admin/SignIn"
                         ).permitAll()
                         .requestMatchers("/Applicant/**").hasRole("Applicant")

@@ -33,7 +33,7 @@ public class ApplicantController {
     public ResponseEntity<String> SignUp(@RequestBody Applicant applicant, HttpServletResponse response) {
         Pair<String, String> applicantServiceResponse= applicantService.register(applicant);
         if(applicantServiceResponse.getLeft().equals("failed")) {
-            return ResponseEntity.ok(applicantServiceResponse.getRight());
+            return ResponseEntity.badRequest().body(applicantServiceResponse.getRight());
         }
         String jwtToken = applicantServiceResponse.getRight();
         response.setHeader( "jwtToken", jwtToken);
@@ -45,7 +45,7 @@ public class ApplicantController {
     public ResponseEntity<String> SignIn(@RequestBody ApplicantLoginRequestBody applicantLoginRequestBody, HttpServletResponse response) {
         Pair<String, String> applicantServiceResponse = applicantService.Login(applicantLoginRequestBody);
         if(applicantServiceResponse.getLeft().equals("failed")) {
-            return ResponseEntity.ok(applicantServiceResponse.getRight());
+            return ResponseEntity.badRequest().body(applicantServiceResponse.getRight());
         }
         String jwtToken = applicantServiceResponse.getRight();
         response.setHeader("jwtToken", jwtToken);
@@ -81,5 +81,14 @@ public class ApplicantController {
     @PreAuthorize("hasRole('Applicant')")
     public ResponseEntity<List<JobPost>> allJobs() { // For Testing purpose only, while deleting, delete service method as well
         return ResponseEntity.ok(applicantService.fetchAllJobs());
+    }
+
+    @PatchMapping("/resetPassword")
+    public ResponseEntity<String> resetPassword(@RequestBody BasicDto dto) {
+        String result = applicantService.resetPassword(dto.getMobNo(), dto.getCode());
+        if (result.equals("ApplicantNotFound")) {
+            return ResponseEntity.badRequest().body("Applicant not found");
+        }
+        return ResponseEntity.ok("Password has been reset successfully");
     }
 }

@@ -11,7 +11,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @ToString
 @Document(collection = "ApplicantData")
 public class Applicant {
-    private String aName;
+    private String name;
     private String dob;
     private String password;
     @Id

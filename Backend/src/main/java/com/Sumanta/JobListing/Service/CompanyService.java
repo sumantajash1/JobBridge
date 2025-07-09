@@ -77,7 +77,6 @@ public class CompanyService {
             return Pair.of("failed", "A Job Post with this Title Already Exists, Please consider editing that Job Post");
         }
         jobDao.save(jobPost);
-        JobPost tempjobPost = jobDao.findByJobTitle(jobPost.getJobTitle());
         return Pair.of("Job ID : ", jobPost.getJobId());
     }
 
