@@ -30,7 +30,7 @@ public class ApplicantController {
     private OtpService otpService;
 
     @PostMapping("/SignUp")
-    public ResponseEntity<String> SignUp(@RequestBody Applicant applicant, HttpServletResponse response) {
+    public ResponseEntity<String> signUp(@RequestBody Applicant applicant, HttpServletResponse response) {
         Pair<String, String> applicantServiceResponse= applicantService.register(applicant);
         if(applicantServiceResponse.getLeft().equals("failed")) {
             return ResponseEntity.badRequest().body(applicantServiceResponse.getRight());
@@ -42,7 +42,7 @@ public class ApplicantController {
     }
 
     @PostMapping("/SignIn")
-    public ResponseEntity<String> SignIn(@RequestBody ApplicantLoginRequestBody applicantLoginRequestBody, HttpServletResponse response) {
+    public ResponseEntity<String> signIn(@RequestBody ApplicantLoginRequestBody applicantLoginRequestBody, HttpServletResponse response) {
         Pair<String, String> applicantServiceResponse = applicantService.Login(applicantLoginRequestBody);
         if(applicantServiceResponse.getLeft().equals("failed")) {
             return ResponseEntity.badRequest().body(applicantServiceResponse.getRight());
@@ -54,12 +54,12 @@ public class ApplicantController {
     }
 
     @GetMapping("/getOtp/{mobNo}")
-    public ResponseEntity<String> getOtp(@PathVariable("mobNo") String mobNO) {
-        String otpServiceResponse = otpService.generateOtpbyMobNo(mobNO);
+    public ResponseEntity<String> getOtp(@PathVariable("mobNo") String mobNo) {
+        String otpServiceResponse = otpService.generateOtpbyMobNo(mobNo);
         if(otpServiceResponse.equals("OtpNotGenerated")) {
             return ResponseEntity.badRequest().body("Otp Couldn't be generated");
         }
-        return ResponseEntity.ok(mobNO);
+        return ResponseEntity.ok(mobNo);
     }
 
     @PostMapping("/verifyOtp")
