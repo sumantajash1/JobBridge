@@ -33,7 +33,6 @@ public class CompanyController {
 
     @PostMapping("/SignUp")
     public ResponseEntity<String> SignUp(@RequestBody Company company, HttpServletResponse response) {
-        System.out.println("Sign Up + " + company);
         Pair<String, String> serviceResponse = companyService.register(company);
         if(serviceResponse.getLeft().equals("failed")) {
             return ResponseEntity.ok(serviceResponse.getRight());
@@ -46,7 +45,6 @@ public class CompanyController {
 
     @PostMapping("/SignIn")
     public ResponseEntity<String> SignIn(@RequestBody CompanyLoginRequestBody companyLoginRequestBody, HttpServletResponse response) {
-        System.out.println("SignIn + " + companyLoginRequestBody);
         Pair<String, String> companyserviceResponse = companyService.Login(companyLoginRequestBody);
         if(companyserviceResponse.getLeft().equals("failed")) {
             return ResponseEntity.badRequest().body(companyserviceResponse.getRight());
@@ -104,14 +102,12 @@ public class CompanyController {
     @PostMapping("/verifyCompanyToken")
     @PreAuthorize("hasRole('Company')")
     public ResponseEntity<String> verifyCompanyToken(@RequestBody SingleObject payload) {
-        System.out.println("Inside verifyCompanyToken");
             return ResponseEntity.ok(companyService.getComapnyName(JwtTokenUtil.getUserIdFromToken(payload.getPayload())));
     }
 
     @PostMapping("/postJob")
     @PreAuthorize("hasRole('Company')")
     public ResponseEntity<String> postJob(@RequestBody JobPost jobPost) {
-       // System.out.println(jobPost);
        Pair<String, String> companyServiceResponse = companyService.postJob(jobPost);
        if(companyServiceResponse.getLeft().equals("failed")) {
           return ResponseEntity.ok(companyServiceResponse.getRight());

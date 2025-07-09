@@ -16,6 +16,6 @@ public interface CompanyDAO extends MongoRepository<Company, String>{
 
     public boolean existsByCompanyEmail(String companyEmail);
 
-    Company findByCompanyContactNum(String mobNo);
+    public Company findByCompanyContactNum(String mobNo);
 }
 

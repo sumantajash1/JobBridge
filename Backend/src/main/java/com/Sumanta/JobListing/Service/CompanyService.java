@@ -28,12 +28,10 @@ public class CompanyService {
     private JobDao jobDao;
 
     public Pair<String, String> register(Company company) {
-       // System.out.println(GstNumberValidator.isGstNumValid(company.getGstNum()));
         if(!GstNumberValidator.isGstNumValid(company.getGstNum())) {
             return Pair.of("failed", "InvalidGST");
         }
         String existsResponse = alreadyExists(company);
-        //System.out.println(existsResponse);
         if(!existsResponse.equals("NO")) {
             return Pair.of("failed", existsResponse);
         }
@@ -44,13 +42,11 @@ public class CompanyService {
     }
 
     public Pair<String, String> Login(CompanyLoginRequestBody companyLoginRequestBody) {
-        //System.out.println(GstNumberValidator.isGstNumValid(companyLoginRequestBody.getGstNum()));
         String gstNum = companyLoginRequestBody.getGstNum();
         if(!GstNumberValidator.isGstNumValid(gstNum)) {
             return Pair.of("failed", "InvalGstNum");
         }
        if(!companyDAO.existsById(gstNum)) {
-            System.out.println("doesn't exist by id");
             return Pair.of("failed", "NotFound");
         }
         Company tempCompany = companyDAO.findById(gstNum).get();
@@ -65,7 +61,6 @@ public class CompanyService {
             return "gstExists";
         }
         if (companyDAO.existsByCompanyName(company.getCompanyName())) {
-            System.out.println(company.getCompanyName());
             return "nameExists";
         }
         if (companyDAO.existsByCompanyContactNum(company.getCompanyContactNum())) {
@@ -83,12 +78,10 @@ public class CompanyService {
         }
         jobDao.save(jobPost);
         JobPost tempjobPost = jobDao.findByJobTitle(jobPost.getJobTitle());
-        if(tempjobPost.equals(null)) System.out.println("null tempJobPost");
         return Pair.of("Job ID : ", jobPost.getJobId());
     }
 
     public String getComapnyName(String userId) {
-        System.out.println("User Id : " + userId);
         Company company = companyDAO.findByGstNum(userId);
         return company.getCompanyName();
     }
@@ -96,7 +89,6 @@ public class CompanyService {
     public Boolean resetPassword(String mobNo, String password) {
         try {
             Company company = companyDAO.findByCompanyContactNum(mobNo);
-            System.out.println(company);
             company.setCompanyPassword(passwordEncoder.encode(password));
             companyDAO.save(company);
         } catch (Exception e) {

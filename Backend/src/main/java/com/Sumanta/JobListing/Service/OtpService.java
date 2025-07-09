@@ -34,18 +34,14 @@ public class OtpService {
                     mobNo,
                     "sms"
             ).create();
-            System.out.println(verification.getStatus());
         } catch (Exception e) {
            e.printStackTrace();
-            System.out.println("Otp couldn't be generated");
             return "OtpNotGenerated";
         }
-        System.out.println("Otp Generated Successfully");
         return mobNo;
     }
 
     public String verifyOtp(String mobileNum, String otp) {
-        System.out.println("verifyOTPService - " + mobileNum + " OTP -> " + otp);
 
         Twilio.init(ACCOUNT_SID, AUTH_TOKEN);
         try{
@@ -54,7 +50,6 @@ public class OtpService {
                     .setTo(mobileNum)
                     .setCode(otp)
                     .create();
-            System.out.println(verificationCheck.getStatus());
         } catch (Exception e) {
             e.printStackTrace();
             return "WRONG";
@@ -71,13 +66,10 @@ public class OtpService {
                     mobNo,
                     "sms"
             ).create();
-            System.out.println(verification.getStatus());
         } catch (Exception e) {
             e.printStackTrace();
-            System.out.println("Otp couldn't be generated");
             return "OtpNotGenerated";
         }
-        System.out.println("Otp Generated Successfully");
         return mobNo;
     }
 

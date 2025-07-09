@@ -24,7 +24,6 @@ public class ApplicantService {
     JobDao jobDao;
 
     public Pair<String, String> register(Applicant applicant) {
-        //System.out.println(applicant);
         String mobNo = applicant.getMobNo();
         if(alreadyExists(mobNo, applicant.getEmail()).equals("phone")) {
             return Pair.of("failed", alreadyExists(mobNo, applicant.getEmail()));
