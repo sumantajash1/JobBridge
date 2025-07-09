@@ -5,10 +5,12 @@ import com.Sumanta.JobListing.Entity.Company;
 import com.twilio.Twilio;
 import com.twilio.rest.verify.v2.service.Verification;
 import com.twilio.rest.verify.v2.service.VerificationCheck;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 public class OtpService {
     @Autowired
@@ -21,7 +23,7 @@ public class OtpService {
     @Value("${SERVICE_SID}")
     private String SERVICE_SID;
 
-    public String generateOtp(String gstNum) {
+    public String generateOtpByGstNum(String gstNum) {
         Company company = companyDAO.findByGstNum(gstNum);
         if(company==null) {
             return "UserNotExist";
@@ -42,14 +44,15 @@ public class OtpService {
     }
 
     public String verifyOtp(String mobileNum, String otp) {
-
         Twilio.init(ACCOUNT_SID, AUTH_TOKEN);
         try{
+            log.info("SUMANTA : Mobile No. for otp Verification : " + mobileNum + ", OTP : " + otp);
             VerificationCheck verificationCheck = VerificationCheck
                     .creator(SERVICE_SID)
                     .setTo(mobileNum)
                     .setCode(otp)
                     .create();
+            log.info("SUMANTA : Verification status : " + verificationCheck.getStatus());
         } catch (Exception e) {
             e.printStackTrace();
             return "WRONG";
@@ -58,7 +61,6 @@ public class OtpService {
     }
 
     public String generateOtpbyMobNo(String mobNo) {
-        mobNo = "+91" + mobNo;
         Twilio.init(ACCOUNT_SID, AUTH_TOKEN);
         try {
             Verification verification = Verification.creator(

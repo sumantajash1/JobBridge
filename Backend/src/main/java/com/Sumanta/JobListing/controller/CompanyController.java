@@ -9,7 +9,6 @@ import com.Sumanta.JobListing.Service.CompanyService;
 import com.Sumanta.JobListing.Service.OtpService;
 import com.Sumanta.JobListing.utils.CookieUtil;
 import com.Sumanta.JobListing.utils.JwtTokenUtil;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,9 +54,9 @@ public class CompanyController {
         return ResponseEntity.ok(companyserviceResponse.getLeft());
     }
 
-    @GetMapping("/generateOtp/{gstNum}")
+    @GetMapping("/generateOtpByGstNum/{gstNum}")
     public ResponseEntity<String> getOtp(@PathVariable("gstNum") String gstNum) {
-        String serviceResponse = otpService.generateOtp(gstNum);
+        String serviceResponse = otpService.generateOtpByGstNum(gstNum);
         if(serviceResponse.equals("UserNotExist")) {
             return ResponseEntity.badRequest().body(serviceResponse);
         }

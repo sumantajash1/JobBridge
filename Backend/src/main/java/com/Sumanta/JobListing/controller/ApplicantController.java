@@ -1,9 +1,11 @@
 package com.Sumanta.JobListing.controller;
 
 import com.Sumanta.JobListing.DTO.ApplicantLoginRequestBody;
+import com.Sumanta.JobListing.DTO.BasicDto;
 import com.Sumanta.JobListing.Entity.Applicant;
 import com.Sumanta.JobListing.Entity.JobPost;
 import com.Sumanta.JobListing.Service.ApplicantService;
+import com.Sumanta.JobListing.Service.OtpService;
 import com.Sumanta.JobListing.utils.CookieUtil;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
@@ -23,8 +25,9 @@ import java.util.List;
 @RequestMapping("/Applicant")
 public class ApplicantController {
     @Autowired
-    ApplicantService applicantService;
-
+    private ApplicantService applicantService;
+    @Autowired
+    private OtpService otpService;
 
     @PostMapping("/SignUp")
     public ResponseEntity<String> SignUp(@RequestBody Applicant applicant, HttpServletResponse response) {
@@ -50,7 +53,23 @@ public class ApplicantController {
         return ResponseEntity.ok(applicantServiceResponse.getLeft());
     }
 
+    @GetMapping("/getOtp/{mobNo}")
+    public ResponseEntity<String> getOtp(@PathVariable("mobNo") String mobNO) {
+        String otpServiceResponse = otpService.generateOtpbyMobNo(mobNO);
+        if(otpServiceResponse.equals("OtpNotGenerated")) {
+            return ResponseEntity.badRequest().body("Otp Couldn't be generated");
+        }
+        return ResponseEntity.ok(mobNO);
+    }
 
+    @PostMapping("/verifyOtp")
+    public ResponseEntity<String> verifyOtp(@RequestBody BasicDto dto) {
+        String otpServiceResponse = otpService.verifyOtp(dto.getMobNo(), dto.getCode());
+        if(otpServiceResponse.equals("WRONG")) {
+            return ResponseEntity.badRequest().body("Wrong Otp");
+        }
+        return ResponseEntity.ok("Otp has been verified successfully");
+    }
 
     @GetMapping("/verifyApplicantToken")
     @PreAuthorize("hasRole('Applicant')")

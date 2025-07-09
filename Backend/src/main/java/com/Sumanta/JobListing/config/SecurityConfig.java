@@ -64,9 +64,11 @@ public class SecurityConfig {
                                 "/Applicant/SignIn",
                                 "/Company/SignUp",
                                 "/Company/SignIn",
-                                "Company/generateOtp/**",
+                                "Company/generateOtpByGstNum/**",
                                 "Company/generateOtpByMobNo/**",
                                 "Company/verifyOtp",
+                                "Applicant/getOtp/**",
+                                "Applicant/verifyOtp",
                                 "Company/resetPassword",
                                 "/Admin/SignIn"
                         ).permitAll()
