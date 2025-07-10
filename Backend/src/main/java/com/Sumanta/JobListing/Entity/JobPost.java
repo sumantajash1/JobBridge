@@ -28,7 +28,10 @@ public class JobPost {
     private List<String> requrements;
     private String benefitsAndPerks;
     private List<String> coreSkills;
-    private boolean activeStatus = true;
     private String deadline; //can be null
     private int maxOpenings;
+
+    private boolean activeStatus = true;
+    private List<String> applicants;
+
 }

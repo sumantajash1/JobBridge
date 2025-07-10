@@ -6,6 +6,7 @@ import com.Sumanta.JobListing.Entity.Applicant;
 import com.Sumanta.JobListing.Entity.JobPost;
 import com.Sumanta.JobListing.Service.ApplicantService;
 import com.Sumanta.JobListing.Service.OtpService;
+import com.Sumanta.JobListing.Service.ResumeService;
 import com.Sumanta.JobListing.utils.CookieUtil;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
@@ -17,7 +18,9 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -28,6 +31,8 @@ public class ApplicantController {
     private ApplicantService applicantService;
     @Autowired
     private OtpService otpService;
+    @Autowired
+    private ResumeService resumeService;
 
     @PostMapping("/SignUp")
     public ResponseEntity<String> signUp(@RequestBody Applicant applicant, HttpServletResponse response) {
@@ -90,5 +95,25 @@ public class ApplicantController {
             return ResponseEntity.badRequest().body("Applicant not found");
         }
         return ResponseEntity.ok("Password has been reset successfully");
+    }
+
+    @PreAuthorize("hasRole('Applicant')")
+    @PostMapping("/jobs/apply")
+    public ResponseEntity<String> applyToJobs(@RequestParam("jobId") String jobId,
+                                              @RequestParam("applicantId") String applicantId,
+                                              @RequestParam ("applicantName") String applicantName,
+                                              @RequestParam("companyId") String companyId,
+                                              @RequestParam("companyName") String companyName,
+                                              @RequestParam("resume")MultipartFile resume) throws IOException {
+
+        String resumeId = resumeService.uploadResume(resume);
+        String applicantServiceResponse = applicantService.applyToJob(jobId, applicantId, applicantName, companyId, companyName, resumeId);
+        if(applicantServiceResponse.equals("alreadyApplied")) {
+            return ResponseEntity.badRequest().body("Already applied to this job");
+        }
+        if(applicantServiceResponse.equals("JobDontExist")) {
+            return ResponseEntity.badRequest().body("This Job has been removed by the employer  ");
+        }
+        return ResponseEntity.ok("Successfully Applied");
     }
 }
