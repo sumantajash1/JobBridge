@@ -3,6 +3,7 @@ package com.Sumanta.JobListing.controller;
 import com.Sumanta.JobListing.DTO.BasicDto;
 import com.Sumanta.JobListing.DTO.CompanyLoginRequestBody;
 import com.Sumanta.JobListing.DTO.SingleObject;
+import com.Sumanta.JobListing.Entity.Application;
 import com.Sumanta.JobListing.Entity.Company;
 import com.Sumanta.JobListing.Entity.JobPost;
 import com.Sumanta.JobListing.Service.CompanyService;
@@ -128,10 +129,11 @@ public class CompanyController {
             return ResponseEntity.status(500).body(null);
         }
     }
+
     @GetMapping("/show-all-inactive-jobs/{companyId}")
     @PreAuthorize("hasRole('Company')")
     public ResponseEntity<List<JobPost>> showAllInactiveJobs(@PathVariable("companyId") String companyId) {
-        log.info("SUMANTA : Inside  ");
+        log.info("SUMANTA : Inside");
         try {
             List<JobPost> allInactiveJobs = companyService.getAllInactiveJobs(companyId);
             return ResponseEntity.ok(allInactiveJobs);
@@ -140,5 +142,14 @@ public class CompanyController {
         }
     }
 
-
+    @GetMapping("/job-all-applications/{jobId}")
+    @PreAuthorize(("hasRole('Company')"))
+    public ResponseEntity<List<Application>> showAllApplicationsForJobId(@PathVariable("jobId") String jobId) {
+        try {
+           List<Application> applications = companyService.getAllApplicationsForJob(jobId);
+           return ResponseEntity.ok(applications);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(null);
+        }
+    }
 }

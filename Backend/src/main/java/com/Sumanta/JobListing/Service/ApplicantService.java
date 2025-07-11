@@ -100,7 +100,7 @@ public class ApplicantService {
        application.setStatus(applicationStatus.PENDING);
        applicationDao.save(application);
        Optional<JobPost> temp = jobDao.findById(jobId);
-       if(temp.isEmpty()) {
+       if(temp.isEmpty() || !temp.get().isActiveStatus()) {
            return "JobDontExist";
        }
        JobPost jobPost = temp.get();

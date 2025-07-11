@@ -9,4 +9,6 @@ import java.util.List;
 @Repository
 public interface ApplicationDao extends MongoRepository<Application, String> {
     List<Application> findByApplicantId(String applicantId);
+
+    List<Application> findAllByJobId(String jobId);
 }

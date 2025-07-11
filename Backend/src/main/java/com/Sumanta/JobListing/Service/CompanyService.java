@@ -1,8 +1,10 @@
 package com.Sumanta.JobListing.Service;
 
+import com.Sumanta.JobListing.DAO.ApplicationDao;
 import com.Sumanta.JobListing.DAO.CompanyDAO;
 import com.Sumanta.JobListing.DAO.JobDao;
 import com.Sumanta.JobListing.DTO.CompanyLoginRequestBody;
+import com.Sumanta.JobListing.Entity.Application;
 import com.Sumanta.JobListing.Entity.Company;
 import com.Sumanta.JobListing.Entity.JobPost;
 import com.Sumanta.JobListing.Entity.Role;
@@ -27,6 +29,8 @@ public class CompanyService {
     PasswordEncoder passwordEncoder;
     @Autowired
     private JobDao jobDao;
+    @Autowired
+    private ApplicationDao applicationDao;
 
     public Pair<String, String> register(Company company) {
         if(!GstNumberValidator.isGstNumValid(company.getGstNum())) {
@@ -104,5 +108,9 @@ public class CompanyService {
     }
     public List<JobPost> getAllInactiveJobs(String companyId) {
         return jobDao.findAllByCompanyIdAndActiveStatusFalse(companyId);
+    }
+
+    public List<Application> getAllApplicationsForJob(String jobId) {
+         return applicationDao.findAllByJobId(jobId);
     }
 }
