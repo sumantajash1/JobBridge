@@ -10,6 +10,7 @@ import com.Sumanta.JobListing.Service.OtpService;
 import com.Sumanta.JobListing.utils.CookieUtil;
 import com.Sumanta.JobListing.utils.JwtTokenUtil;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -18,6 +19,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
+@Slf4j
 @RestController
 @EnableMethodSecurity
 @RequestMapping("/Company")
@@ -97,7 +101,7 @@ public class CompanyController {
     }
 
     @PostMapping("/verifyCompanyToken")
-    @PreAuthorize("hasRole('Company')")
+    @PreAuthorize("hasRole('Company')") //Change this using pathVariable
     public ResponseEntity<String> verifyCompanyToken(@RequestBody SingleObject payload) {
             return ResponseEntity.ok(companyService.getComapnyName(JwtTokenUtil.getUserIdFromToken(payload.getPayload())));
     }
@@ -111,6 +115,18 @@ public class CompanyController {
        }
        String jobId = companyServiceResponse.getRight();
        return ResponseEntity.ok(jobId);
+    }
+
+    @GetMapping("/show-all-active-jobs/{companyId}")
+    @PreAuthorize("hasRole('Company')")
+    public ResponseEntity<List<JobPost>> showAllActiveJobs(@PathVariable("companyId") String companyId) {
+        log.info("SUMANTA : Inside  ");
+        try {
+            List<JobPost> allActiveJobs = companyService.getAllActiveJobs(companyId);
+            return ResponseEntity.ok(allActiveJobs);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(null);
+        }
     }
 
 }

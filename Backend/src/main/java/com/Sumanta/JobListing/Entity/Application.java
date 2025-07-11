@@ -10,7 +10,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Setter
 @ToString
 @Document("applications")
-public class Applications {
+public class Application {
     @Id
     private String applicationId;
     private String jobId; //To be taken from client

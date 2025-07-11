@@ -6,7 +6,6 @@ import com.Sumanta.JobListing.DAO.JobDao;
 import com.Sumanta.JobListing.DTO.ApplicantLoginRequestBody;
 import com.Sumanta.JobListing.Entity.*;
 import com.Sumanta.JobListing.utils.JwtTokenUtil;
-import com.twilio.twiml.voice.Application;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -14,7 +13,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 @Service
 public class ApplicantService {
@@ -87,12 +85,12 @@ public class ApplicantService {
     }
 
     public String applyToJob(String jobId, String applicantId, String applicantName, String companyId, String companyName, String resumeId) {
-       List<Applications> applicationsList = applicationDao.findByApplicantId(applicantId);
+       List<Application> applicationsList = applicationDao.findByApplicantId(applicantId);
        Boolean alreadyApplied = applicationsList.stream().anyMatch(app -> app.getJobId().equals(jobId));
        if(alreadyApplied) {
            return "alreadyApplied";
        }
-       Applications application = new Applications();
+       Application application = new Application();
        application.setApplicantId(applicantId);
        application.setApplicantName(applicantName);
        application.setJobId(jobId);

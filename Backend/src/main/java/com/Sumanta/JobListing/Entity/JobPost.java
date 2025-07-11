@@ -33,5 +33,5 @@ public class JobPost {
 
     private boolean activeStatus = true;
     private List<String> applicants;
-
+    private String companyId;
 }

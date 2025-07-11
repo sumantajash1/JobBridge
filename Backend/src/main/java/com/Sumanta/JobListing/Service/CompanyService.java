@@ -96,4 +96,8 @@ public class CompanyService {
         }
         return true;
     }
+
+    public List<JobPost> getAllActiveJobs(String companyId) {
+       return jobDao.findAllByCompanyIdAndActiveStatusTrue(companyId);
+    }
 }
