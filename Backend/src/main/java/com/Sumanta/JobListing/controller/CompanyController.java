@@ -128,5 +128,17 @@ public class CompanyController {
             return ResponseEntity.status(500).body(null);
         }
     }
+    @GetMapping("/show-all-inactive-jobs/{companyId}")
+    @PreAuthorize("hasRole('Company')")
+    public ResponseEntity<List<JobPost>> showAllInactiveJobs(@PathVariable("companyId") String companyId) {
+        log.info("SUMANTA : Inside  ");
+        try {
+            List<JobPost> allInactiveJobs = companyService.getAllInactiveJobs(companyId);
+            return ResponseEntity.ok(allInactiveJobs);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(null);
+        }
+    }
+
 
 }

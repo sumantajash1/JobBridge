@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -76,6 +77,7 @@ public class CompanyService {
         if(jobDao.existsByJobTitle(jobPost.getJobTitle())) {
             return Pair.of("failed", "A Job Post with this Title Already Exists, Please consider editing that Job Post");
         }
+        jobPost.setApplicants(new ArrayList<>());
         jobDao.save(jobPost);
         return Pair.of("Job ID : ", jobPost.getJobId());
     }
@@ -99,5 +101,8 @@ public class CompanyService {
 
     public List<JobPost> getAllActiveJobs(String companyId) {
        return jobDao.findAllByCompanyIdAndActiveStatusTrue(companyId);
+    }
+    public List<JobPost> getAllInactiveJobs(String companyId) {
+        return jobDao.findAllByCompanyIdAndActiveStatusFalse(companyId);
     }
 }
