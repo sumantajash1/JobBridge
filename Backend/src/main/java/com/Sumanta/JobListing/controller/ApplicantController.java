@@ -69,7 +69,7 @@ public class ApplicantController {
 
     @PostMapping("/verifyOtp")
     public ResponseEntity<String> verifyOtp(@RequestBody BasicDto dto) {
-        String otpServiceResponse = otpService.verifyOtp(dto.getMobNo(), dto.getCode());
+        String otpServiceResponse = otpService.verifyOtp(dto.getId(), dto.getCode());
         if(otpServiceResponse.equals("WRONG")) {
             return ResponseEntity.badRequest().body("Wrong Otp");
         }
@@ -90,7 +90,7 @@ public class ApplicantController {
 
     @PatchMapping("/resetPassword")
     public ResponseEntity<String> resetPassword(@RequestBody BasicDto dto) {
-        String result = applicantService.resetPassword(dto.getMobNo(), dto.getCode());
+        String result = applicantService.resetPassword(dto.getId(), dto.getCode());
         if (result.equals("ApplicantNotFound")) {
             return ResponseEntity.badRequest().body("Applicant not found");
         }

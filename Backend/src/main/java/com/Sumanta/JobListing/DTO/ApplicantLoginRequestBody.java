@@ -1,37 +1,15 @@
 package com.Sumanta.JobListing.DTO;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
+
+@NoArgsConstructor
+@AllArgsConstructor
+@Data
+@ToString
 public class ApplicantLoginRequestBody {
     String mobileNo;
     String password;
-
-    public ApplicantLoginRequestBody() {};
-
-    public ApplicantLoginRequestBody(String mobileNo, String password) {
-        this.mobileNo = mobileNo;
-        this.password = password;
-    }
-
-    public String getMobileNo() {
-        return mobileNo;
-    }
-
-    public void setMobileNo(String mobileNo) {
-        this.mobileNo = mobileNo;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    @Override
-    public String toString() {
-        return "ApplicantLoginRequestBody{" +
-                "mobileNo='" + mobileNo + '\'' +
-                ", password='" + password + '\'' +
-                '}';
-    }
 }

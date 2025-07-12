@@ -4,10 +4,7 @@ import com.Sumanta.JobListing.DAO.ApplicationDao;
 import com.Sumanta.JobListing.DAO.CompanyDAO;
 import com.Sumanta.JobListing.DAO.JobDao;
 import com.Sumanta.JobListing.DTO.CompanyLoginRequestBody;
-import com.Sumanta.JobListing.Entity.Application;
-import com.Sumanta.JobListing.Entity.Company;
-import com.Sumanta.JobListing.Entity.JobPost;
-import com.Sumanta.JobListing.Entity.Role;
+import com.Sumanta.JobListing.Entity.*;
 import com.Sumanta.JobListing.utils.GstNumberValidator;
 import com.Sumanta.JobListing.utils.JwtTokenUtil;
 import org.apache.commons.lang3.tuple.Pair;
@@ -112,5 +109,35 @@ public class CompanyService {
 
     public List<Application> getAllApplicationsForJob(String jobId) {
          return applicationDao.findAllByJobId(jobId);
+    }
+
+    public void setJobStatus(String jobId, Boolean status) {
+        Optional<JobPost> jobPostOptional = jobDao.findById(jobId);
+        if (jobPostOptional.isPresent()) {
+            JobPost jobPost = jobPostOptional.get();
+            jobPost.setActiveStatus(status);
+            jobDao.save(jobPost);
+        } else {
+            throw new RuntimeException("Job not found with ID: " + jobId);
+        }
+    }
+
+    public void setApplicationStatus(String applicationId, applicationStatus status) {
+        try {
+            Optional<Application> OptionalApplication = applicationDao.findById(applicationId);
+            if(OptionalApplication.isPresent()) {
+                Application application = OptionalApplication.get();
+                application.setStatus(status);
+                applicationDao.save(application);
+            } else {
+                throw new RuntimeException("Application not found with ID: " + applicationId);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public List<Application> getAllSelectedApplicationsForJob(String jobId) {
+        return applicationDao.findAllByJobIdAndStatus(jobId, applicationStatus.SELECTED);
     }
 }
