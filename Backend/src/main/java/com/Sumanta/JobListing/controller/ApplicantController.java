@@ -8,21 +8,28 @@ import com.Sumanta.JobListing.Service.ApplicantService;
 import com.Sumanta.JobListing.Service.OtpService;
 import com.Sumanta.JobListing.Service.ResumeService;
 import com.Sumanta.JobListing.utils.CookieUtil;
+import com.mongodb.client.gridfs.model.GridFSFile;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.batch.BatchProperties;
+import org.springframework.data.mongodb.gridfs.GridFsOperations;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
+@Slf4j
 @RestController
 @CrossOrigin("http://localhost:3000")
 @RequestMapping("/Applicant")
@@ -33,6 +40,8 @@ public class ApplicantController {
     private OtpService otpService;
     @Autowired
     private ResumeService resumeService;
+    @Autowired
+    private GridFsOperations gridFsOperations;
 
     @PostMapping("/SignUp")
     public ResponseEntity<String> signUp(@RequestBody Applicant applicant, HttpServletResponse response) {
@@ -116,4 +125,27 @@ public class ApplicantController {
         }
         return ResponseEntity.ok("Successfully Applied");
     }
-}
+
+
+    @GetMapping("/download-resume/{resumeId}")
+    @PreAuthorize("hasRole('Applicant')")
+    public void downloadResume(@PathVariable("resumeId") String resumeId, HttpServletResponse response) {
+        try {
+            GridFSFile file = resumeService.getFileById(resumeId);
+            if (file == null) {
+                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                return;
+            }
+            response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"");
+            response.setContentType(file.getMetadata() != null && file.getMetadata().get("_contentType") != null
+                    ? file.getMetadata().get("_contentType").toString()
+                    : MediaType.APPLICATION_PDF_VALUE);
+
+            InputStream inputStream = gridFsOperations.getResource(file).getInputStream();
+            StreamUtils.copy(inputStream, response.getOutputStream());
+        } catch (Exception e) {
+
+            log.error("Error downloading resume: {}", e.getMessage());
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        }
+    }}
