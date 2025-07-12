@@ -2,10 +2,10 @@ package com.Sumanta.JobListing.controller;
 
 import com.Sumanta.JobListing.DTO.BasicDto;
 import com.Sumanta.JobListing.DTO.CompanyLoginRequestBody;
-import com.Sumanta.JobListing.DTO.SingleObject;
 import com.Sumanta.JobListing.Entity.Application;
 import com.Sumanta.JobListing.Entity.Company;
 import com.Sumanta.JobListing.Entity.JobPost;
+import com.Sumanta.JobListing.Entity.applicationStatus;
 import com.Sumanta.JobListing.Service.CompanyService;
 import com.Sumanta.JobListing.Service.OtpService;
 import com.Sumanta.JobListing.utils.CookieUtil;
@@ -39,7 +39,7 @@ public class CompanyController {
     public ResponseEntity<String> SignUp(@RequestBody Company company, HttpServletResponse response) {
         Pair<String, String> serviceResponse = companyService.register(company);
         if(serviceResponse.getLeft().equals("failed")) {
-            return ResponseEntity.ok(serviceResponse.getRight());
+            return ResponseEntity.badRequest().body(serviceResponse.getRight());
         }
         String jwtToken = serviceResponse.getRight();
         response.setHeader("jwt", jwtToken);
@@ -101,10 +101,10 @@ public class CompanyController {
       return ResponseEntity.ok("SUCCESS");
     }
 
-    @PostMapping("/verifyCompanyToken")
-    @PreAuthorize("hasRole('Company')") //Change this using pathVariable
-    public ResponseEntity<String> verifyCompanyToken(@RequestBody SingleObject payload) {
-            return ResponseEntity.ok(companyService.getComapnyName(JwtTokenUtil.getUserIdFromToken(payload.getPayload())));
+    @GetMapping("/verifyCompanyToken/{jwtToken}")
+    @PreAuthorize("hasRole('Company')")
+    public ResponseEntity<String> verifyCompanyToken(@PathVariable("jwtToken") String jwtToken) {
+            return ResponseEntity.ok(companyService.getComapnyName(JwtTokenUtil.getUserIdFromToken(jwtToken)));
     }
 
     @PostMapping("/postJob")
@@ -168,4 +168,21 @@ public class CompanyController {
             return ResponseEntity.internalServerError().body("Failed to update job status");
         }
     }
+
+    @PatchMapping("/set-application-status")
+    @PreAuthorize("hasRole('Company')")
+    public ResponseEntity<String> setApplicationStatus(@RequestBody BasicDto dto) {
+        String applicationId = dto.getId();
+        applicationStatus status = dto.getApplicationStatus();
+        if(applicationId == null || status == null) {
+            return ResponseEntity.badRequest().body("Application ID or Status is missing");
+        }
+        try {
+            companyService.setApplicationStatus(applicationId, status);
+            return ResponseEntity.ok("Application status updated successfully");
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Failed to update application status");
+        }
+    }
+
 }

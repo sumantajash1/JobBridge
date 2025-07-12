@@ -1,5 +1,6 @@
 package com.Sumanta.JobListing.DTO;
 
+import com.Sumanta.JobListing.Entity.applicationStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -13,4 +14,5 @@ public class BasicDto {
     private String id;
     private String code;
     private Boolean status;
+    private applicationStatus applicationStatus;
 }
