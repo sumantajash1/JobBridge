@@ -137,4 +137,7 @@ public class CompanyService {
         }
     }
 
+    public List<Application> getAllSelectedApplicationsForJob(String jobId) {
+        return applicationDao.findAllByJobIdAndStatus(jobId, applicationStatus.SELECTED);
+    }
 }

@@ -185,4 +185,15 @@ public class CompanyController {
         }
     }
 
+    @GetMapping("/view-all-selected-applications/{jobId}")
+    @PreAuthorize("hasRole('Company')")
+    public ResponseEntity<List<Application>> viewAllSelectedApplications(@PathVariable("jobId") String jobId) {
+        try {
+            List<Application> selectedApplications = companyService.getAllSelectedApplicationsForJob(jobId);
+            return ResponseEntity.ok(selectedApplications);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(null);
+        }
+    }
+
 }
