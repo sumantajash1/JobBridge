@@ -8,18 +8,24 @@ import com.Sumanta.JobListing.Entity.JobPost;
 import com.Sumanta.JobListing.Entity.applicationStatus;
 import com.Sumanta.JobListing.Service.CompanyService;
 import com.Sumanta.JobListing.Service.OtpService;
+import com.Sumanta.JobListing.Service.ResumeService;
 import com.Sumanta.JobListing.utils.CookieUtil;
 import com.Sumanta.JobListing.utils.JwtTokenUtil;
+import com.mongodb.client.gridfs.model.GridFSFile;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.gridfs.GridFsOperations;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.InputStream;
 import java.util.List;
 
 @Slf4j
@@ -33,7 +39,10 @@ public class CompanyController {
     CompanyService companyService;
     @Autowired
     OtpService otpService;
-    CookieUtil cookieUtil = new CookieUtil();
+    @Autowired
+    ResumeService resumeService;
+    @Autowired
+    private GridFsOperations gridFsOperations;
 
     @PostMapping("/SignUp")
     public ResponseEntity<String> SignUp(@RequestBody Company company, HttpServletResponse response) {
@@ -43,7 +52,7 @@ public class CompanyController {
         }
         String jwtToken = serviceResponse.getRight();
         response.setHeader("jwt", jwtToken);
-        response.setHeader(HttpHeaders.SET_COOKIE, cookieUtil.generateCookie(jwtToken).toString());
+        response.setHeader(HttpHeaders.SET_COOKIE, CookieUtil.generateCookie(jwtToken).toString());
         return ResponseEntity.ok(serviceResponse.getLeft());
     }
 
@@ -55,7 +64,7 @@ public class CompanyController {
         }
         String jwtToken = companyserviceResponse.getRight();
         response.setHeader("jwt", jwtToken);
-        response.setHeader(HttpHeaders.SET_COOKIE, cookieUtil.generateCookie(jwtToken).toString());
+        response.setHeader(HttpHeaders.SET_COOKIE, CookieUtil.generateCookie(jwtToken).toString());
         return ResponseEntity.ok(companyserviceResponse.getLeft());
     }
 
@@ -193,6 +202,29 @@ public class CompanyController {
             return ResponseEntity.ok(selectedApplications);
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(null);
+        }
+    }
+
+    @GetMapping("/download-resume/{resumeId}")
+    @PreAuthorize("hasRole('Company')")
+    public void downloadResume(@PathVariable("resumeId") String resumeId, HttpServletResponse response) {
+        try {
+            GridFSFile file = resumeService.getFileById(resumeId);
+            if (file == null) {
+                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                return;
+            }
+            response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"");
+            response.setContentType(file.getMetadata() != null && file.getMetadata().get("_contentType") != null
+                    ? file.getMetadata().get("_contentType").toString()
+                    : MediaType.APPLICATION_PDF_VALUE);
+
+            InputStream inputStream = gridFsOperations.getResource(file).getInputStream();
+            StreamUtils.copy(inputStream, response.getOutputStream());
+        } catch (Exception e) {
+
+            log.error("Error downloading resume: {}", e.getMessage());
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
     }
 

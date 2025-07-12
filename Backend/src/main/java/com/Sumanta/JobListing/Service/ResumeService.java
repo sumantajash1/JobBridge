@@ -1,5 +1,6 @@
 package com.Sumanta.JobListing.Service;
 
+import com.mongodb.client.gridfs.model.GridFSFile;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,5 +23,13 @@ public class ResumeService {
                 file.getContentType()
         );
         return fileId.toHexString();
+    }
+
+    public GridFSFile getFileById(String id) {
+        return gridFsTemplate.findOne(
+                org.springframework.data.mongodb.core.query.Query.query(
+                        org.springframework.data.mongodb.core.query.Criteria.where("_id").is(id)
+                )
+        );
     }
 }
