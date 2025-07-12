@@ -85,7 +85,7 @@ public class CompanyController {
 
     @PostMapping("/verifyOtp")
     public ResponseEntity<String> verifyOtp(@RequestBody BasicDto dto) {
-        String otpServiceResponse = otpService.verifyOtp(dto.getMobNo(), dto.getCode());
+        String otpServiceResponse = otpService.verifyOtp(dto.getId(), dto.getCode());
         if(otpServiceResponse.equals("RIGHT")) {
             return ResponseEntity.ok("OTP Verified");
         }
@@ -94,7 +94,7 @@ public class CompanyController {
 
     @PostMapping("/resetPassword")
     public ResponseEntity<String> resetPassword(@RequestBody BasicDto dto) {
-      Boolean companyServiceResponse = companyService.resetPassword(dto.getMobNo(), dto.getCode());
+      Boolean companyServiceResponse = companyService.resetPassword(dto.getId(), dto.getCode());
       if(!companyServiceResponse) {
           return ResponseEntity.badRequest().body("FAILED");
       }
@@ -150,6 +150,22 @@ public class CompanyController {
            return ResponseEntity.ok(applications);
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(null);
+        }
+    }
+
+    @PatchMapping("/set-job-status")
+    @PreAuthorize("hasRole('Company')")
+    public ResponseEntity<String> setJobbStatus(@RequestBody BasicDto dto) {
+        String jobId = dto.getId();
+        Boolean status = dto.getStatus();
+        if(jobId == null || status == null) {
+            return ResponseEntity.badRequest().body("Job ID or Status is missing");
+        }
+        try {
+            companyService.setJobStatus(jobId, status);
+            return ResponseEntity.ok("Job status updated successfully");
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Failed to update job status");
         }
     }
 }

@@ -113,4 +113,15 @@ public class CompanyService {
     public List<Application> getAllApplicationsForJob(String jobId) {
          return applicationDao.findAllByJobId(jobId);
     }
+
+    public void setJobStatus(String jobId, Boolean status) {
+        Optional<JobPost> jobPostOptional = jobDao.findById(jobId);
+        if (jobPostOptional.isPresent()) {
+            JobPost jobPost = jobPostOptional.get();
+            jobPost.setActiveStatus(status);
+            jobDao.save(jobPost);
+        } else {
+            throw new RuntimeException("Job not found with ID: " + jobId);
+        }
+    }
 }

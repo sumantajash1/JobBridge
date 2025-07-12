@@ -10,6 +10,7 @@ import lombok.ToString;
 @Data
 @ToString
 public class BasicDto {
-    private String mobNo;
+    private String id;
     private String code;
+    private Boolean status;
 }
