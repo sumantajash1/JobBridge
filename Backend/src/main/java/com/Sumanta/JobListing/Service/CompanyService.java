@@ -3,6 +3,7 @@ package com.Sumanta.JobListing.Service;
 import com.Sumanta.JobListing.DAO.ApplicationDao;
 import com.Sumanta.JobListing.DAO.CompanyDAO;
 import com.Sumanta.JobListing.DAO.JobDao;
+import com.Sumanta.JobListing.DTO.ApplicationDto;
 import com.Sumanta.JobListing.DTO.CompanyLoginRequestBody;
 import com.Sumanta.JobListing.Entity.*;
 import com.Sumanta.JobListing.utils.GstNumberValidator;
@@ -10,6 +11,8 @@ import com.Sumanta.JobListing.utils.JwtTokenUtil;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -28,6 +31,8 @@ public class CompanyService {
     private JobDao jobDao;
     @Autowired
     private ApplicationDao applicationDao;
+    @Autowired
+    private MongoTemplate mongoTemplate;
 
     public Pair<String, String> register(Company company) {
         if(!GstNumberValidator.isGstNumValid(company.getGstNum())) {
@@ -107,8 +112,18 @@ public class CompanyService {
         return jobDao.findAllByCompanyIdAndActiveStatusFalse(companyId);
     }
 
-    public List<Application> getAllApplicationsForJob(String jobId) {
-         return applicationDao.findAllByJobId(jobId);
+    public List<ApplicationDto> getAllApplicationsForJob(String jobId) {
+        Aggregation aggregation = Aggregation.newAggregation(
+                Aggregation.lookup("ApplicantData", "mobNo", "mobNo", "applicantDetails"),
+                Aggregation.lookup("CompanyData", "gstNum", "gstNum", "companyDetails"),
+                Aggregation.unwind("applicantDetails", true),
+                Aggregation.unwind("companyDetails", true),
+                Aggregation.project("applicationId", "jobId", "applicantId", "companyId", "resumeId", "status")
+                        .and("_id").as("applicationId")
+                        .and("applicantDetails.name").as("applicantName")
+                        .and("companyDetails.companyName").as("companyName")
+        );
+        return mongoTemplate.aggregate(aggregation, "applications", ApplicationDto.class).getMappedResults();
     }
 
     public void setJobStatus(String jobId, Boolean status) {

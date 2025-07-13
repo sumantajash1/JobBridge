@@ -1,5 +1,6 @@
 package com.Sumanta.JobListing.controller;
 
+import com.Sumanta.JobListing.DTO.ApplicationDto;
 import com.Sumanta.JobListing.DTO.BasicDto;
 import com.Sumanta.JobListing.DTO.CompanyLoginRequestBody;
 import com.Sumanta.JobListing.Entity.Application;
@@ -153,9 +154,9 @@ public class CompanyController {
 
     @GetMapping("/job-all-applications/{jobId}")
     @PreAuthorize(("hasRole('Company')"))
-    public ResponseEntity<List<Application>> showAllApplicationsForJobId(@PathVariable("jobId") String jobId) {
+    public ResponseEntity<List<ApplicationDto>> showAllApplicationsForJobId(@PathVariable("jobId") String jobId) {
         try {
-           List<Application> applications = companyService.getAllApplicationsForJob(jobId);
+           List<ApplicationDto> applications = companyService.getAllApplicationsForJob(jobId);
            return ResponseEntity.ok(applications);
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(null);

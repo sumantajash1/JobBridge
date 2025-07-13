@@ -1,6 +1,7 @@
 package com.Sumanta.JobListing.controller;
 
 import com.Sumanta.JobListing.DTO.ApplicantLoginRequestBody;
+import com.Sumanta.JobListing.DTO.ApplicationDto;
 import com.Sumanta.JobListing.DTO.BasicDto;
 import com.Sumanta.JobListing.Entity.Applicant;
 import com.Sumanta.JobListing.Entity.JobPost;
@@ -110,13 +111,17 @@ public class ApplicantController {
     @PostMapping("/jobs/apply")
     public ResponseEntity<String> applyToJobs(@RequestParam("jobId") String jobId,
                                               @RequestParam("applicantId") String applicantId,
-                                              @RequestParam ("applicantName") String applicantName,
                                               @RequestParam("companyId") String companyId,
-                                              @RequestParam("companyName") String companyName,
                                               @RequestParam("resume")MultipartFile resume) throws IOException {
 
         String resumeId = resumeService.uploadResume(resume);
-        String applicantServiceResponse = applicantService.applyToJob(jobId, applicantId, applicantName, companyId, companyName, resumeId);
+        String applicantServiceResponse = applicantService.applyToJob(jobId, applicantId, companyId, resumeId);
+        if(applicantServiceResponse.equals("ApplicantNotFound")) {
+            return ResponseEntity.badRequest().body("Applicant not found");
+        }
+        if(applicantServiceResponse.equals("JobNotFound")) {
+            return ResponseEntity.badRequest().body("Job not found");
+        }
         if(applicantServiceResponse.equals("alreadyApplied")) {
             return ResponseEntity.badRequest().body("Already applied to this job");
         }
@@ -148,6 +153,16 @@ public class ApplicantController {
             log.error("Error downloading resume: {}", e.getMessage());
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
+    }
+
+    @GetMapping("/get-all-applications/{applicantId}")
+    @PreAuthorize("hasRole('Applicant')")
+    public ResponseEntity<List<ApplicationDto>> getAllApplications(@PathVariable("applicantId") String applicantId) {
+        List<ApplicationDto> applications = applicantService.getAllApplications(applicantId);
+        if (applications.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(applications);
     }
 
     @GetMapping("/health-check")

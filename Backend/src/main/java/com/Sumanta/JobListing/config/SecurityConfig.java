@@ -60,19 +60,19 @@ public class SecurityConfig {
                 csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/Applicant/SignUp",
-                                "/Applicant/SignIn",
-                                "/Company/SignUp",
-                                "/Company/SignIn",
-                                "/Company/generateOtpByGstNum/**",
-                                "/Company/generateOtpByMobNo/**",
-                                "/Company/verifyOtp",
-                                "/Applicant/getOtp/**",
-                                "/Applicant/verifyOtp",
-                                "/Company/resetPassword",
+                                "/Applicant/sign-up",
+                                "/Applicant/sign-in",
+                                "/Company/sign-up",
+                                "/Company/sign-in",
+                                "/Company/generate-otp-gst-num/**",
+                                "/Company/generate-otp-mob-no/**",
+                                "/Company/verify-otp",
+                                "/Applicant/get-otp/**",
+                                "/Applicant/verify-otp",
+                                "/Company/reset-password",
                                 "/Applicant/resetPassword",
-                                "/Admin/SignIn",
-                                "/Applicant/healthCheck"
+                                "/Admin/sign-in",
+                                "/Applicant/health-check"
                         ).permitAll()
                         .requestMatchers("/Applicant/**").hasRole("Applicant")
                         .requestMatchers("/Company/**").hasRole("Company")

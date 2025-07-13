@@ -16,8 +16,6 @@ public class Application {
     private String jobId; //To be taken from client
     private String applicantId; // To be taken from client
     private String companyId;// To be taken from client
-    private String applicantName;
-    private String companyName;
     private String resumeId;
     private applicationStatus status;
 }
