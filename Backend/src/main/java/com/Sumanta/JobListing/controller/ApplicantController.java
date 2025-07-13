@@ -43,7 +43,7 @@ public class ApplicantController {
     @Autowired
     private GridFsOperations gridFsOperations;
 
-    @PostMapping("/SignUp")
+    @PostMapping("/sign-up")
     public ResponseEntity<String> signUp(@RequestBody Applicant applicant, HttpServletResponse response) {
         Pair<String, String> applicantServiceResponse= applicantService.register(applicant);
         if(applicantServiceResponse.getLeft().equals("failed")) {
@@ -55,7 +55,7 @@ public class ApplicantController {
         return ResponseEntity.ok(applicantServiceResponse.getLeft());
     }
 
-    @PostMapping("/SignIn")
+    @PostMapping("/sign-in")
     public ResponseEntity<String> signIn(@RequestBody ApplicantLoginRequestBody applicantLoginRequestBody, HttpServletResponse response) {
         Pair<String, String> applicantServiceResponse = applicantService.Login(applicantLoginRequestBody);
         if(applicantServiceResponse.getLeft().equals("failed")) {
@@ -67,7 +67,7 @@ public class ApplicantController {
         return ResponseEntity.ok(applicantServiceResponse.getLeft());
     }
 
-    @GetMapping("/getOtp/{mobNo}")
+    @GetMapping("/get-otp/{mobNo}")
     public ResponseEntity<String> getOtp(@PathVariable("mobNo") String mobNo) {
         String otpServiceResponse = otpService.generateOtpbyMobNo(mobNo);
         if(otpServiceResponse.equals("OtpNotGenerated")) {
@@ -76,7 +76,7 @@ public class ApplicantController {
         return ResponseEntity.ok(mobNo);
     }
 
-    @PostMapping("/verifyOtp")
+    @PostMapping("/verify-otp")
     public ResponseEntity<String> verifyOtp(@RequestBody BasicDto dto) {
         String otpServiceResponse = otpService.verifyOtp(dto.getId(), dto.getCode());
         if(otpServiceResponse.equals("WRONG")) {
@@ -85,19 +85,19 @@ public class ApplicantController {
         return ResponseEntity.ok("Otp has been verified successfully");
     }
 
-    @GetMapping("/verifyApplicantToken")
+    @GetMapping("/verify-applicant-token")
     @PreAuthorize("hasRole('Applicant')")
     public ResponseEntity<String> verifyApplicantToken() {
         return ResponseEntity.ok("applicantTokenIsValid");
     }
 
-    @GetMapping("/getAllJobs")
+    @GetMapping("/get-all-jobs")
     @PreAuthorize("hasRole('Applicant')")
     public ResponseEntity<List<JobPost>> allJobs() { // For Testing purpose only, while deleting, delete service method as well
         return ResponseEntity.ok(applicantService.fetchAllJobs());
     }
 
-    @PatchMapping("/resetPassword")
+    @PatchMapping("/reset-password")
     public ResponseEntity<String> resetPassword(@RequestBody BasicDto dto) {
         String result = applicantService.resetPassword(dto.getId(), dto.getCode());
         if (result.equals("ApplicantNotFound")) {
@@ -148,4 +148,11 @@ public class ApplicantController {
             log.error("Error downloading resume: {}", e.getMessage());
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
-    }}
+    }
+
+    @GetMapping("/health-check")
+    public ResponseEntity<String> healthCheck() {
+        return ResponseEntity.ok("Applicant Service is running");
+    }
+}
+

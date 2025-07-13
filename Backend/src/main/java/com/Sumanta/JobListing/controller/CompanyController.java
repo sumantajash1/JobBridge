@@ -44,7 +44,7 @@ public class CompanyController {
     @Autowired
     private GridFsOperations gridFsOperations;
 
-    @PostMapping("/SignUp")
+    @PostMapping("/sign-up")
     public ResponseEntity<String> SignUp(@RequestBody Company company, HttpServletResponse response) {
         Pair<String, String> serviceResponse = companyService.register(company);
         if(serviceResponse.getLeft().equals("failed")) {
@@ -56,7 +56,7 @@ public class CompanyController {
         return ResponseEntity.ok(serviceResponse.getLeft());
     }
 
-    @PostMapping("/SignIn")
+    @PostMapping("/sign-in")
     public ResponseEntity<String> SignIn(@RequestBody CompanyLoginRequestBody companyLoginRequestBody, HttpServletResponse response) {
         Pair<String, String> companyserviceResponse = companyService.Login(companyLoginRequestBody);
         if(companyserviceResponse.getLeft().equals("failed")) {
@@ -68,7 +68,7 @@ public class CompanyController {
         return ResponseEntity.ok(companyserviceResponse.getLeft());
     }
 
-    @GetMapping("/generateOtpByGstNum/{gstNum}")
+    @GetMapping("/generate-otp-gst-num/{gstNum}")
     public ResponseEntity<String> getOtp(@PathVariable("gstNum") String gstNum) {
         String serviceResponse = otpService.generateOtpByGstNum(gstNum);
         if(serviceResponse.equals("UserNotExist")) {
@@ -80,7 +80,7 @@ public class CompanyController {
         return ResponseEntity.ok(serviceResponse);
     }
 
-    @GetMapping("/generateOtpByMobNo/{mobNo}")
+    @GetMapping("/generate-otp-mob-no/{mobNo}")
     public ResponseEntity<String> getOtpbyMobNo(@PathVariable("mobNo") String mobNo) {
        String serviceResponse = otpService.generateOtpbyMobNo(mobNo);
         if(serviceResponse.equals("UserNotExist")) {
@@ -92,7 +92,7 @@ public class CompanyController {
         return ResponseEntity.ok(serviceResponse);
     }
 
-    @PostMapping("/verifyOtp")
+    @PostMapping("/verify-otp")
     public ResponseEntity<String> verifyOtp(@RequestBody BasicDto dto) {
         String otpServiceResponse = otpService.verifyOtp(dto.getId(), dto.getCode());
         if(otpServiceResponse.equals("RIGHT")) {
@@ -101,7 +101,7 @@ public class CompanyController {
         return ResponseEntity.badRequest().body("Wrong Otp");
     }
 
-    @PostMapping("/resetPassword")
+    @PostMapping("/reset-password")
     public ResponseEntity<String> resetPassword(@RequestBody BasicDto dto) {
       Boolean companyServiceResponse = companyService.resetPassword(dto.getId(), dto.getCode());
       if(!companyServiceResponse) {
@@ -110,13 +110,13 @@ public class CompanyController {
       return ResponseEntity.ok("SUCCESS");
     }
 
-    @GetMapping("/verifyCompanyToken/{jwtToken}")
+    @GetMapping("/verify-company-token/{jwtToken}")
     @PreAuthorize("hasRole('Company')")
     public ResponseEntity<String> verifyCompanyToken(@PathVariable("jwtToken") String jwtToken) {
             return ResponseEntity.ok(companyService.getComapnyName(JwtTokenUtil.getUserIdFromToken(jwtToken)));
     }
 
-    @PostMapping("/postJob")
+    @PostMapping("/post-job")
     @PreAuthorize("hasRole('Company')")
     public ResponseEntity<String> postJob(@RequestBody JobPost jobPost) {
        Pair<String, String> companyServiceResponse = companyService.postJob(jobPost);
