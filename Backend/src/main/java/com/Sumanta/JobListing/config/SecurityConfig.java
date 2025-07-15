@@ -71,8 +71,7 @@ public class SecurityConfig {
                                 "/Applicant/verify-otp",
                                 "/Company/reset-password",
                                 "/Applicant/resetPassword",
-                                "/Admin/sign-in",
-                                "/Applicant/health-check"
+                                "/Admin/sign-in"
                         ).permitAll()
                         .requestMatchers("/Applicant/**").hasRole("Applicant")
                         .requestMatchers("/Company/**").hasRole("Company")

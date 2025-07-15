@@ -229,4 +229,9 @@ public class CompanyController {
         }
     }
 
+    @GetMapping("/health-check")
+    @PreAuthorize("hasRole('Company')")
+    public ResponseEntity<String> healthCheck() {
+        return ResponseEntity.ok("Company Service is running");
+    }
 }

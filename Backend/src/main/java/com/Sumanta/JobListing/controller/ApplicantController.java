@@ -163,6 +163,7 @@ public class ApplicantController {
     }
 
     @GetMapping("/health-check")
+    @PreAuthorize("hasRole('Applicant')")
     public ResponseEntity<String> healthCheck() {
         return ResponseEntity.ok("Applicant Service is running");
     }
