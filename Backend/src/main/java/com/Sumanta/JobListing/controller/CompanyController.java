@@ -64,7 +64,7 @@ public class CompanyController {
             return ResponseEntity.badRequest().body(companyserviceResponse.getRight());
         }
         String jwtToken = companyserviceResponse.getRight();
-        response.setHeader("jwt", jwtToken);
+        response.setHeader("jwtToken", jwtToken);
         response.setHeader(HttpHeaders.SET_COOKIE, CookieUtil.generateCookie(jwtToken).toString());
         return ResponseEntity.ok(companyserviceResponse.getLeft());
     }
@@ -122,7 +122,7 @@ public class CompanyController {
     public ResponseEntity<String> postJob(@RequestBody JobPost jobPost) {
        Pair<String, String> companyServiceResponse = companyService.postJob(jobPost);
        if(companyServiceResponse.getLeft().equals("failed")) {
-          return ResponseEntity.ok(companyServiceResponse.getRight());
+          return ResponseEntity.badRequest().body(companyServiceResponse.getRight());
        }
        String jobId = companyServiceResponse.getRight();
        return ResponseEntity.ok(jobId);

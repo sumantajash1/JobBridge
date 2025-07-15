@@ -91,9 +91,13 @@ public class ApplicantService {
     public String applyToJob(String jobId, String applicantId, String companyId, String resumeId) {
         if(!doesExists(applicantId)) {
             return "ApplicantNotFound";
-        } else if(!jobDao.existsById(jobId)) {
-            return "JobNotFound";
         }
+        Optional<JobPost> temp = jobDao.findById(jobId);
+        if(temp.isEmpty() || !temp.get().isActiveStatus()) {
+            return "JobDontExist";
+        }
+        JobPost jobPost = temp.get();
+        List<String> applicants = jobPost.getApplicants();
        List<Application> applicationsList = applicationDao.findByApplicantId(applicantId);
        boolean alreadyApplied = applicationsList.stream().anyMatch(app -> app.getJobId().equals(jobId));
        if(alreadyApplied) {
@@ -106,12 +110,6 @@ public class ApplicantService {
        application.setResumeId(resumeId);
        application.setStatus(applicationStatus.PENDING);
        applicationDao.save(application);
-       Optional<JobPost> temp = jobDao.findById(jobId);
-       if(temp.isEmpty() || !temp.get().isActiveStatus()) {
-           return "JobDontExist";
-       }
-       JobPost jobPost = temp.get();
-       List<String> applicants = jobPost.getApplicants();
        applicants.add(applicantId);
        jobDao.save(jobPost);
        return "SUCCESS";

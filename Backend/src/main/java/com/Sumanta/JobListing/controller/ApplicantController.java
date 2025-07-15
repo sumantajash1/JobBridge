@@ -119,14 +119,11 @@ public class ApplicantController {
         if(applicantServiceResponse.equals("ApplicantNotFound")) {
             return ResponseEntity.badRequest().body("Applicant not found");
         }
-        if(applicantServiceResponse.equals("JobNotFound")) {
-            return ResponseEntity.badRequest().body("Job not found");
-        }
         if(applicantServiceResponse.equals("alreadyApplied")) {
             return ResponseEntity.badRequest().body("Already applied to this job");
         }
         if(applicantServiceResponse.equals("JobDontExist")) {
-            return ResponseEntity.badRequest().body("This Job has been removed by the employer  ");
+            return ResponseEntity.badRequest().body("This Job Don't Exist / has been removed by the employer");
         }
         return ResponseEntity.ok("Successfully Applied");
     }
