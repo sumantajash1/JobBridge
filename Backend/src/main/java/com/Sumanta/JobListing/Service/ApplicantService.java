@@ -11,6 +11,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
+import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -119,6 +120,7 @@ public class ApplicantService {
             return null;
         }
         Aggregation aggregation = Aggregation.newAggregation(
+                Aggregation.match(Criteria.where("applicantId").is(applicantId)),
                 Aggregation.lookup("ApplicantData", "mobNO", "mobNo", "applicantDetails"),
                 Aggregation.lookup("CompanyData", "gstNum", "gstNum", "CompanyDetails"),
                 Aggregation.unwind("applicantDetails", true),
