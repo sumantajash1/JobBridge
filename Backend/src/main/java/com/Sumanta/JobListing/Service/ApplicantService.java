@@ -14,6 +14,8 @@ import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.swing.text.html.Option;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -55,10 +57,7 @@ public class ApplicantService {
     }
 
     private boolean doesExists(String mobileNo) {
-        if(applicantDAO.existsById(mobileNo)) {
-            return true;
-        }
-        return false;
+        return applicantDAO.existsById(mobileNo);
     }
 
     public Pair<String, String> Login(ApplicantLoginRequestBody applicantLoginRequestBody) {
@@ -131,5 +130,28 @@ public class ApplicantService {
         );
 
         return mongoTemplate.aggregate(aggregation, "applications", ApplicationDto.class).getMappedResults();
+    }
+
+    public String deleteAccount(String applicantId) {
+        List<Application> applications = applicationDao.findByApplicantId(applicantId);
+        List<String> jobIds = new ArrayList<>();
+        for(Application a : applications) {
+            jobIds.add(a.getJobId());
+            applicationDao.deleteById(a.getApplicationId());
+        }
+        for(String j : jobIds) {
+            Optional<JobPost> optionalJob = jobDao.findById(j);
+            JobPost job = null;
+            if(optionalJob.isPresent()) {
+                job = optionalJob.get();
+            }
+            assert job != null;
+            List<String> applicants = job.getApplicants();
+            applicants.remove(applicantId);
+            job.setApplicants(applicants);
+            jobDao.save(job);
+        }
+        applicantDAO.deleteById(applicantId);
+        return "success";
     }
 }

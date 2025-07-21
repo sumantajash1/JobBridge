@@ -167,5 +167,15 @@ public class ApplicantController {
     public ResponseEntity<String> healthCheck() {
         return ResponseEntity.ok("Applicant Service is running");
     }
+
+    @DeleteMapping("/delete-account")
+    @PreAuthorize("hasRole('Applicant')")
+    public ResponseEntity<String> deleteAccount(@RequestParam("id") String applicantId) {
+         String serviceResp = applicantService.deleteAccount("+91"+applicantId);
+         if(serviceResp.equals("error")) {
+             return ResponseEntity.badRequest().body("Account couldn't be deleted");
+         }
+         return ResponseEntity.ok("account has been deleted");
+    }
 }
 

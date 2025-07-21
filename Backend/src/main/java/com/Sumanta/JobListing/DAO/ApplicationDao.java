@@ -14,4 +14,6 @@ public interface ApplicationDao extends MongoRepository<Application, String> {
     List<Application> findAllByJobId(String jobId);
 
     List<Application> findAllByJobIdAndStatus(String jobId, applicationStatus applicationStatus);
+
+    List<Application> deleteByApplicantId(String applicantId);
 }
