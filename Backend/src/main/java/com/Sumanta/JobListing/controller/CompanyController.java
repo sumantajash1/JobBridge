@@ -234,4 +234,5 @@ public class CompanyController {
     public ResponseEntity<String> healthCheck() {
         return ResponseEntity.ok("Company Service is running");
     }
+
 }

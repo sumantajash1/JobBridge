@@ -14,12 +14,15 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @Service
 public class CompanyService {
@@ -154,5 +157,18 @@ public class CompanyService {
 
     public List<Application> getAllSelectedApplicationsForJob(String jobId) {
         return applicationDao.findAllByJobIdAndStatus(jobId, applicationStatus.SELECTED);
+    }
+
+    @Scheduled(cron = "0 0 1 * * *")
+    public void automaticDeactivationOfJobs() {
+        List<JobPost> jobs = jobDao.findAllByActiveStatusTrueAndDeadlineBefore(LocalDate.now());
+        if(jobs.isEmpty()) {
+            return;
+        }
+        Stream jobstream = jobs.stream().forEach(job -> {
+                job.setActiveStatus(false);
+                jobDao.save(job);
+            }
+        );
     }
 }
