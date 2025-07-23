@@ -18,4 +18,8 @@ public interface JobDao extends MongoRepository<JobPost, String> {
     List<JobPost> findAllByCompanyIdAndActiveStatusFalse(String companyId);
 
     List<JobPost> findAllByActiveStatusTrueAndDeadlineBefore(LocalDate now);
+
+    List<JobPost> findAllByCompanyId(String jobId);
+
+    List<JobPost> findByCompanyId(String companyId); //for testing
 }
