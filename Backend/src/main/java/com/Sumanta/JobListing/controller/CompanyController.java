@@ -13,6 +13,7 @@ import com.Sumanta.JobListing.Service.ResumeService;
 import com.Sumanta.JobListing.utils.CookieUtil;
 import com.Sumanta.JobListing.utils.JwtTokenUtil;
 import com.mongodb.client.gridfs.model.GridFSFile;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
@@ -229,9 +230,20 @@ public class CompanyController {
         }
     }
 
+    @DeleteMapping("/delete-job")
+    @PreAuthorize("hasRole('Company')")
+    public ResponseEntity<String> deleteJob(@RequestParam("jobId") String jobId, HttpServletRequest request) {
+        String serviceResponse = companyService.deleteJob(jobId, request.getHeader("Authorization").substring(7));
+        if(serviceResponse.equals("error")) {
+            return ResponseEntity.badRequest().body("Job Couldn't be deleted / Job doesn't exist");
+        }
+        return ResponseEntity.ok("Job deleted successfully");
+    }
+
     @GetMapping("/health-check")
     @PreAuthorize("hasRole('Company')")
     public ResponseEntity<String> healthCheck() {
         return ResponseEntity.ok("Company Service is running");
     }
+
 }

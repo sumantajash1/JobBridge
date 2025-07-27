@@ -103,6 +103,7 @@ public class ApplicantService {
        if(alreadyApplied) {
            return "alreadyApplied";
        }
+       //Application application = new Application(null, applicantId, jobId, companyId, resumeId, applicationStatus.PENDING);
        Application application = new Application();
        application.setApplicantId(applicantId);
        application.setJobId(jobId);

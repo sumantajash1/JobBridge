@@ -8,15 +8,16 @@ import com.Sumanta.JobListing.DTO.CompanyLoginRequestBody;
 import com.Sumanta.JobListing.Entity.*;
 import com.Sumanta.JobListing.utils.GstNumberValidator;
 import com.Sumanta.JobListing.utils.JwtTokenUtil;
+import com.twilio.rest.bulkexports.v1.export.Job;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
-import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -154,5 +155,38 @@ public class CompanyService {
 
     public List<Application> getAllSelectedApplicationsForJob(String jobId) {
         return applicationDao.findAllByJobIdAndStatus(jobId, applicationStatus.SELECTED);
+    }
+
+    @Scheduled(cron = "0 0 1 * * *")
+    public void automaticDeactivationOfJobs() {
+        List<JobPost> jobs = jobDao.findAllByActiveStatusTrueAndDeadlineBefore(LocalDate.now());
+        if(jobs.isEmpty()) {
+            return;
+        }
+        jobs.stream().forEach(job -> {
+                job.setActiveStatus(false);
+                jobDao.save(job);
+            }
+        );
+    }
+
+    public String deleteJob(String jobId, String jwtToken) {
+        if(!jobDao.existsById(jobId)) {
+            return "error";
+        }
+        String companyId = JwtTokenUtil.getUserIdFromToken(jwtToken);
+        List<JobPost> jobs = jobDao.findAllByCompanyId(companyId);
+        JobPost tempJob = jobDao.findById(jobId).get();
+        boolean exists = jobs.stream().anyMatch(job -> job.getJobId().equals(tempJob.getJobId()));
+        if(!exists) {
+            return "error";
+        }
+        try {
+            jobDao.deleteById(jobId);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "error";
+        }
+        return "success";
     }
 }
