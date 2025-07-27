@@ -13,6 +13,7 @@ import com.Sumanta.JobListing.Service.ResumeService;
 import com.Sumanta.JobListing.utils.CookieUtil;
 import com.Sumanta.JobListing.utils.JwtTokenUtil;
 import com.mongodb.client.gridfs.model.GridFSFile;
+import com.twilio.rest.bulkexports.v1.export.Job;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -69,63 +70,54 @@ public class ApplicantController {
     }
 
     @GetMapping("/get-otp/{mobNo}")
-    public ResponseEntity<String> getOtp(@PathVariable("mobNo") String mobNo) {
-        String otpServiceResponse = otpService.generateOtpbyMobNo(mobNo);
-        if(otpServiceResponse.equals("OtpNotGenerated")) {
-            return ResponseEntity.badRequest().body("Otp Couldn't be generated");
-        }
-        return ResponseEntity.ok(mobNo);
+    public ResponseEntity<ResponseWrapper<String>> getOtp(@PathVariable("mobNo") String mobNo) {
+        ResponseWrapper<String> otpServiceResponse = otpService.generateOtpbyMobNo(mobNo);
+        return new ResponseEntity<>(otpServiceResponse, HttpStatus.valueOf(otpServiceResponse.getHttpStatusCode()));
     }
 
     @PostMapping("/verify-otp")
-    public ResponseEntity<String> verifyOtp(@RequestBody BasicDto dto) {
-        String otpServiceResponse = otpService.verifyOtp(dto.getId(), dto.getCode());
-        if(otpServiceResponse.equals("WRONG")) {
-            return ResponseEntity.badRequest().body("Wrong Otp");
-        }
-        return ResponseEntity.ok("Otp has been verified successfully");
+    public ResponseEntity<ResponseWrapper<String>> verifyOtp(@RequestBody BasicDto dto) {
+        ResponseWrapper<String> otpServiceResponse = otpService.verifyOtp(dto.getId(), dto.getCode());
+        return new ResponseEntity<>(otpServiceResponse, HttpStatus.valueOf(otpServiceResponse.getHttpStatusCode()));
     }
 
     @GetMapping("/verify-applicant-token")
     @PreAuthorize("hasRole('Applicant')")
-    public ResponseEntity<String> verifyApplicantToken() {
-        return ResponseEntity.ok("applicantTokenIsValid");
+    public ResponseEntity<ResponseWrapper> verifyApplicantToken() {
+        return new ResponseEntity<>(
+                new ResponseWrapper(
+                        true,
+                        200,
+                        "Applicant's Jwt Token is verified",
+                        null,
+                        null
+                ),
+                HttpStatus.valueOf(200));
     }
 
     @GetMapping("/get-all-jobs")
     @PreAuthorize("hasRole('Applicant')")
-    public ResponseEntity<List<JobPost>> allJobs() { // For Testing purpose only, while deleting, delete service method as well
-        return ResponseEntity.ok(applicantService.fetchAllJobs());
+    public ResponseEntity<ResponseWrapper<List<JobPost>>> allJobs() { // For Testing purpose only, while deleting, delete service method as well
+        ResponseWrapper<List<JobPost>> response = applicantService.fetchAllJobs();
+        return new ResponseEntity<>(response, HttpStatus.valueOf(response.getHttpStatusCode()));
     }
 
     @PatchMapping("/reset-password")
-    public ResponseEntity<String> resetPassword(@RequestBody BasicDto dto) {
-        String result = applicantService.resetPassword(dto.getId(), dto.getCode());
-        if (result.equals("ApplicantNotFound")) {
-            return ResponseEntity.badRequest().body("Applicant not found");
-        }
-        return ResponseEntity.ok("Password has been reset successfully");
+    public ResponseEntity<ResponseWrapper> resetPassword(@RequestBody BasicDto dto) {
+        ResponseWrapper response = applicantService.resetPassword(dto.getId(), dto.getCode());
+        return new ResponseEntity<>(response, HttpStatus.valueOf(response.getHttpStatusCode()));
     }
 
     @PreAuthorize("hasRole('Applicant')")
     @PostMapping("/jobs/apply")
-    public ResponseEntity<String> applyToJobs(@RequestParam("jobId") String jobId,
+    public ResponseEntity<ResponseWrapper> applyToJobs(@RequestParam("jobId") String jobId,
                                               @RequestParam("companyId") String companyId,
                                               @RequestParam("resume")MultipartFile resume,
                                               HttpServletRequest request) throws IOException {
 
         String resumeId = resumeService.uploadResume(resume);
-        String applicantServiceResponse = applicantService.applyToJob(jobId,JwtTokenUtil.getUserIdFromToken(JwtTokenUtil.extractTokenFromRequest(request)), companyId, resumeId);
-        if(applicantServiceResponse.equals("ApplicantNotFound")) {
-            return ResponseEntity.badRequest().body("Applicant not found");
-        }
-        if(applicantServiceResponse.equals("alreadyApplied")) {
-            return ResponseEntity.badRequest().body("Already applied to this job");
-        }
-        if(applicantServiceResponse.equals("JobDontExist")) {
-            return ResponseEntity.badRequest().body("This Job Don't Exist / has been removed by the employer");
-        }
-        return ResponseEntity.ok("Successfully Applied");
+        ResponseWrapper applicantServiceResponse = applicantService.applyToJob(jobId,JwtTokenUtil.getUserIdFromToken(JwtTokenUtil.extractTokenFromRequest(request)), companyId, resumeId);
+        return new ResponseEntity<>(applicantServiceResponse, HttpStatus.valueOf(applicantServiceResponse.getHttpStatusCode()));
     }
 
 
@@ -146,35 +138,37 @@ public class ApplicantController {
             InputStream inputStream = gridFsOperations.getResource(file).getInputStream();
             StreamUtils.copy(inputStream, response.getOutputStream());
         } catch (Exception e) {
-
             log.error("Error downloading resume: {}", e.getMessage());
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
     }
 
-    @GetMapping("/get-all-applications/{applicantId}")
-    @PreAuthorize("hasRole('Applicant')")
-    public ResponseEntity<List<ApplicationDto>> getAllApplications(@PathVariable("applicantId") String applicantId) {
-        List<ApplicationDto> applications = applicantService.getAllApplications(applicantId);
-        if (applications.isEmpty()) {
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.ok(applications);
-    }
+//    @GetMapping("/get-all-applications/{applicantId}")
+//    @PreAuthorize("hasRole('Applicant')")
+//    public ResponseEntity<ResponseWrapper<List<ApplicationDto>>> getAllApplications(@PathVariable("applicantId") String applicantId) {
+//        ResponseWrapper<List<ApplicationDto>> response = applicantService.getAllApplications(applicantId);
+//        return new ResponseEntity<>(response, HttpStatus.valueOf(response.getHttpStatusCode()));
+//    }
 
     @GetMapping("/health-check")
     @PreAuthorize("hasRole('Applicant')")
-    public ResponseEntity<String> healthCheck() {
-        return ResponseEntity.ok("Applicant Service is running");
+    public ResponseEntity<ResponseWrapper> healthCheck() {
+        return new ResponseEntity<>(
+                new ResponseWrapper<>(
+                        true,
+                        200,
+                        "Health Check Successful",
+                        null,
+                        null
+                ),
+                HttpStatus.OK
+        );
     }
 
     @DeleteMapping("/delete-account")
     @PreAuthorize("hasRole('Applicant')")
-    public ResponseEntity<String> deleteAccount(HttpServletRequest request) {
-         String serviceResp = applicantService.deleteAccount(JwtTokenUtil.extractTokenFromRequest(request));
-         if(serviceResp.equals("error")) {
-             return ResponseEntity.badRequest().body("Account couldn't be deleted");
-         }
-         return ResponseEntity.ok("account has been deleted");
+    public ResponseEntity<ResponseWrapper<String>> deleteAccount(HttpServletRequest request) {
+        ResponseWrapper<String> serviceResp = applicantService.deleteAccount(JwtTokenUtil.extractTokenFromRequest(request));
+        return new ResponseEntity<>(serviceResp, HttpStatus.valueOf(serviceResp.getHttpStatusCode()));
     }
 }

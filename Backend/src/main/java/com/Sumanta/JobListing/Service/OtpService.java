@@ -1,6 +1,7 @@
 package com.Sumanta.JobListing.Service;
 
 import com.Sumanta.JobListing.DAO.CompanyDAO;
+import com.Sumanta.JobListing.DTO.ResponseWrapper;
 import com.Sumanta.JobListing.Entity.Company;
 import com.twilio.Twilio;
 import com.twilio.rest.verify.v2.service.Verification;
@@ -43,36 +44,58 @@ public class OtpService {
         return mobNo;
     }
 
-    public String verifyOtp(String mobileNum, String otp) {
+    public ResponseWrapper<String> verifyOtp(String mobNo, String otp) {
         Twilio.init(ACCOUNT_SID, AUTH_TOKEN);
         try{
-            log.info("SUMANTA : Mobile No. for otp Verification : " + mobileNum + ", OTP : " + otp);
+            log.info("SUMANTA : Mobile No. for otp Verification : " +  mobNo + ", OTP : " + otp);
             VerificationCheck verificationCheck = VerificationCheck
                     .creator(SERVICE_SID)
-                    .setTo(mobileNum)
+                    .setTo(mobNo)
                     .setCode(otp)
                     .create();
             log.info("SUMANTA : Verification status : " + verificationCheck.getStatus());
         } catch (Exception e) {
-            e.printStackTrace();
-            return "WRONG";
+            return new ResponseWrapper<>(
+                    false,
+                    503,
+                    "OTP couldn't be verified.",
+                    null,
+                    e.getMessage()
+            );
         }
-        return "RIGHT";
+        return new ResponseWrapper(
+                true,
+                200,
+                "OTP is Verified",
+                mobNo,
+                null
+        );
     }
 
-    public String generateOtpbyMobNo(String mobNo) {
+    public ResponseWrapper<String> generateOtpbyMobNo(String mobNo) {
         Twilio.init(ACCOUNT_SID, AUTH_TOKEN);
         try {
             Verification verification = Verification.creator(
                     SERVICE_SID,
-                    mobNo,
+                    "+91"+mobNo,
                     "sms"
             ).create();
         } catch (Exception e) {
-            e.printStackTrace();
-            return "OtpNotGenerated";
+            return new ResponseWrapper(
+                    false,
+                    503,
+                    "OTP couldn't be generated.",
+                    null,
+                    e.getMessage()
+            );
         }
-        return mobNo;
+        return new ResponseWrapper(
+                true,
+                200,
+                "OTP sent to the user's mobile number.",
+                mobNo,
+                null
+        );
     }
 
 }

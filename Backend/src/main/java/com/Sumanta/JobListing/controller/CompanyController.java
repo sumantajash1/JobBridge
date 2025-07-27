@@ -82,27 +82,27 @@ public class CompanyController {
         return ResponseEntity.ok(serviceResponse);
     }
 
-    @GetMapping("/generate-otp-mob-no/{mobNo}")
-    public ResponseEntity<String> getOtpbyMobNo(@PathVariable("mobNo") String mobNo) {
-       String serviceResponse = otpService.generateOtpbyMobNo(mobNo);
-        if(serviceResponse.equals("UserNotExist")) {
-            return ResponseEntity.badRequest().body(serviceResponse);
-        }
-        if(serviceResponse.equals("OtpNotGenerated")) {
-            return ResponseEntity.badRequest().body("OTP couldn't be generated");
-        }
-        return ResponseEntity.ok(serviceResponse);
-    }
-
-    @PostMapping("/verify-otp")
-    public ResponseEntity<String> verifyOtp(@RequestBody BasicDto dto) {
-        String otpServiceResponse = otpService.verifyOtp(dto.getId(), dto.getCode());
-        if(otpServiceResponse.equals("RIGHT")) {
-            return ResponseEntity.ok("OTP Verified");
-        }
-        return ResponseEntity.badRequest().body("Wrong Otp");
-    }
-
+//    @GetMapping("/generate-otp-mob-no/{mobNo}")
+//    public ResponseEntity<String> getOtpbyMobNo(@PathVariable("mobNo") String mobNo) {
+//       String serviceResponse = otpService.generateOtpbyMobNo(mobNo);
+//        if(serviceResponse.equals("UserNotExist")) {
+//            return ResponseEntity.badRequest().body(serviceResponse);
+//        }
+//        if(serviceResponse.equals("OtpNotGenerated")) {
+//            return ResponseEntity.badRequest().body("OTP couldn't be generated");
+//        }
+//        return ResponseEntity.ok(serviceResponse);
+//    }
+//
+//    @PostMapping("/verify-otp")
+//    public ResponseEntity<String> verifyOtp(@RequestBody BasicDto dto) {
+//        String otpServiceResponse = otpService.verifyOtp(dto.getId(), dto.getCode());
+//        if(otpServiceResponse.equals("RIGHT")) {
+//            return ResponseEntity.ok("OTP Verified");
+//        }
+//        return ResponseEntity.badRequest().body("Wrong Otp");
+//    }
+//
     @PostMapping("/reset-password")
     public ResponseEntity<String> resetPassword(@RequestBody BasicDto dto) {
       Boolean companyServiceResponse = companyService.resetPassword(dto.getId(), dto.getCode());
