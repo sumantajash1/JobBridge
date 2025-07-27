@@ -2,7 +2,9 @@ package com.Sumanta.JobListing.controller;
 
 import com.Sumanta.JobListing.DTO.ApplicantLoginRequestBody;
 import com.Sumanta.JobListing.DTO.ApplicationDto;
+import com.Sumanta.JobListing.DTO.AuthResponseDto;
 import com.Sumanta.JobListing.DTO.BasicDto;
+import com.Sumanta.JobListing.DTO.ResponseWrapper;
 import com.Sumanta.JobListing.Entity.Applicant;
 import com.Sumanta.JobListing.Entity.JobPost;
 import com.Sumanta.JobListing.Service.ApplicantService;
@@ -11,17 +13,14 @@ import com.Sumanta.JobListing.Service.ResumeService;
 import com.Sumanta.JobListing.utils.CookieUtil;
 import com.Sumanta.JobListing.utils.JwtTokenUtil;
 import com.mongodb.client.gridfs.model.GridFSFile;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.batch.BatchProperties;
 import org.springframework.data.mongodb.gridfs.GridFsOperations;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -48,27 +47,25 @@ public class ApplicantController {
     private GridFsOperations gridFsOperations;
 
     @PostMapping("/sign-up")
-    public ResponseEntity<String> signUp(@RequestBody Applicant applicant, HttpServletResponse response) {
-        Pair<String, String> applicantServiceResponse= applicantService.register(applicant);
-        if(applicantServiceResponse.getLeft().equals("failed")) {
-            return ResponseEntity.badRequest().body(applicantServiceResponse.getRight());
+    public ResponseEntity<ResponseWrapper<AuthResponseDto>> signUp(@RequestBody Applicant applicant, HttpServletResponse response) {
+        ResponseWrapper<AuthResponseDto> applicantServiceResponse= applicantService.register(applicant);
+        if(applicantServiceResponse.isSuccess() && applicantServiceResponse.getData() != null) {
+            String jwtToken = applicantServiceResponse.getData().getJwtToken();
+            response.setHeader( "jwtToken", jwtToken);
+            response.setHeader(HttpHeaders.SET_COOKIE, CookieUtil.generateCookie(jwtToken).toString());
         }
-        String jwtToken = applicantServiceResponse.getRight();
-        response.setHeader( "jwtToken", jwtToken);
-        response.setHeader(HttpHeaders.SET_COOKIE, CookieUtil.generateCookie(jwtToken).toString());
-        return ResponseEntity.ok(applicantServiceResponse.getLeft());
+        return new ResponseEntity<>(applicantServiceResponse,HttpStatus.valueOf(applicantServiceResponse.getHttpStatusCode()));
     }
 
     @PostMapping("/sign-in")
-    public ResponseEntity<String> signIn(@RequestBody ApplicantLoginRequestBody applicantLoginRequestBody, HttpServletResponse response) {
-        Pair<String, String> applicantServiceResponse = applicantService.Login(applicantLoginRequestBody);
-        if(applicantServiceResponse.getLeft().equals("failed")) {
-            return ResponseEntity.badRequest().body(applicantServiceResponse.getRight());
+    public ResponseEntity<ResponseWrapper<AuthResponseDto>> signIn(@RequestBody ApplicantLoginRequestBody applicantLoginRequestBody, HttpServletResponse response) {
+        ResponseWrapper<AuthResponseDto> applicantServiceResponse = applicantService.logIn(applicantLoginRequestBody);
+        if(applicantServiceResponse.isSuccess() && applicantServiceResponse.getData() != null) {
+            String jwtToken = applicantServiceResponse.getData().getJwtToken();
+            response.setHeader("jwtToken", jwtToken);
+            response.setHeader(HttpHeaders.SET_COOKIE, CookieUtil.generateCookie(jwtToken).toString());
         }
-        String jwtToken = applicantServiceResponse.getRight();
-        response.setHeader("jwtToken", jwtToken);
-        response.setHeader(HttpHeaders.SET_COOKIE, CookieUtil.generateCookie(jwtToken).toString());
-        return ResponseEntity.ok(applicantServiceResponse.getLeft());
+        return new ResponseEntity<>(applicantServiceResponse, HttpStatus.valueOf(applicantServiceResponse.getHttpStatusCode()));
     }
 
     @GetMapping("/get-otp/{mobNo}")
@@ -181,4 +178,3 @@ public class ApplicantController {
          return ResponseEntity.ok("account has been deleted");
     }
 }
-

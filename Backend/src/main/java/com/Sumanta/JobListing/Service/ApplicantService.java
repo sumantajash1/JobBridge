@@ -5,6 +5,8 @@ import com.Sumanta.JobListing.DAO.ApplicationDao;
 import com.Sumanta.JobListing.DAO.JobDao;
 import com.Sumanta.JobListing.DTO.ApplicantLoginRequestBody;
 import com.Sumanta.JobListing.DTO.ApplicationDto;
+import com.Sumanta.JobListing.DTO.AuthResponseDto;
+import com.Sumanta.JobListing.DTO.ResponseWrapper;
 import com.Sumanta.JobListing.Entity.*;
 import com.Sumanta.JobListing.utils.JwtTokenUtil;
 import com.twilio.jwt.Jwt;
@@ -36,45 +38,67 @@ public class ApplicantService {
     @Autowired
     ResumeService resumeService;
 
-    public Pair<String, String> register(Applicant applicant) {
+    public ResponseWrapper<AuthResponseDto> register(Applicant applicant) {
         String mobNo = applicant.getMobNo();
-        if(alreadyExists(mobNo, applicant.getEmail()).equals("PhoneExists")) {
-            return Pair.of("failed", "Phone number already exists");
+        if(applicantDAO.existsByMobNo(mobNo)) {
+            return new ResponseWrapper(
+                    false,
+                    409,
+                    "User's mobile number is already associated with another account.",
+                    null,
+                    null
+            );
         }
-        if(alreadyExists(mobNo, applicant.getEmail()).equals("EmailExists")) {
-            return Pair.of("failed", "Email address already exists");
+        if(applicantDAO.existsByEmail(applicant.getEmail())) {
+            return new ResponseWrapper(
+                    false,
+                    409,
+                    "User's email id is already associated with another account",
+                    null,
+                    null
+            );
         }
         applicant.setPassword(passwordEncoder.encode(applicant.getPassword()));
         applicantDAO.save(applicant);
         String jwtToken = JwtTokenUtil.GenerateToken(mobNo, Role.Applicant);
-        return Pair.of(applicant.getName(), jwtToken);
+        return new ResponseWrapper<>(
+                true,
+                201,
+                "New user account has been created successfully",
+                new AuthResponseDto(applicant.getName(), jwtToken),
+                null
+        );
     }
 
-    private String alreadyExists(String mobNo, String email) {
-        if(applicantDAO.existsByMobNo(mobNo)) {
-            return "PhoneExists";
-        }
-        if(applicantDAO.existsByEmail(email)) {
-            return "EmailExists";
-        }
-        return "No";
-    }
-
-    private boolean doesExists(String mobileNo) {
-        return applicantDAO.existsById(mobileNo);
-    }
-
-    public Pair<String, String> Login(ApplicantLoginRequestBody applicantLoginRequestBody) {
+    public ResponseWrapper<AuthResponseDto> logIn(ApplicantLoginRequestBody applicantLoginRequestBody) {
         String mobNo = applicantLoginRequestBody.getMobileNo();
-        if(!doesExists(mobNo)) {
-            return Pair.of("failed", "Doesn't Exist");
+        if(!applicantDAO.existsByMobNo(mobNo)) {
+            return new ResponseWrapper(
+                    false,
+                    404,
+                    "No user to be found with this mobile number.",
+                    null,
+                    null
+            );
         }
         Applicant applicant = applicantDAO.findByMobNo(mobNo);
         if(!passwordEncoder.matches(applicantLoginRequestBody.getPassword(), applicant.getPassword())) {
-            return Pair.of("failed", "Wrong Password");
+            return new ResponseWrapper(
+                    false,
+                    401,
+                    "Wrong Password / Invalid Credentials.",
+                    null,
+                    null
+            );
         }
         String jwtToken = JwtTokenUtil.GenerateToken(mobNo, Role.Applicant);
-        return Pair.of(applicant.getName(), jwtToken);
+        return new ResponseWrapper(
+                true,
+                200,
+                "User logged in Successfully.",
+                new AuthResponseDto(applicant.getName(), jwtToken),
+                null
+        );
     }
 
     public List<JobPost> fetchAllJobs() {
@@ -82,7 +106,7 @@ public class ApplicantService {
     }
 
     public String resetPassword(String mobNo, String newPassword) {
-        if (doesExists(mobNo)) {
+        if (applicantDAO.existsByMobNo(mobNo)) {
             return "ApplicantNotFound";
         }
         Applicant applicant = applicantDAO.findByMobNo(mobNo);
@@ -92,7 +116,7 @@ public class ApplicantService {
     }
 
     public String applyToJob(String jobId, String applicantId, String companyId, String resumeId) {
-        if(!doesExists(applicantId)) {
+        if(applicantDAO.existsByMobNo(applicantId)) {
             return "ApplicantNotFound";
         }
         Optional<JobPost> temp = jobDao.findById(jobId);
@@ -120,7 +144,7 @@ public class ApplicantService {
     }
 
     public List<ApplicationDto> getAllApplications(String applicantId) {
-        if(!doesExists(applicantId)) {
+        if(applicantDAO.existsByMobNo(applicantId)) {
             return null;
         }
         Aggregation aggregation = Aggregation.newAggregation(
