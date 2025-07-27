@@ -7,6 +7,7 @@ import com.Sumanta.JobListing.DTO.ApplicantLoginRequestBody;
 import com.Sumanta.JobListing.DTO.ApplicationDto;
 import com.Sumanta.JobListing.Entity.*;
 import com.Sumanta.JobListing.utils.JwtTokenUtil;
+import com.twilio.jwt.Jwt;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -32,6 +33,8 @@ public class ApplicantService {
     ApplicationDao applicationDao;
     @Autowired
     MongoTemplate mongoTemplate;
+    @Autowired
+    ResumeService resumeService;
 
     public Pair<String, String> register(Applicant applicant) {
         String mobNo = applicant.getMobNo();
@@ -135,11 +138,17 @@ public class ApplicantService {
         return mongoTemplate.aggregate(aggregation, "applications", ApplicationDto.class).getMappedResults();
     }
 
-    public String deleteAccount(String applicantId) {
+    public String deleteAccount(String jwtToken) {
+        String applicantId = JwtTokenUtil.getUserIdFromToken(jwtToken);
+        if(!applicantDAO.existsById(applicantId)) {
+            return "error";
+        }
         List<Application> applications = applicationDao.findByApplicantId(applicantId);
         List<String> jobIds = new ArrayList<>();
+        List<String> resumeIds = new ArrayList<>();
         for(Application a : applications) {
             jobIds.add(a.getJobId());
+            resumeIds.add(a.getResumeId());
             applicationDao.deleteById(a.getApplicationId());
         }
         for(String j : jobIds) {
@@ -153,6 +162,9 @@ public class ApplicantService {
             applicants.remove(applicantId);
             job.setApplicants(applicants);
             jobDao.save(job);
+        }
+        for(String r : resumeIds) {
+            resumeService.deleteFileById(r);
         }
         applicantDAO.deleteById(applicantId);
         return "success";

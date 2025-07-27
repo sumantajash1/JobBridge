@@ -9,8 +9,10 @@ import com.Sumanta.JobListing.Service.ApplicantService;
 import com.Sumanta.JobListing.Service.OtpService;
 import com.Sumanta.JobListing.Service.ResumeService;
 import com.Sumanta.JobListing.utils.CookieUtil;
+import com.Sumanta.JobListing.utils.JwtTokenUtil;
 import com.mongodb.client.gridfs.model.GridFSFile;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
@@ -19,6 +21,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.batch.BatchProperties;
 import org.springframework.data.mongodb.gridfs.GridFsOperations;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpRequest;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -110,12 +113,12 @@ public class ApplicantController {
     @PreAuthorize("hasRole('Applicant')")
     @PostMapping("/jobs/apply")
     public ResponseEntity<String> applyToJobs(@RequestParam("jobId") String jobId,
-                                              @RequestParam("applicantId") String applicantId,
                                               @RequestParam("companyId") String companyId,
-                                              @RequestParam("resume")MultipartFile resume) throws IOException {
+                                              @RequestParam("resume")MultipartFile resume,
+                                              HttpServletRequest request) throws IOException {
 
         String resumeId = resumeService.uploadResume(resume);
-        String applicantServiceResponse = applicantService.applyToJob(jobId, applicantId, companyId, resumeId);
+        String applicantServiceResponse = applicantService.applyToJob(jobId,JwtTokenUtil.getUserIdFromToken(JwtTokenUtil.extractTokenFromRequest(request)), companyId, resumeId);
         if(applicantServiceResponse.equals("ApplicantNotFound")) {
             return ResponseEntity.badRequest().body("Applicant not found");
         }
@@ -170,8 +173,8 @@ public class ApplicantController {
 
     @DeleteMapping("/delete-account")
     @PreAuthorize("hasRole('Applicant')")
-    public ResponseEntity<String> deleteAccount(@RequestParam("id") String applicantId) {
-         String serviceResp = applicantService.deleteAccount("+91"+applicantId);
+    public ResponseEntity<String> deleteAccount(HttpServletRequest request) {
+         String serviceResp = applicantService.deleteAccount(JwtTokenUtil.extractTokenFromRequest(request));
          if(serviceResp.equals("error")) {
              return ResponseEntity.badRequest().body("Account couldn't be deleted");
          }

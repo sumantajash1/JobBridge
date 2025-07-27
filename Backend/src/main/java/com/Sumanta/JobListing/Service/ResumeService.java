@@ -32,4 +32,18 @@ public class ResumeService {
                 )
         );
     }
+
+    public boolean deleteFileById(String id) {
+        try {
+            gridFsTemplate.delete(
+              org.springframework.data.mongodb.core.query.Query.query(
+                      org.springframework.data.mongodb.core.query.Criteria.where("_id").is(id)
+              )
+            );
+        } catch (Exception e) {
+           e.printStackTrace();
+           return false;
+        }
+        return true;
+    }
 }
