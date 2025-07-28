@@ -10,6 +10,7 @@ import com.Sumanta.JobListing.DTO.AuthResponseDto;
 import com.Sumanta.JobListing.DTO.ResponseWrapper;
 import com.Sumanta.JobListing.Entity.*;
 import com.Sumanta.JobListing.utils.JwtTokenUtil;
+import com.twilio.jwt.Jwt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
@@ -166,24 +167,13 @@ public class ApplicantService {
                         null
                 );
             }
-            if(!companyDao.existsById(companyId)) {
-                return new ResponseWrapper(
-                        false,
-                        404,
-                        "Company/Employer not found.",
-                        null,
-                        null
-                );
+            Optional<Company> optionalCompany = companyDao.findById(companyId);
+            if(optionalCompany.isEmpty()) {
+               return new ResponseWrapper(false, 404, "Company not found", null, null);
             }
             Optional<JobPost> optionalJob = jobDao.findById(jobId);
-            if(optionalJob.isEmpty() || !optionalJob.get().isActiveStatus()) {
-                return new ResponseWrapper(
-                        false,
-                        404,
-                        "Job not found.",
-                        null,
-                        null
-                );
+            if(optionalJob.isEmpty() || !optionalJob.get().getCompanyId().equals(companyId)) {
+                return new ResponseWrapper(false, 404, "Job not found", null, null);
             }
             JobPost job = optionalJob.get();
             List<String> applicantIds = job.getApplicants();
@@ -295,5 +285,45 @@ public class ApplicantService {
             null,
             null
         );
+    }
+
+    public ResponseWrapper removeApplication(String applicationId, String jwtToken) {
+       String applicantId = JwtTokenUtil.getUserIdFromToken(jwtToken);
+       try {
+           Optional<Application> optionalApplication = applicationDao.findById(applicationId);
+           if(optionalApplication.isEmpty() || !optionalApplication.get().getApplicantId().equals(applicantId)) {
+               return new ResponseWrapper(
+                       false,
+                       404,
+                       "Application not found.",
+                       null,
+                       null
+               );
+           }
+           String resumeId = optionalApplication.get().getResumeId();
+           resumeService.deleteFileById(resumeId);
+           Optional<JobPost> job = jobDao.findById(optionalApplication.get().getJobId());
+           if(job.isPresent()) {
+               List<String> applicantIds = job.get().getApplicants();
+               applicantIds.remove(applicantId);
+               jobDao.save(job.get());
+           }
+           applicationDao.deleteById(applicationId);
+           return new ResponseWrapper(
+                   true,
+                   204,
+                   "Application withdrawn successfully.",
+                   null,
+                   null
+           );
+       } catch (Exception e) {
+           return new ResponseWrapper(
+                   false,
+                   500,
+                   "Application couldn't be withdrawn because of some unknown server error.",
+                   null,
+                   e.getMessage()
+           );
+       }
     }
 }

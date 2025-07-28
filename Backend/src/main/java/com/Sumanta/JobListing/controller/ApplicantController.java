@@ -168,4 +168,11 @@ public class ApplicantController {
         ResponseWrapper<String> serviceResp = applicantService.deleteAccount(JwtTokenUtil.extractTokenFromRequest(request));
         return new ResponseEntity<>(serviceResp, HttpStatus.valueOf(serviceResp.getHttpStatusCode()));
     }
+
+    @DeleteMapping("/remove-application/{applicationId}")
+    @PreAuthorize("hasRole('Applicant')")
+    public ResponseEntity<ResponseWrapper> withdrawApplication(@PathVariable("applicationId") String applicationId, HttpServletRequest request) {
+        ResponseWrapper serviceResp = applicantService.removeApplication(applicationId, JwtTokenUtil.extractTokenFromRequest(request));
+        return new ResponseEntity<>(serviceResp, HttpStatus.valueOf(serviceResp.getHttpStatusCode()));
+    }
 }
