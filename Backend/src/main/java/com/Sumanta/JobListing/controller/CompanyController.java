@@ -11,6 +11,7 @@ import com.Sumanta.JobListing.Service.ResumeService;
 import com.Sumanta.JobListing.utils.CookieUtil;
 import com.Sumanta.JobListing.utils.JwtTokenUtil;
 import com.mongodb.client.gridfs.model.GridFSFile;
+import com.twilio.jwt.Jwt;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -92,29 +93,29 @@ public class CompanyController {
 
     @GetMapping("/verify-company-token/{jwtToken}")
     @PreAuthorize("hasRole('Company')")
-    public ResponseEntity<ResponseWrapper<String>> verifyCompanyToken(@PathVariable("jwtToken") String jwtToken) {
-        ResponseWrapper<String> serviceResponse = companyService.getComapnyName(JwtTokenUtil.getUserIdFromToken(jwtToken));
+    public ResponseEntity<ResponseWrapper<String>> verifyCompanyToken(HttpServletRequest request) {
+        ResponseWrapper<String> serviceResponse = companyService.getComapnyName(JwtTokenUtil.getUserIdFromToken(JwtTokenUtil.extractTokenFromRequest(request)));
         return new ResponseEntity<>(serviceResponse, HttpStatus.valueOf(serviceResponse.getHttpStatusCode()));
     }
 
     @PostMapping("/post-job")
     @PreAuthorize("hasRole('Company')")
-    public ResponseEntity<ResponseWrapper<String>> postJob(@RequestBody JobPost jobPost) {
-       ResponseWrapper<String> serviceResponse = companyService.postJob(jobPost);
+    public ResponseEntity<ResponseWrapper<String>> postJob(@RequestBody JobPost jobPost, HttpServletRequest request) {
+       ResponseWrapper<String> serviceResponse = companyService.postJob(jobPost, JwtTokenUtil.extractTokenFromRequest(request));
        return new ResponseEntity<>(serviceResponse, HttpStatus.valueOf(serviceResponse.getHttpStatusCode()));
     }
 
-    @GetMapping("/show-all-active-jobs/{companyId}")
+    @GetMapping("/show-all-active-jobs")
     @PreAuthorize("hasRole('Company')")
-    public ResponseEntity<ResponseWrapper<List<JobPost>>> showAllActiveJobs(@PathVariable("companyId") String companyId) {
-        ResponseWrapper<List<JobPost>> serviceResponse = companyService.getAllActiveJobsWrapped(companyId);
+    public ResponseEntity<ResponseWrapper<List<JobPost>>> showAllActiveJobs(HttpServletRequest request) {
+        ResponseWrapper<List<JobPost>> serviceResponse = companyService.getAllActiveJobs(JwtTokenUtil.extractTokenFromRequest(request));
         return new ResponseEntity<>(serviceResponse, HttpStatus.valueOf(serviceResponse.getHttpStatusCode()));
     }
 
-    @GetMapping("/show-all-inactive-jobs/{companyId}")
+    @GetMapping("/show-all-inactive-jobs")
     @PreAuthorize("hasRole('Company')")
-    public ResponseEntity<ResponseWrapper<List<JobPost>>> showAllInactiveJobs(@PathVariable("companyId") String companyId) {
-        ResponseWrapper<List<JobPost>> serviceResponse = companyService.getAllInactiveJobs(companyId);
+    public ResponseEntity<ResponseWrapper<List<JobPost>>> showAllInactiveJobs(HttpServletRequest request) {
+        ResponseWrapper<List<JobPost>> serviceResponse = companyService.getAllInactiveJobs(JwtTokenUtil.extractTokenFromRequest(request));
         return new ResponseEntity<>(serviceResponse, HttpStatus.valueOf(serviceResponse.getHttpStatusCode()));
     }
 
@@ -127,21 +128,21 @@ public class CompanyController {
 
     @PatchMapping("/set-job-status")
     @PreAuthorize("hasRole('Company')")
-    public ResponseEntity<ResponseWrapper<String>> setJobStatus(@RequestParam("jobId") String jobId, @RequestParam("status") boolean status) {
+    public ResponseEntity<ResponseWrapper<String>> setJobStatus(@RequestParam("jobId") String jobId, @RequestParam("status") boolean status, HttpServletRequest request) {
         if(jobId == null) {
             return new ResponseEntity<>(new ResponseWrapper<>(false, 400, "Job ID or Status is missing", null, null), HttpStatus.BAD_REQUEST);
         }
-        ResponseWrapper<String> serviceResponse = companyService.setJobStatus(jobId, status);
+        ResponseWrapper<String> serviceResponse = companyService.setJobStatus(jobId, status, JwtTokenUtil.extractTokenFromRequest(request));
         return new ResponseEntity<>(serviceResponse, HttpStatus.valueOf(serviceResponse.getHttpStatusCode()));
     }
 
     @PatchMapping("/set-application-status")
     @PreAuthorize("hasRole('Company')")
-    public ResponseEntity<ResponseWrapper<String>> setApplicationStatus(@RequestParam("applicationId") String applicationId, @RequestParam("status") applicationStatus status) {
+    public ResponseEntity<ResponseWrapper<String>> setApplicationStatus(@RequestParam("applicationId") String applicationId, @RequestParam("status") applicationStatus status, HttpServletRequest request) {
         if(applicationId == null || status == null) {
             return new ResponseEntity<>(new ResponseWrapper<>(false, 400, "Application ID or Status is missing", null, null), HttpStatus.BAD_REQUEST);
         }
-        ResponseWrapper<String> serviceResponse = companyService.setApplicationStatus(applicationId, status);
+        ResponseWrapper<String> serviceResponse = companyService.setApplicationStatus(applicationId, status, JwtTokenUtil.extractTokenFromRequest(request));
         return new ResponseEntity<>(serviceResponse, HttpStatus.valueOf(serviceResponse.getHttpStatusCode()));
     }
 

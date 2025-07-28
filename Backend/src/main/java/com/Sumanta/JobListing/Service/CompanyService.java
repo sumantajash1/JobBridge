@@ -108,16 +108,27 @@ public class CompanyService {
         }
         return Pair.of(false, "No conflict found.");
     }
-    public ResponseWrapper<String> postJob(JobPost jobPost) {
-        if(jobDao.existsByJobTitle(jobPost.getJobTitle())) {
+    public ResponseWrapper<String> postJob(JobPost jobPost, String jwtToken) {
+        String gstNum = JwtTokenUtil.getUserIdFromToken(jwtToken);
+        Optional<Company> optionalCompany = companyDAO.findById(gstNum);
+        if(optionalCompany.isEmpty()) {
+            return new ResponseWrapper<>(false, 404, "Company not found.", null, null);
+        }
+        List<JobPost> jobs = jobDao.findByCompanyId(gstNum);
+        boolean exists = jobs.stream().anyMatch(j -> j.getJobTitle().equals(jobPost.getJobTitle()));
+        if(exists) {
             return new ResponseWrapper<>(false, 409, "A Job Post with this Title Already Exists, Please consider editing that Job Post", null, null);
         }
+        String companyName = optionalCompany.get().getCompanyName();
+        jobPost.setCompanyId(gstNum);
+        jobPost.setCompanyName(companyName);
         jobPost.setApplicants(new ArrayList<>());
         jobDao.save(jobPost);
         return new ResponseWrapper<>(true, 201, "Job posted successfully", jobPost.getJobId(), null);
     }
 
-   public ResponseWrapper<List<JobPost>> getAllActiveJobsWrapped(String companyId) {
+   public ResponseWrapper<List<JobPost>> getAllActiveJobs(String jwtToken) {
+        String companyId = JwtTokenUtil.getUserIdFromToken(jwtToken);
         try {
             List<JobPost> jobs = jobDao.findAllByCompanyIdAndActiveStatusTrue(companyId);
             return new ResponseWrapper<>(true, 200, "Active jobs fetched", jobs, null);
@@ -126,7 +137,8 @@ public class CompanyService {
         }
     }
 
-    public ResponseWrapper<List<JobPost>> getAllInactiveJobs(String companyId) {
+    public ResponseWrapper<List<JobPost>> getAllInactiveJobs(String jwtToken) {
+        String companyId = JwtTokenUtil.getUserIdFromToken(jwtToken);
         try {
             return new ResponseWrapper(
                     true,
@@ -160,24 +172,27 @@ public class CompanyService {
 //        return mongoTemplate.aggregate(aggregation, "applications", ApplicationDto.class).getMappedResults();
 //    }
 
-    public ResponseWrapper setJobStatus(String jobId, Boolean status) {
+    public ResponseWrapper setJobStatus(String jobId, Boolean status, String jwtToken) {
+        String companyId = JwtTokenUtil.getUserIdFromToken(jwtToken);
         try {
-            Optional<JobPost> jobPostOptional = jobDao.findById(jobId);
-            if (jobPostOptional.isPresent()) {
-                JobPost jobPost = jobPostOptional.get();
+            List<JobPost> jobs = jobDao.findByCompanyId(companyId);
+            boolean exists = jobs.stream().anyMatch(job -> job.getJobId().equals(jobId));
+            if (exists) {
+                JobPost jobPost = jobDao.findById(jobId).get();
                 jobPost.setActiveStatus(status);
                 jobDao.save(jobPost);
+                return new ResponseWrapper<>(true, 200, "Job status updated successfully", null, null);
             } else {
                 return new ResponseWrapper<>(false, 404, "No Job to be found with given job Id.", null, null);
             }
-            return new ResponseWrapper<>(true, 200, "Job status updated successfully", null, null);
         } catch (Exception e) {
             return new ResponseWrapper<>(false, 500, "Failed to update job status", null, e.getMessage());
         }
     }
 
-    public ResponseWrapper setApplicationStatus(String applicationId, applicationStatus status) {
-       try {
+    public ResponseWrapper setApplicationStatus(String applicationId, applicationStatus status, String jwtToken) {
+        String companyId = JwtTokenUtil.getUserIdFromToken(jwtToken);
+        try {
             Optional<Application> OptionalApplication = applicationDao.findById(applicationId);
             if(OptionalApplication.isPresent()) {
                 Application application = OptionalApplication.get();
@@ -188,7 +203,7 @@ public class CompanyService {
                 return new ResponseWrapper<>(false, 404, "Application is not found.", null, null);
             }
         } catch (Exception e) {
-           return new ResponseWrapper<>(false, 500, "Operation failed due to unknown server error.", null, e.getMessage());
+            return new ResponseWrapper<>(false, 500, "Operation failed due to unknown server error.", null, e.getMessage());
         }
     }
 

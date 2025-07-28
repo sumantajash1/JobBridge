@@ -22,7 +22,7 @@ public interface JobDao extends MongoRepository<JobPost, String> {
 
     List<JobPost> findAllByCompanyId(String jobId);
 
-    List<JobPost> findByCompanyId(String companyId); //for testing
-
     List<JobPost> findAllByActiveStatusTrue();
+
+    List<JobPost> findByCompanyId(String gstNum);
 }
