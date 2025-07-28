@@ -1,7 +1,6 @@
 package com.Sumanta.JobListing.controller;
 
-import com.Sumanta.JobListing.DTO.ApplicantLoginRequestBody;
-import com.Sumanta.JobListing.DTO.ApplicationDto;
+import com.Sumanta.JobListing.DTO.AuthRequestBody;
 import com.Sumanta.JobListing.DTO.AuthResponseDto;
 import com.Sumanta.JobListing.DTO.BasicDto;
 import com.Sumanta.JobListing.DTO.ResponseWrapper;
@@ -13,11 +12,9 @@ import com.Sumanta.JobListing.Service.ResumeService;
 import com.Sumanta.JobListing.utils.CookieUtil;
 import com.Sumanta.JobListing.utils.JwtTokenUtil;
 import com.mongodb.client.gridfs.model.GridFSFile;
-import com.twilio.rest.bulkexports.v1.export.Job;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.gridfs.GridFsOperations;
 import org.springframework.http.HttpHeaders;
@@ -59,7 +56,7 @@ public class ApplicantController {
     }
 
     @PostMapping("/sign-in")
-    public ResponseEntity<ResponseWrapper<AuthResponseDto>> signIn(@RequestBody ApplicantLoginRequestBody applicantLoginRequestBody, HttpServletResponse response) {
+    public ResponseEntity<ResponseWrapper<AuthResponseDto>> signIn(@RequestBody AuthRequestBody applicantLoginRequestBody, HttpServletResponse response) {
         ResponseWrapper<AuthResponseDto> applicantServiceResponse = applicantService.logIn(applicantLoginRequestBody);
         if(applicantServiceResponse.isSuccess() && applicantServiceResponse.getData() != null) {
             String jwtToken = applicantServiceResponse.getData().getJwtToken();
@@ -76,8 +73,8 @@ public class ApplicantController {
     }
 
     @PostMapping("/verify-otp")
-    public ResponseEntity<ResponseWrapper<String>> verifyOtp(@RequestBody BasicDto dto) {
-        ResponseWrapper<String> otpServiceResponse = otpService.verifyOtp(dto.getId(), dto.getCode());
+    public ResponseEntity<ResponseWrapper<String>> verifyOtp(@RequestBody AuthRequestBody dto) {
+        ResponseWrapper<String> otpServiceResponse = otpService.verifyOtp(dto.getId(), dto.getPassword());
         return new ResponseEntity<>(otpServiceResponse, HttpStatus.valueOf(otpServiceResponse.getHttpStatusCode()));
     }
 
@@ -103,8 +100,8 @@ public class ApplicantController {
     }
 
     @PatchMapping("/reset-password")
-    public ResponseEntity<ResponseWrapper> resetPassword(@RequestBody BasicDto dto) {
-        ResponseWrapper response = applicantService.resetPassword(dto.getId(), dto.getCode());
+    public ResponseEntity<ResponseWrapper> resetPassword(@RequestBody AuthRequestBody dto) {
+        ResponseWrapper response = applicantService.resetPassword(dto.getId(), dto.getPassword());
         return new ResponseEntity<>(response, HttpStatus.valueOf(response.getHttpStatusCode()));
     }
 

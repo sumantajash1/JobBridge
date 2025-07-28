@@ -3,18 +3,15 @@ package com.Sumanta.JobListing.Service;
 import com.Sumanta.JobListing.DAO.ApplicationDao;
 import com.Sumanta.JobListing.DAO.CompanyDAO;
 import com.Sumanta.JobListing.DAO.JobDao;
-import com.Sumanta.JobListing.DTO.ApplicationDto;
 import com.Sumanta.JobListing.DTO.AuthResponseDto;
-import com.Sumanta.JobListing.DTO.CompanyLoginRequestBody;
+import com.Sumanta.JobListing.DTO.AuthRequestBody;
 import com.Sumanta.JobListing.DTO.ResponseWrapper;
 import com.Sumanta.JobListing.Entity.*;
 import com.Sumanta.JobListing.utils.GstNumberValidator;
 import com.Sumanta.JobListing.utils.JwtTokenUtil;
-import com.twilio.rest.bulkexports.v1.export.Job;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -80,8 +77,8 @@ public class CompanyService {
         );
     }
 
-    public ResponseWrapper<AuthResponseDto> login(CompanyLoginRequestBody companyLoginRequestBody) {
-        String gstNum = companyLoginRequestBody.getGstNum();
+    public ResponseWrapper<AuthResponseDto> login(AuthRequestBody authRequestBody) {
+        String gstNum = authRequestBody.getId();
         if(!GstNumberValidator.isGstNumValid(gstNum)) {
             return new ResponseWrapper<>(false, 400, "Invalid GST Number", null, null);
         }
@@ -90,7 +87,7 @@ public class CompanyService {
             return new ResponseWrapper<>(false, 404, "Company not found", null, null);
         }
         Company company = optionalCompany.get();
-        if(!passwordEncoder.matches(companyLoginRequestBody.getPassword(), company.getCompanyPassword())) {
+        if(!passwordEncoder.matches(authRequestBody.getPassword(), company.getCompanyPassword())) {
             return new ResponseWrapper<>(false, 401, "Wrong Password", null, null);
         }
         String jwtToken = JwtTokenUtil.GenerateToken(gstNum, Role.Company);

@@ -11,11 +11,9 @@ import com.Sumanta.JobListing.Service.ResumeService;
 import com.Sumanta.JobListing.utils.CookieUtil;
 import com.Sumanta.JobListing.utils.JwtTokenUtil;
 import com.mongodb.client.gridfs.model.GridFSFile;
-import com.twilio.http.Response;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.gridfs.GridFsOperations;
 import org.springframework.http.HttpHeaders;
@@ -58,8 +56,8 @@ public class CompanyController {
     }
 
     @PostMapping("/sign-in")
-    public ResponseEntity<ResponseWrapper<AuthResponseDto>> signIn(@RequestBody CompanyLoginRequestBody companyLoginRequestBody, HttpServletResponse response) {
-        ResponseWrapper<AuthResponseDto> serviceResponse = companyService.login(companyLoginRequestBody);
+    public ResponseEntity<ResponseWrapper<AuthResponseDto>> signIn(@RequestBody AuthRequestBody authRequestBody, HttpServletResponse response) {
+        ResponseWrapper<AuthResponseDto> serviceResponse = companyService.login(authRequestBody);
         if(serviceResponse.isSuccess()) {
             String jwtToken = serviceResponse.getData().getJwtToken();
             response.setHeader("jwt", jwtToken);
@@ -81,14 +79,14 @@ public class CompanyController {
     }
 
     @PostMapping("/verify-otp")
-    public ResponseEntity<ResponseWrapper<String>> verifyOtp(@RequestBody BasicDto dto) {
-        ResponseWrapper<String> otpServiceResponse = otpService.verifyOtp(dto.getId(), dto.getCode());
+    public ResponseEntity<ResponseWrapper<String>> verifyOtp(@RequestBody AuthRequestBody dto) {
+        ResponseWrapper<String> otpServiceResponse = otpService.verifyOtp(dto.getId(), dto.getPassword());
         return new ResponseEntity<>(otpServiceResponse, HttpStatus.valueOf(otpServiceResponse.getHttpStatusCode()));
     }
 
     @PostMapping("/reset-password")
-    public ResponseEntity<ResponseWrapper<String>> resetPassword(@RequestBody BasicDto dto) {
-      ResponseWrapper<String> serviceResponse = companyService.resetPassword(dto.getId(), dto.getCode());
+    public ResponseEntity<ResponseWrapper<String>> resetPassword(@RequestBody AuthRequestBody dto) {
+      ResponseWrapper<String> serviceResponse = companyService.resetPassword(dto.getId(), dto.getPassword());
       return new ResponseEntity<>(serviceResponse, HttpStatus.valueOf(serviceResponse.getHttpStatusCode()));
     }
 
@@ -129,10 +127,8 @@ public class CompanyController {
 
     @PatchMapping("/set-job-status")
     @PreAuthorize("hasRole('Company')")
-    public ResponseEntity<ResponseWrapper<String>> setJobStatus(@RequestBody BasicDto dto) {
-        String jobId = dto.getId();
-        Boolean status = dto.getStatus();
-        if(jobId == null || status == null) {
+    public ResponseEntity<ResponseWrapper<String>> setJobStatus(@RequestParam("jobId") String jobId, @RequestParam("status") boolean status) {
+        if(jobId == null) {
             return new ResponseEntity<>(new ResponseWrapper<>(false, 400, "Job ID or Status is missing", null, null), HttpStatus.BAD_REQUEST);
         }
         ResponseWrapper<String> serviceResponse = companyService.setJobStatus(jobId, status);
@@ -141,9 +137,7 @@ public class CompanyController {
 
     @PatchMapping("/set-application-status")
     @PreAuthorize("hasRole('Company')")
-    public ResponseEntity<ResponseWrapper<String>> setApplicationStatus(@RequestBody BasicDto dto) {
-        String applicationId = dto.getId();
-        applicationStatus status = dto.getApplicationStatus();
+    public ResponseEntity<ResponseWrapper<String>> setApplicationStatus(@RequestParam("applicationId") String applicationId, @RequestParam("status") applicationStatus status) {
         if(applicationId == null || status == null) {
             return new ResponseEntity<>(new ResponseWrapper<>(false, 400, "Application ID or Status is missing", null, null), HttpStatus.BAD_REQUEST);
         }

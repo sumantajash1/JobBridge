@@ -9,7 +9,8 @@ import lombok.ToString;
 @AllArgsConstructor
 @Data
 @ToString
-public class ApplicantLoginRequestBody {
-    String mobileNo;
-    String password;
+public class AuthRequestBody {
+    private String id;
+    private String password;
+
 }
