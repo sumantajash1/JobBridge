@@ -85,15 +85,16 @@ public class CompanyService {
         if(!GstNumberValidator.isGstNumValid(gstNum)) {
             return new ResponseWrapper<>(false, 400, "Invalid GST Number", null, null);
         }
-        if(!companyDAO.existsById(gstNum)) {
-            return new ResponseWrapper<>(false, 404, "Company Not Found", null, null);
+        Optional<Company> optionalCompany = companyDAO.findById(gstNum);
+        if(optionalCompany.isEmpty()) {
+            return new ResponseWrapper<>(false, 404, "Company not found", null, null);
         }
-        Company tempCompany = companyDAO.findById(gstNum).get();
-        if(!passwordEncoder.matches(companyLoginRequestBody.getPassword(), tempCompany.getCompanyPassword())) {
+        Company company = optionalCompany.get();
+        if(!passwordEncoder.matches(companyLoginRequestBody.getPassword(), company.getCompanyPassword())) {
             return new ResponseWrapper<>(false, 401, "Wrong Password", null, null);
         }
         String jwtToken = JwtTokenUtil.GenerateToken(gstNum, Role.Company);
-        return new ResponseWrapper<>(true, 200, "Login successful", new AuthResponseDto(tempCompany.getCompanyName(), jwtToken), null);
+        return new ResponseWrapper<>(true, 200, "Login successful", new AuthResponseDto(company.getCompanyName(), jwtToken), null);
     }
     private Pair<Boolean, String> alreadyExists(Company company) {
         if (companyDAO.existsByGstNum(company.getGstNum())) {

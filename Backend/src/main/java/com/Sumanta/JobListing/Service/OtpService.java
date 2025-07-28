@@ -27,7 +27,13 @@ public class OtpService {
     public ResponseWrapper<String> generateOtpByGstNum(String gstNum) {
         Company company = companyDAO.findByGstNum(gstNum);
         if(company==null) {
-            return "UserNotExist";
+             return new ResponseWrapper<>(
+                    false,
+                    404,
+                    "Company Not found.",
+                    null,
+                    null
+            );
         }
         String mobNo = "+91" + company.getCompanyContactNum();
         Twilio.init(ACCOUNT_SID, AUTH_TOKEN);
@@ -38,10 +44,21 @@ public class OtpService {
                     "sms"
             ).create();
         } catch (Exception e) {
-           e.printStackTrace();
-            return "OtpNotGenerated";
+            return new ResponseWrapper<>(
+                    false,
+                    503,
+                    "OTP couldn't be generated.",
+                    null,
+                    e.getMessage()
+            );
         }
-        return mobNo;
+        return new ResponseWrapper<>(
+                true,
+                200,
+                "OTP sent successfully.",
+                mobNo,
+                null
+        );
     }
 
     public ResponseWrapper<String> verifyOtp(String mobNo, String otp) {

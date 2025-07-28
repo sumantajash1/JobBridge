@@ -24,9 +24,5 @@ public interface JobDao extends MongoRepository<JobPost, String> {
 
     List<JobPost> findByCompanyId(String companyId); //for testing
 
-    List<JobPost> findAllByActiveStatusTrueAndDeadlineGreaterThanEqual(LocalDate now);
-
     List<JobPost> findAllByActiveStatusTrue();
-
-    List<Application> findByComapnyIdAndJobId(String gstNum, String jobId);
 }

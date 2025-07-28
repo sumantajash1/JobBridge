@@ -75,7 +75,7 @@ public class CompanyController {
     }
 
     @GetMapping("/generate-otp-mob-no/{mobNo}")
-    public ResponseEntity<ResponseWrapper<String>> getOtpbyMobNo(@PathVariable("mobNo") String mobNo) {
+    public ResponseEntity<ResponseWrapper<String>> getOtpByMobNo(@PathVariable("mobNo") String mobNo) {
        ResponseWrapper<String> serviceResponse = otpService.generateOtpbyMobNo(mobNo);
        return new ResponseEntity<>(serviceResponse, HttpStatus.valueOf(serviceResponse.getHttpStatusCode()));
     }
