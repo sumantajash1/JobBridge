@@ -1,5 +1,6 @@
 package com.Sumanta.JobListing.DAO;
 
+import com.Sumanta.JobListing.Entity.Application;
 import com.Sumanta.JobListing.Entity.JobPost;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
@@ -26,4 +27,6 @@ public interface JobDao extends MongoRepository<JobPost, String> {
     List<JobPost> findAllByActiveStatusTrueAndDeadlineGreaterThanEqual(LocalDate now);
 
     List<JobPost> findAllByActiveStatusTrue();
+
+    List<Application> findByComapnyIdAndJobId(String gstNum, String jobId);
 }

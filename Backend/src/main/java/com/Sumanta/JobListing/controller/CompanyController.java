@@ -1,8 +1,6 @@
 package com.Sumanta.JobListing.controller;
 
-import com.Sumanta.JobListing.DTO.ApplicationDto;
-import com.Sumanta.JobListing.DTO.BasicDto;
-import com.Sumanta.JobListing.DTO.CompanyLoginRequestBody;
+import com.Sumanta.JobListing.DTO.*;
 import com.Sumanta.JobListing.Entity.Application;
 import com.Sumanta.JobListing.Entity.Company;
 import com.Sumanta.JobListing.Entity.JobPost;
@@ -13,6 +11,7 @@ import com.Sumanta.JobListing.Service.ResumeService;
 import com.Sumanta.JobListing.utils.CookieUtil;
 import com.Sumanta.JobListing.utils.JwtTokenUtil;
 import com.mongodb.client.gridfs.model.GridFSFile;
+import com.twilio.http.Response;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +19,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.gridfs.GridFsOperations;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -47,164 +47,115 @@ public class CompanyController {
     private GridFsOperations gridFsOperations;
 
     @PostMapping("/sign-up")
-    public ResponseEntity<String> SignUp(@RequestBody Company company, HttpServletResponse response) {
-        Pair<String, String> serviceResponse = companyService.register(company);
-        if(serviceResponse.getLeft().equals("failed")) {
-            return ResponseEntity.badRequest().body(serviceResponse.getRight());
+    public ResponseEntity<ResponseWrapper<AuthResponseDto>> signUp(@RequestBody Company company, HttpServletResponse response) {
+        ResponseWrapper<AuthResponseDto> serviceResponse = companyService.register(company);
+        if(serviceResponse.isSuccess()) {
+            String jwtToken = serviceResponse.getData().getJwtToken();
+            response.setHeader("jwt", jwtToken);
+            response.setHeader(HttpHeaders.SET_COOKIE, CookieUtil.generateCookie(jwtToken).toString());
         }
-        String jwtToken = serviceResponse.getRight();
-        response.setHeader("jwt", jwtToken);
-        response.setHeader(HttpHeaders.SET_COOKIE, CookieUtil.generateCookie(jwtToken).toString());
-        return ResponseEntity.ok(serviceResponse.getLeft());
+        return new ResponseEntity<>(serviceResponse, HttpStatus.valueOf(serviceResponse.getHttpStatusCode()));
     }
 
     @PostMapping("/sign-in")
-    public ResponseEntity<String> SignIn(@RequestBody CompanyLoginRequestBody companyLoginRequestBody, HttpServletResponse response) {
-        Pair<String, String> companyserviceResponse = companyService.Login(companyLoginRequestBody);
-        if(companyserviceResponse.getLeft().equals("failed")) {
-            return ResponseEntity.badRequest().body(companyserviceResponse.getRight());
+    public ResponseEntity<ResponseWrapper<AuthResponseDto>> signIn(@RequestBody CompanyLoginRequestBody companyLoginRequestBody, HttpServletResponse response) {
+        ResponseWrapper<AuthResponseDto> serviceResponse = companyService.login(companyLoginRequestBody);
+        if(serviceResponse.isSuccess()) {
+            String jwtToken = serviceResponse.getData().getJwtToken();
+            response.setHeader("jwt", jwtToken);
+            response.setHeader(HttpHeaders.SET_COOKIE, CookieUtil.generateCookie(jwtToken).toString());
         }
-        String jwtToken = companyserviceResponse.getRight();
-        response.setHeader("jwtToken", jwtToken);
-        response.setHeader(HttpHeaders.SET_COOKIE, CookieUtil.generateCookie(jwtToken).toString());
-        return ResponseEntity.ok(companyserviceResponse.getLeft());
+        return new ResponseEntity<>(serviceResponse, HttpStatus.valueOf(serviceResponse.getHttpStatusCode()));
     }
 
     @GetMapping("/generate-otp-gst-num/{gstNum}")
-    public ResponseEntity<String> getOtp(@PathVariable("gstNum") String gstNum) {
-        String serviceResponse = otpService.generateOtpByGstNum(gstNum);
-        if(serviceResponse.equals("UserNotExist")) {
-            return ResponseEntity.badRequest().body(serviceResponse);
-        }
-        if(serviceResponse.equals("OtpNotGenerated")) {
-            return ResponseEntity.badRequest().body("OTP couldn't be generated");
-        }
-        return ResponseEntity.ok(serviceResponse);
+    public ResponseEntity<ResponseWrapper<String>> getOtp(@PathVariable("gstNum") String gstNum) {
+        ResponseWrapper<String> serviceResponse = otpService.generateOtpByGstNum(gstNum);
+        return new ResponseEntity<>(serviceResponse, HttpStatus.valueOf(serviceResponse.getHttpStatusCode()));
     }
 
-//    @GetMapping("/generate-otp-mob-no/{mobNo}")
-//    public ResponseEntity<String> getOtpbyMobNo(@PathVariable("mobNo") String mobNo) {
-//       String serviceResponse = otpService.generateOtpbyMobNo(mobNo);
-//        if(serviceResponse.equals("UserNotExist")) {
-//            return ResponseEntity.badRequest().body(serviceResponse);
-//        }
-//        if(serviceResponse.equals("OtpNotGenerated")) {
-//            return ResponseEntity.badRequest().body("OTP couldn't be generated");
-//        }
-//        return ResponseEntity.ok(serviceResponse);
-//    }
-//
-//    @PostMapping("/verify-otp")
-//    public ResponseEntity<String> verifyOtp(@RequestBody BasicDto dto) {
-//        String otpServiceResponse = otpService.verifyOtp(dto.getId(), dto.getCode());
-//        if(otpServiceResponse.equals("RIGHT")) {
-//            return ResponseEntity.ok("OTP Verified");
-//        }
-//        return ResponseEntity.badRequest().body("Wrong Otp");
-//    }
-//
+    @GetMapping("/generate-otp-mob-no/{mobNo}")
+    public ResponseEntity<ResponseWrapper<String>> getOtpbyMobNo(@PathVariable("mobNo") String mobNo) {
+       ResponseWrapper<String> serviceResponse = otpService.generateOtpbyMobNo(mobNo);
+       return new ResponseEntity<>(serviceResponse, HttpStatus.valueOf(serviceResponse.getHttpStatusCode()));
+    }
+
+    @PostMapping("/verify-otp")
+    public ResponseEntity<ResponseWrapper<String>> verifyOtp(@RequestBody BasicDto dto) {
+        ResponseWrapper<String> otpServiceResponse = otpService.verifyOtp(dto.getId(), dto.getCode());
+        return new ResponseEntity<>(otpServiceResponse, HttpStatus.valueOf(otpServiceResponse.getHttpStatusCode()));
+    }
+
     @PostMapping("/reset-password")
-    public ResponseEntity<String> resetPassword(@RequestBody BasicDto dto) {
-      Boolean companyServiceResponse = companyService.resetPassword(dto.getId(), dto.getCode());
-      if(!companyServiceResponse) {
-          return ResponseEntity.badRequest().body("FAILED");
-      }
-      return ResponseEntity.ok("SUCCESS");
+    public ResponseEntity<ResponseWrapper<String>> resetPassword(@RequestBody BasicDto dto) {
+      ResponseWrapper<String> serviceResponse = companyService.resetPassword(dto.getId(), dto.getCode());
+      return new ResponseEntity<>(serviceResponse, HttpStatus.valueOf(serviceResponse.getHttpStatusCode()));
     }
 
     @GetMapping("/verify-company-token/{jwtToken}")
     @PreAuthorize("hasRole('Company')")
-    public ResponseEntity<String> verifyCompanyToken(@PathVariable("jwtToken") String jwtToken) {
-            return ResponseEntity.ok(companyService.getComapnyName(JwtTokenUtil.getUserIdFromToken(jwtToken)));
+    public ResponseEntity<ResponseWrapper<String>> verifyCompanyToken(@PathVariable("jwtToken") String jwtToken) {
+        ResponseWrapper<String> serviceResponse = companyService.getComapnyName(JwtTokenUtil.getUserIdFromToken(jwtToken));
+        return new ResponseEntity<>(serviceResponse, HttpStatus.valueOf(serviceResponse.getHttpStatusCode()));
     }
 
     @PostMapping("/post-job")
     @PreAuthorize("hasRole('Company')")
-    public ResponseEntity<String> postJob(@RequestBody JobPost jobPost) {
-       Pair<String, String> companyServiceResponse = companyService.postJob(jobPost);
-       if(companyServiceResponse.getLeft().equals("failed")) {
-          return ResponseEntity.badRequest().body(companyServiceResponse.getRight());
-       }
-       String jobId = companyServiceResponse.getRight();
-       return ResponseEntity.ok(jobId);
+    public ResponseEntity<ResponseWrapper<String>> postJob(@RequestBody JobPost jobPost) {
+       ResponseWrapper<String> serviceResponse = companyService.postJob(jobPost);
+       return new ResponseEntity<>(serviceResponse, HttpStatus.valueOf(serviceResponse.getHttpStatusCode()));
     }
 
     @GetMapping("/show-all-active-jobs/{companyId}")
     @PreAuthorize("hasRole('Company')")
-    public ResponseEntity<List<JobPost>> showAllActiveJobs(@PathVariable("companyId") String companyId) {
-        log.info("SUMANTA : Inside  ");
-        try {
-            List<JobPost> allActiveJobs = companyService.getAllActiveJobs(companyId);
-            return ResponseEntity.ok(allActiveJobs);
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body(null);
-        }
+    public ResponseEntity<ResponseWrapper<List<JobPost>>> showAllActiveJobs(@PathVariable("companyId") String companyId) {
+        ResponseWrapper<List<JobPost>> serviceResponse = companyService.getAllActiveJobsWrapped(companyId);
+        return new ResponseEntity<>(serviceResponse, HttpStatus.valueOf(serviceResponse.getHttpStatusCode()));
     }
 
     @GetMapping("/show-all-inactive-jobs/{companyId}")
     @PreAuthorize("hasRole('Company')")
-    public ResponseEntity<List<JobPost>> showAllInactiveJobs(@PathVariable("companyId") String companyId) {
-        log.info("SUMANTA : Inside");
-        try {
-            List<JobPost> allInactiveJobs = companyService.getAllInactiveJobs(companyId);
-            return ResponseEntity.ok(allInactiveJobs);
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body(null);
-        }
+    public ResponseEntity<ResponseWrapper<List<JobPost>>> showAllInactiveJobs(@PathVariable("companyId") String companyId) {
+        ResponseWrapper<List<JobPost>> serviceResponse = companyService.getAllInactiveJobs(companyId);
+        return new ResponseEntity<>(serviceResponse, HttpStatus.valueOf(serviceResponse.getHttpStatusCode()));
     }
 
-    @GetMapping("/job-all-applications/{jobId}")
-    @PreAuthorize(("hasRole('Company')"))
-    public ResponseEntity<List<ApplicationDto>> showAllApplicationsForJobId(@PathVariable("jobId") String jobId) {
-        try {
-           List<ApplicationDto> applications = companyService.getAllApplicationsForJob(jobId);
-           return ResponseEntity.ok(applications);
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(null);
-        }
-    }
+//    @GetMapping("/job-all-applications/{jobId}")
+//    @PreAuthorize(("hasRole('Company')"))
+//    public ResponseEntity<ResponseWrapper<List<ApplicationDto>>> showAllApplicationsForJobId(@PathVariable("jobId") String jobId) {
+//        ResponseWrapper<List<ApplicationDto>> serviceResponse = companyService.getAllApplicationsForJobWrapped(jobId);
+//        return new ResponseEntity<>(serviceResponse, HttpStatus.valueOf(serviceResponse.getHttpStatusCode()));
+//    }
 
     @PatchMapping("/set-job-status")
     @PreAuthorize("hasRole('Company')")
-    public ResponseEntity<String> setJobbStatus(@RequestBody BasicDto dto) {
+    public ResponseEntity<ResponseWrapper<String>> setJobStatus(@RequestBody BasicDto dto) {
         String jobId = dto.getId();
         Boolean status = dto.getStatus();
         if(jobId == null || status == null) {
-            return ResponseEntity.badRequest().body("Job ID or Status is missing");
+            return new ResponseEntity<>(new ResponseWrapper<>(false, 400, "Job ID or Status is missing", null, null), HttpStatus.BAD_REQUEST);
         }
-        try {
-            companyService.setJobStatus(jobId, status);
-            return ResponseEntity.ok("Job status updated successfully");
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("Failed to update job status");
-        }
+        ResponseWrapper<String> serviceResponse = companyService.setJobStatus(jobId, status);
+        return new ResponseEntity<>(serviceResponse, HttpStatus.valueOf(serviceResponse.getHttpStatusCode()));
     }
 
     @PatchMapping("/set-application-status")
     @PreAuthorize("hasRole('Company')")
-    public ResponseEntity<String> setApplicationStatus(@RequestBody BasicDto dto) {
+    public ResponseEntity<ResponseWrapper<String>> setApplicationStatus(@RequestBody BasicDto dto) {
         String applicationId = dto.getId();
         applicationStatus status = dto.getApplicationStatus();
         if(applicationId == null || status == null) {
-            return ResponseEntity.badRequest().body("Application ID or Status is missing");
+            return new ResponseEntity<>(new ResponseWrapper<>(false, 400, "Application ID or Status is missing", null, null), HttpStatus.BAD_REQUEST);
         }
-        try {
-            companyService.setApplicationStatus(applicationId, status);
-            return ResponseEntity.ok("Application status updated successfully");
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("Failed to update application status");
-        }
+        ResponseWrapper<String> serviceResponse = companyService.setApplicationStatus(applicationId, status);
+        return new ResponseEntity<>(serviceResponse, HttpStatus.valueOf(serviceResponse.getHttpStatusCode()));
     }
 
     @GetMapping("/view-all-selected-applications/{jobId}")
     @PreAuthorize("hasRole('Company')")
-    public ResponseEntity<List<Application>> viewAllSelectedApplications(@PathVariable("jobId") String jobId) {
-        try {
-            List<Application> selectedApplications = companyService.getAllSelectedApplicationsForJob(jobId);
-            return ResponseEntity.ok(selectedApplications);
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(null);
-        }
+    public ResponseEntity<ResponseWrapper<List<Application>>> viewAllSelectedApplications(@PathVariable("jobId") String jobId, HttpServletRequest request) {
+        ResponseWrapper<List<Application>> serviceResponse = companyService.getAllSelectedApplicationsForJob(JwtTokenUtil.extractTokenFromRequest(request), jobId);
+        return new ResponseEntity<>(serviceResponse, HttpStatus.valueOf(serviceResponse.getHttpStatusCode()));
     }
 
     @GetMapping("/download-resume/{resumeId}")
@@ -232,12 +183,10 @@ public class CompanyController {
 
     @DeleteMapping("/delete-job")
     @PreAuthorize("hasRole('Company')")
-    public ResponseEntity<String> deleteJob(@RequestParam("jobId") String jobId, HttpServletRequest request) {
-        String serviceResponse = companyService.deleteJob(jobId, request.getHeader("Authorization").substring(7));
-        if(serviceResponse.equals("error")) {
-            return ResponseEntity.badRequest().body("Job Couldn't be deleted / Job doesn't exist");
-        }
-        return ResponseEntity.ok("Job deleted successfully");
+    public ResponseEntity<ResponseWrapper<String>> deleteJob(@RequestParam("jobId") String jobId, HttpServletRequest request) {
+        String jwtToken = request.getHeader("Authorization").substring(7);
+        ResponseWrapper<String> serviceResponse = companyService.deleteJob(jobId, jwtToken);
+        return new ResponseEntity<>(serviceResponse, HttpStatus.valueOf(serviceResponse.getHttpStatusCode()));
     }
 
     @GetMapping("/health-check")

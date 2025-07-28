@@ -24,7 +24,7 @@ public class OtpService {
     @Value("${SERVICE_SID}")
     private String SERVICE_SID;
 
-    public String generateOtpByGstNum(String gstNum) {
+    public ResponseWrapper<String> generateOtpByGstNum(String gstNum) {
         Company company = companyDAO.findByGstNum(gstNum);
         if(company==null) {
             return "UserNotExist";
