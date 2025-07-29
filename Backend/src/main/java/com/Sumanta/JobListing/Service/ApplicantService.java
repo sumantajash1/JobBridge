@@ -17,6 +17,7 @@ import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -156,7 +157,7 @@ public class ApplicantService {
         );
     }
 
-    public ResponseWrapper applyToJob(String jobId, String applicantId, String companyId, String resumeId) {
+    public ResponseWrapper applyToJob(String jobId, String applicantId, String companyId, MultipartFile resume) {
         try {
             if(!applicantDAO.existsById(applicantId)) {
                 return new ResponseWrapper(
@@ -193,7 +194,7 @@ public class ApplicantService {
             application.setApplicantId(applicantId);
             application.setJobId(jobId);
             application.setCompanyId(companyId);
-            application.setResumeId(resumeId);
+            application.setResumeId(resumeService.uploadResume(resume));
             application.setStatus(applicationStatus.PENDING);
             applicationDao.save(application);
             applicantIds.add(applicantId);
@@ -290,7 +291,8 @@ public class ApplicantService {
     public ResponseWrapper removeApplication(String applicationId, String jwtToken) {
        String applicantId = JwtTokenUtil.getUserIdFromToken(jwtToken);
        try {
-           Optional<Application> optionalApplication = applicationDao.findById(applicationId);
+//           Optional<Application> optionalApplication = applicationDao.findById(applicationId);
+           Optional<Application> optionalApplication = applicationDao.findByApplicationId(applicationId);
            if(optionalApplication.isEmpty() || !optionalApplication.get().getApplicantId().equals(applicantId)) {
                return new ResponseWrapper(
                        false,
