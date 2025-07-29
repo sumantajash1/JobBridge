@@ -217,23 +217,45 @@ public class ApplicantService {
         );
     }
 
-    public List<ApplicationDto> getAllApplications(String applicantId) {
-        if(applicantDAO.existsByMobNo(applicantId)) {
-            return null;
+    public ResponseWrapper<List<ApplicationDto>> getAllApplications(String jwtToken) {
+        String applicantId = JwtTokenUtil.getUserIdFromToken(jwtToken);
+        try {
+            if(!applicantDAO.existsByMobNo(applicantId)) {
+                return new ResponseWrapper(
+                        false,
+                        404,
+                        "User not found.",
+                        null,
+                        null
+                );
+            }
+            Aggregation aggregation = Aggregation.newAggregation(
+                    Aggregation.match(Criteria.where("applicantId").is(applicantId)),
+                    Aggregation.lookup("ApplicantData", "mobNO", "mobNo", "applicantDetails"),
+                    Aggregation.lookup("CompanyData", "gstNum", "gstNum", "CompanyDetails"),
+                    Aggregation.unwind("applicantDetails", true),
+                    Aggregation.unwind("CompanyDetails", true),
+                    Aggregation.project("applicationId", "jobId", "applicantId", "companyId", "resumeId", "status")
+                            .and("_id").as("applicationId")
+                            .and("applicantDetails.name").as("applicantName")
+                            .and("CompanyDetails.companyName").as("companyName")
+            );
+            return new ResponseWrapper<>(
+                    true,
+                    200,
+                    "Returning all the application of the given user",
+                    mongoTemplate.aggregate(aggregation, "applications", ApplicationDto.class).getMappedResults(),
+                    null
+            );
+        } catch (Exception e) {
+            return new ResponseWrapper<>(
+                    false,
+                    503,
+                    "Operation is not successful due to some unknown server error.",
+                    null,
+                    e.getMessage()
+            );
         }
-        Aggregation aggregation = Aggregation.newAggregation(
-                Aggregation.match(Criteria.where("applicantId").is(applicantId)),
-                Aggregation.lookup("ApplicantData", "mobNO", "mobNo", "applicantDetails"),
-                Aggregation.lookup("CompanyData", "gstNum", "gstNum", "CompanyDetails"),
-                Aggregation.unwind("applicantDetails", true),
-                Aggregation.unwind("CompanyDetails", true),
-                Aggregation.project("applicationId", "jobId", "applicantId", "companyId", "resumeId", "status")
-                        .and("_id").as("applicationId")
-                        .and("applicantDetails.name").as("applicantName")
-                        .and("CompanyDetails.companyName").as("companyName")
-        );
-
-        return mongoTemplate.aggregate(aggregation, "applications", ApplicationDto.class).getMappedResults();
     }
 
     public ResponseWrapper deleteAccount(String jwtToken) {

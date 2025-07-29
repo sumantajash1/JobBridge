@@ -1,9 +1,6 @@
 package com.Sumanta.JobListing.controller;
 
-import com.Sumanta.JobListing.DTO.AuthRequestBody;
-import com.Sumanta.JobListing.DTO.AuthResponseDto;
-import com.Sumanta.JobListing.DTO.BasicDto;
-import com.Sumanta.JobListing.DTO.ResponseWrapper;
+import com.Sumanta.JobListing.DTO.*;
 import com.Sumanta.JobListing.Entity.Applicant;
 import com.Sumanta.JobListing.Entity.JobPost;
 import com.Sumanta.JobListing.Service.ApplicantService;
@@ -139,12 +136,12 @@ public class ApplicantController {
         }
     }
 
-//    @GetMapping("/get-all-applications/{applicantId}")
-//    @PreAuthorize("hasRole('Applicant')")
-//    public ResponseEntity<ResponseWrapper<List<ApplicationDto>>> getAllApplications(@PathVariable("applicantId") String applicantId) {
-//        ResponseWrapper<List<ApplicationDto>> response = applicantService.getAllApplications(applicantId);
-//        return new ResponseEntity<>(response, HttpStatus.valueOf(response.getHttpStatusCode()));
-//    }
+    @GetMapping("/get-all-applications")
+    @PreAuthorize("hasRole('Applicant')")
+    public ResponseEntity<ResponseWrapper<List<ApplicationDto>>> getAllApplications(HttpServletRequest request) {
+        ResponseWrapper<List<ApplicationDto>> response = applicantService.getAllApplications(JwtTokenUtil.extractTokenFromRequest(request));
+        return new ResponseEntity<>(response, HttpStatus.valueOf(response.getHttpStatusCode()));
+    }
 
     @GetMapping("/health-check")
     @PreAuthorize("hasRole('Applicant')")
