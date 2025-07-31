@@ -4,6 +4,8 @@ import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.LocalDate;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -12,7 +14,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document(collection = "ApplicantData")
 public class Applicant {
     private String name;
-    private String dob;
+    private LocalDate dob;
     private String password;
     @Id
     private String mobNo;

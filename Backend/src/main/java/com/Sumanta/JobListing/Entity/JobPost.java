@@ -4,6 +4,7 @@ import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -28,7 +29,7 @@ public class JobPost {
     private List<String> requrements;
     private String benefitsAndPerks;
     private List<String> coreSkills;
-    private String deadline; //can be null
+    private LocalDate deadline; //can be null
     private int maxOpenings;
 
     private boolean activeStatus = true;
