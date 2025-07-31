@@ -11,6 +11,7 @@ import com.Sumanta.JobListing.DTO.ResponseWrapper;
 import com.Sumanta.JobListing.Entity.*;
 import com.Sumanta.JobListing.utils.JwtTokenUtil;
 import com.twilio.jwt.Jwt;
+import com.twilio.rest.microvisor.v1.App;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
@@ -217,44 +218,77 @@ public class ApplicantService {
         );
     }
 
+//    public ResponseWrapper<List<ApplicationDto>> getAllApplications(String jwtToken) {
+//        String applicantId = JwtTokenUtil.getUserIdFromToken(jwtToken);
+//        try {
+//            if(!applicantDAO.existsByMobNo(applicantId)) {
+//                return new ResponseWrapper(
+//                        false,
+//                        404,
+//                        "User not found.",
+//                        null,
+//                        null
+//                );
+//            }
+//            Aggregation aggregation = Aggregation.newAggregation(
+//                    Aggregation.match(Criteria.where("applicantId").is(applicantId)),
+//                    Aggregation.lookup("ApplicantData", "mobNO", "mobNo", "applicantDetails"),
+//                    Aggregation.lookup("CompanyData", "gstNum", "gstNum", "CompanyDetails"),
+//                    Aggregation.unwind("applicantDetails", true),
+//                    Aggregation.unwind("CompanyDetails", true),
+//                    Aggregation.project("applicationId", "jobId", "applicantId", "companyId", "resumeId", "status")
+//                            .and("_id").as("applicationId")
+//                            .and("applicantDetails.name").as("applicantName")
+//                            .and("CompanyDetails.companyName").as("companyName")
+//            );
+//            return new ResponseWrapper<>(
+//                    true,
+//                    200,
+//                    "Returning all the application of the given user",
+//                    mongoTemplate.aggregate(aggregation, "applications", ApplicationDto.class).getMappedResults(),
+//                    null
+//            );
+//        } catch (Exception e) {
+//            return new ResponseWrapper<>(
+//                    false,
+//                    503,
+//                    "Operation is not successful due to some unknown server error.",
+//                    null,
+//                    e.getMessage()
+//            );
+//        }
+//    }
+
     public ResponseWrapper<List<ApplicationDto>> getAllApplications(String jwtToken) {
         String applicantId = JwtTokenUtil.getUserIdFromToken(jwtToken);
         try {
-            if(!applicantDAO.existsByMobNo(applicantId)) {
-                return new ResponseWrapper(
-                        false,
-                        404,
-                        "User not found.",
-                        null,
-                        null
-                );
+            List<Application> applications = applicationDao.findByApplicantId(applicantId);
+            if (applications.isEmpty()) {
+                return new ResponseWrapper<>(false, 204, "No applications found.", null, null);
             }
-            Aggregation aggregation = Aggregation.newAggregation(
-                    Aggregation.match(Criteria.where("applicantId").is(applicantId)),
-                    Aggregation.lookup("ApplicantData", "mobNO", "mobNo", "applicantDetails"),
-                    Aggregation.lookup("CompanyData", "gstNum", "gstNum", "CompanyDetails"),
-                    Aggregation.unwind("applicantDetails", true),
-                    Aggregation.unwind("CompanyDetails", true),
-                    Aggregation.project("applicationId", "jobId", "applicantId", "companyId", "resumeId", "status")
-                            .and("_id").as("applicationId")
-                            .and("applicantDetails.name").as("applicantName")
-                            .and("CompanyDetails.companyName").as("companyName")
-            );
-            return new ResponseWrapper<>(
-                    true,
-                    200,
-                    "Returning all the application of the given user",
-                    mongoTemplate.aggregate(aggregation, "applications", ApplicationDto.class).getMappedResults(),
-                    null
-            );
+            Optional<Company> optionalCompany = companyDao.findById(applications.get(0).getCompanyId());
+            if (optionalCompany.isEmpty()) {
+                return new ResponseWrapper<>(false, 404, "Company not found.", null, null);
+            }
+            Company company = optionalCompany.get();
+            String companyName = company.getCompanyName();
+            List<ApplicationDto> dtos = new ArrayList<>();
+            for (Application application : applications) {
+                ApplicationDto dto = new ApplicationDto(
+                        application.getApplicationId(),
+                        application.getJobId(),
+                        applicantId,
+                        application.getCompanyId(),
+                        null,
+                        companyName,
+                        application.getResumeId(),
+                        application.getStatus()
+                );
+                dtos.add(dto);
+            }
+            return new ResponseWrapper<>(true, 200, "Returning all the applications", dtos, null);
         } catch (Exception e) {
-            return new ResponseWrapper<>(
-                    false,
-                    503,
-                    "Operation is not successful due to some unknown server error.",
-                    null,
-                    e.getMessage()
-            );
+            return new ResponseWrapper<>(false, 503, "Operation unsuccessful due to unknown server error.", null, e.getMessage());
         }
     }
 
