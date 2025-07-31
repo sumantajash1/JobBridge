@@ -1,14 +1,18 @@
 package com.Sumanta.JobListing.Service;
 
+import com.Sumanta.JobListing.DAO.ApplicantDAO;
 import com.Sumanta.JobListing.DAO.ApplicationDao;
 import com.Sumanta.JobListing.DAO.CompanyDAO;
 import com.Sumanta.JobListing.DAO.JobDao;
+import com.Sumanta.JobListing.DTO.ApplicationDto;
 import com.Sumanta.JobListing.DTO.AuthResponseDto;
 import com.Sumanta.JobListing.DTO.AuthRequestBody;
 import com.Sumanta.JobListing.DTO.ResponseWrapper;
 import com.Sumanta.JobListing.Entity.*;
 import com.Sumanta.JobListing.utils.GstNumberValidator;
 import com.Sumanta.JobListing.utils.JwtTokenUtil;
+import com.twilio.jwt.Jwt;
+import com.twilio.rest.microvisor.v1.App;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -31,6 +35,8 @@ public class CompanyService {
     private JobDao jobDao;
     @Autowired
     private ApplicationDao applicationDao;
+    @Autowired
+    private ApplicantDAO applicantDao;
     @Autowired
     private MongoTemplate mongoTemplate;
 
@@ -171,6 +177,40 @@ public class CompanyService {
 //        );
 //        return mongoTemplate.aggregate(aggregation, "applications", ApplicationDto.class).getMappedResults();
 //    }
+
+    public ResponseWrapper<List<ApplicationDto>> getAllApplicationsForJob(String jobId, String jwtToken) {
+        String companyId = JwtTokenUtil.getUserIdFromToken(jwtToken);
+        try {
+            Optional<JobPost> optionalJob = jobDao.findById(jobId);
+            if(optionalJob.isEmpty() || !optionalJob.get().getCompanyId().equals(companyId)) {
+                return new ResponseWrapper<>(false, 404, "Job not found.", null, null);
+            }
+            List<Application> applications = applicationDao.findAllByJobId(jobId);
+            if(applications.isEmpty()) {
+                return new ResponseWrapper<>(false, 204, "No application found for this job.", null, null);
+            }
+            List<ApplicationDto> dtos = new ArrayList<>();
+            for(Application application : applications) {
+                ApplicationDto dto = new ApplicationDto();
+                Optional<Applicant> optionalApplicant = applicantDao.findById(application.getApplicantId());
+                if(optionalApplicant.isEmpty()) {
+                    continue;
+                }
+                String applicantName = optionalApplicant.get().getName();
+                dto.setApplicationId(application.getApplicationId());
+                dto.setJobId(application.getJobId());
+                dto.setApplicantId(application.getApplicantId());
+                dto.setCompanyId(companyId);
+                dto.setApplicantName(applicantName);
+                dto.setResumeId(application.getResumeId());
+                dto.setStatus(application.getStatus());
+                dtos.add(dto);
+            }
+            return new ResponseWrapper<>(true, 200, "Returning all the applications for this job.", dtos, null);
+        } catch (Exception e) {
+            return new ResponseWrapper<>(false, 503, "Operation failed due to unknown server error.", null, e.getMessage());
+        }
+    }
 
     public ResponseWrapper setJobStatus(String jobId, Boolean status, String jwtToken) {
         String companyId = JwtTokenUtil.getUserIdFromToken(jwtToken);

@@ -119,12 +119,12 @@ public class CompanyController {
         return new ResponseEntity<>(serviceResponse, HttpStatus.valueOf(serviceResponse.getHttpStatusCode()));
     }
 
-//    @GetMapping("/job-all-applications/{jobId}")
-//    @PreAuthorize(("hasRole('Company')"))
-//    public ResponseEntity<ResponseWrapper<List<ApplicationDto>>> showAllApplicationsForJobId(@PathVariable("jobId") String jobId) {
-//        ResponseWrapper<List<ApplicationDto>> serviceResponse = companyService.getAllApplicationsForJobWrapped(jobId);
-//        return new ResponseEntity<>(serviceResponse, HttpStatus.valueOf(serviceResponse.getHttpStatusCode()));
-//    }
+    @GetMapping("/job-all-applications/{jobId}")
+    @PreAuthorize(("hasRole('Company')"))
+    public ResponseEntity<ResponseWrapper<List<ApplicationDto>>> showAllApplicationsForJobId(@PathVariable("jobId") String jobId, HttpServletRequest request) {
+        ResponseWrapper<List<ApplicationDto>> serviceResponse = companyService.getAllApplicationsForJob(jobId, JwtTokenUtil.extractTokenFromRequest(request));
+        return new ResponseEntity<>(serviceResponse, HttpStatus.valueOf(serviceResponse.getHttpStatusCode()));
+    }
 
     @PatchMapping("/set-job-status")
     @PreAuthorize("hasRole('Company')")
