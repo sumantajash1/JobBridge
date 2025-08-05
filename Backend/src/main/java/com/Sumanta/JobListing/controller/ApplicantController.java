@@ -160,8 +160,8 @@ public class ApplicantController {
 
     @DeleteMapping("/delete-account")
     @PreAuthorize("hasRole('Applicant')")
-    public ResponseEntity<ResponseWrapper<String>> deleteAccount(HttpServletRequest request) {
-        ResponseWrapper<String> serviceResp = applicantService.deleteAccount(JwtTokenUtil.extractTokenFromRequest(request));
+    public ResponseEntity<ResponseWrapper<Void>> deleteAccount(HttpServletRequest request) {
+        ResponseWrapper<Void> serviceResp = applicantService.deleteAccount(JwtTokenUtil.extractTokenFromRequest(request));
         return new ResponseEntity<>(serviceResp, HttpStatus.valueOf(serviceResp.getHttpStatusCode()));
     }
 
