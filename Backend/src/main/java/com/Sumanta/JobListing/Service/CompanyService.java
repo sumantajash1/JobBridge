@@ -12,8 +12,6 @@ import com.Sumanta.JobListing.Entity.*;
 import com.Sumanta.JobListing.Exception.*;
 import com.Sumanta.JobListing.utils.GstNumberValidator;
 import com.Sumanta.JobListing.utils.JwtTokenUtil;
-import com.twilio.jwt.Jwt;
-import com.twilio.rest.microvisor.v1.App;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -38,8 +36,6 @@ public class CompanyService {
     private ApplicationDao applicationDao;
     @Autowired
     private ApplicantDAO applicantDao;
-    @Autowired
-    private MongoTemplate mongoTemplate;
 
     public ResponseWrapper<AuthResponseDto> register(Company company) {
         if(!GstNumberValidator.isGstNumValid(company.getGstNum())) {
@@ -53,7 +49,7 @@ public class CompanyService {
         company.setCompanyContactNum("+91"+company.getCompanyContactNum());
         companyDAO.save(company);
         String jwtToken = JwtTokenUtil.GenerateToken(company.getGstNum(), Role.Company);
-        return new ResponseWrapper<AuthResponseDto>(
+        return new ResponseWrapper<>(
                 true,
                 201,
                 "New user has been created.",
@@ -130,7 +126,7 @@ public class CompanyService {
         if(optionalCompany.isEmpty()) {
             throw new CompanyNotFoundException();
         }
-        return new ResponseWrapper(
+        return new ResponseWrapper<>(
                 true,
                 200,
                 "All inactive jobs fetched.",
@@ -173,7 +169,7 @@ public class CompanyService {
         return new ResponseWrapper<>(true, 200, "Returning all the applications for this job.", dtos, null);
     }
 
-    public ResponseWrapper setJobStatus(String jobId, Boolean status, String jwtToken) {
+    public ResponseWrapper<Void> setJobStatus(String jobId, Boolean status, String jwtToken) {
         String gstNum = JwtTokenUtil.getUserIdFromToken(jwtToken);
         if(!companyDAO.existsByGstNum(gstNum)) {
            throw new CompanyNotFoundException();
@@ -190,7 +186,7 @@ public class CompanyService {
         }
     }
 
-    public ResponseWrapper setApplicationStatus(String applicationId, applicationStatus status, String jwtToken) {
+    public ResponseWrapper<Void> setApplicationStatus(String applicationId, applicationStatus status, String jwtToken) {
         String gstNum = JwtTokenUtil.getUserIdFromToken(jwtToken);
         if(!companyDAO.existsByGstNum(gstNum)) {
             throw new CompanyNotFoundException();
@@ -249,7 +245,7 @@ public class CompanyService {
         );
     }
 
-    public ResponseWrapper deleteJob(String jobId, String jwtToken) {
+    public ResponseWrapper<Void> deleteJob(String jobId, String jwtToken) {
         String gstNum = JwtTokenUtil.getUserIdFromToken(jwtToken);
         if(!companyDAO.existsByGstNum(gstNum)) {
             throw new CompanyNotFoundException();

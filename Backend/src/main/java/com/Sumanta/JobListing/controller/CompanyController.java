@@ -128,21 +128,21 @@ public class CompanyController {
 
     @PatchMapping("/set-job-status")
     @PreAuthorize("hasRole('Company')")
-    public ResponseEntity<ResponseWrapper<String>> setJobStatus(@RequestParam("jobId") String jobId, @RequestParam("status") boolean status, HttpServletRequest request) {
+    public ResponseEntity<ResponseWrapper<Void>> setJobStatus(@RequestParam("jobId") String jobId, @RequestParam("status") boolean status, HttpServletRequest request) {
         if(jobId == null) {
             return new ResponseEntity<>(new ResponseWrapper<>(false, 400, "Job ID or Status is missing", null, null), HttpStatus.BAD_REQUEST);
         }
-        ResponseWrapper<String> serviceResponse = companyService.setJobStatus(jobId, status, JwtTokenUtil.extractTokenFromRequest(request));
+        ResponseWrapper<Void> serviceResponse = companyService.setJobStatus(jobId, status, JwtTokenUtil.extractTokenFromRequest(request));
         return new ResponseEntity<>(serviceResponse, HttpStatus.valueOf(serviceResponse.getHttpStatusCode()));
     }
 
     @PatchMapping("/set-application-status")
     @PreAuthorize("hasRole('Company')")
-    public ResponseEntity<ResponseWrapper<String>> setApplicationStatus(@RequestParam("applicationId") String applicationId, @RequestParam("status") applicationStatus status, HttpServletRequest request) {
+    public ResponseEntity<ResponseWrapper<Void>> setApplicationStatus(@RequestParam("applicationId") String applicationId, @RequestParam("status") applicationStatus status, HttpServletRequest request) {
         if(applicationId == null || status == null) {
             return new ResponseEntity<>(new ResponseWrapper<>(false, 400, "Application ID or Status is missing", null, null), HttpStatus.BAD_REQUEST);
         }
-        ResponseWrapper<String> serviceResponse = companyService.setApplicationStatus(applicationId, status, JwtTokenUtil.extractTokenFromRequest(request));
+        ResponseWrapper<Void> serviceResponse = companyService.setApplicationStatus(applicationId, status, JwtTokenUtil.extractTokenFromRequest(request));
         return new ResponseEntity<>(serviceResponse, HttpStatus.valueOf(serviceResponse.getHttpStatusCode()));
     }
 
@@ -178,9 +178,9 @@ public class CompanyController {
 
     @DeleteMapping("/delete-job")
     @PreAuthorize("hasRole('Company')")
-    public ResponseEntity<ResponseWrapper<String>> deleteJob(@RequestParam("jobId") String jobId, HttpServletRequest request) {
+    public ResponseEntity<ResponseWrapper<Void>> deleteJob(@RequestParam("jobId") String jobId, HttpServletRequest request) {
         String jwtToken = request.getHeader("Authorization").substring(7);
-        ResponseWrapper<String> serviceResponse = companyService.deleteJob(jobId, jwtToken);
+        ResponseWrapper<Void> serviceResponse = companyService.deleteJob(jobId, jwtToken);
         return new ResponseEntity<>(serviceResponse, HttpStatus.valueOf(serviceResponse.getHttpStatusCode()));
     }
 
