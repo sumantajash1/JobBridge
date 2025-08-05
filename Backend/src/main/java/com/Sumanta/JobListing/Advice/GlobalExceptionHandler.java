@@ -38,7 +38,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(CompanyNotFoundException.class)
     public ResponseEntity<ResponseWrapper<String>> handleCompanyNotFoundException(CompanyNotFoundException ex) {
-        ResponseWrapper<String> response = new ResponseWrapper<>(false, 404, "Company not found.", null, null);
+        ResponseWrapper<String> response = new ResponseWrapper<>(false, 404, ex.getMessage(), null, null);
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
 
@@ -54,9 +54,21 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(response, HttpStatus.CONFLICT);
     }
 
-    @ExceptionHandler(ApplicantAlreadyAppliedToJobException.class)
+    @ExceptionHandler(ApplicationNotFoundException.class)
     public ResponseEntity<ResponseWrapper<String>> handleApplicationNotFoundException(ApplicationNotFoundException ex) {
         ResponseWrapper<String> response = new ResponseWrapper<>(false, 409, ex.getMessage(), null, null);
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(DuplicateCompanyException.class)
+    public ResponseEntity<ResponseWrapper<String>> handleDuplicateCompanyException(DuplicateCompanyException ex) {
+        ResponseWrapper<String> response = new ResponseWrapper<>(false, 409, ex.getMessage(), null, null);
+        return new ResponseEntity<>(response, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(DuplicateJobException.class)
+    public ResponseEntity<ResponseWrapper<String>> handleDuplicateJobException(DuplicateJobException ex) {
+        ResponseWrapper<String> response = new ResponseWrapper<>(false, 409, ex.getMessage(), null, null);
+        return new ResponseEntity<>(response, HttpStatus.CONFLICT);
     }
 }

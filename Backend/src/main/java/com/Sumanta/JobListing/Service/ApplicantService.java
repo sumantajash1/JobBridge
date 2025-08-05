@@ -70,7 +70,7 @@ public class ApplicantService {
         }
         Applicant applicant = applicantDAO.findByMobNo(mobNo);
         if(!passwordEncoder.matches(applicantLoginRequestBody.getPassword(), applicant.getPassword())) {
-            throw new InvalidCredentialsException();
+            throw new InvalidCredentialsException("password");
         }
         String jwtToken = JwtTokenUtil.GenerateToken(mobNo, Role.Applicant);
         return new ResponseWrapper<AuthResponseDto>(

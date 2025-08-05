@@ -9,6 +9,7 @@ import com.Sumanta.JobListing.DTO.AuthResponseDto;
 import com.Sumanta.JobListing.DTO.AuthRequestBody;
 import com.Sumanta.JobListing.DTO.ResponseWrapper;
 import com.Sumanta.JobListing.Entity.*;
+import com.Sumanta.JobListing.Exception.*;
 import com.Sumanta.JobListing.utils.GstNumberValidator;
 import com.Sumanta.JobListing.utils.JwtTokenUtil;
 import com.twilio.jwt.Jwt;
@@ -41,38 +42,16 @@ public class CompanyService {
     private MongoTemplate mongoTemplate;
 
     public ResponseWrapper<AuthResponseDto> register(Company company) {
-        try {
-            if(!GstNumberValidator.isGstNumValid(company.getGstNum())) {
-                return new ResponseWrapper(
-                        false,
-                        401,
-                        "GST number is invalid",
-                        null,
-                        null
-                );
-            }
-            Pair<Boolean, String> conflictResponse =  alreadyExists(company);
-            if(conflictResponse.getLeft().equals(true)) {
-                return new ResponseWrapper(
-                        false,
-                        409,
-                        conflictResponse.getRight(),
-                        null,
-                        null
-                );
-            }
-            company.setCompanyPassword(passwordEncoder.encode(company.getCompanyPassword()));
-            company.setCompanyContactNum("+91"+company.getCompanyContactNum());
-            companyDAO.save(company);
-        } catch (Exception e) {
-            return new ResponseWrapper(
-                    false,
-                    409,
-                    "Failed due to some unknown server error.",
-                    null,
-                    e.getMessage()
-            );
+        if(!GstNumberValidator.isGstNumValid(company.getGstNum())) {
+            throw new InvalidCredentialsException("gst number");
         }
+        Pair<Boolean, String> conflictResponse =  alreadyExists(company);
+        if(conflictResponse.getLeft().equals(true)) {
+            throw new DuplicateCompanyException(conflictResponse.getRight());
+        }
+        company.setCompanyPassword(passwordEncoder.encode(company.getCompanyPassword()));
+        company.setCompanyContactNum("+91"+company.getCompanyContactNum());
+        companyDAO.save(company);
         String jwtToken = JwtTokenUtil.GenerateToken(company.getGstNum(), Role.Company);
         return new ResponseWrapper<AuthResponseDto>(
                 true,
@@ -86,19 +65,20 @@ public class CompanyService {
     public ResponseWrapper<AuthResponseDto> login(AuthRequestBody authRequestBody) {
         String gstNum = authRequestBody.getId();
         if(!GstNumberValidator.isGstNumValid(gstNum)) {
-            return new ResponseWrapper<>(false, 400, "Invalid GST Number", null, null);
+            throw new InvalidCredentialsException("gst number");
         }
         Optional<Company> optionalCompany = companyDAO.findById(gstNum);
         if(optionalCompany.isEmpty()) {
-            return new ResponseWrapper<>(false, 404, "Company not found", null, null);
+            throw new CompanyNotFoundException();
         }
         Company company = optionalCompany.get();
         if(!passwordEncoder.matches(authRequestBody.getPassword(), company.getCompanyPassword())) {
-            return new ResponseWrapper<>(false, 401, "Wrong Password", null, null);
+            throw new InvalidCredentialsException("password");
         }
         String jwtToken = JwtTokenUtil.GenerateToken(gstNum, Role.Company);
         return new ResponseWrapper<>(true, 200, "Login successful", new AuthResponseDto(company.getCompanyName(), jwtToken), null);
     }
+
     private Pair<Boolean, String> alreadyExists(Company company) {
         if (companyDAO.existsByGstNum(company.getGstNum())) {
             return Pair.of(true, "GST number is already associated with another company.");
@@ -114,16 +94,17 @@ public class CompanyService {
         }
         return Pair.of(false, "No conflict found.");
     }
+
     public ResponseWrapper<String> postJob(JobPost jobPost, String jwtToken) {
         String gstNum = JwtTokenUtil.getUserIdFromToken(jwtToken);
         Optional<Company> optionalCompany = companyDAO.findById(gstNum);
         if(optionalCompany.isEmpty()) {
-            return new ResponseWrapper<>(false, 404, "Company not found.", null, null);
+            throw new CompanyNotFoundException();
         }
         List<JobPost> jobs = jobDao.findByCompanyId(gstNum);
         boolean exists = jobs.stream().anyMatch(j -> j.getJobTitle().equals(jobPost.getJobTitle()));
         if(exists) {
-            return new ResponseWrapper<>(false, 409, "A Job Post with this Title Already Exists, Please consider editing that Job Post", null, null);
+            throw new DuplicateJobException(jobPost.getJobTitle());
         }
         String companyName = optionalCompany.get().getCompanyName();
         jobPost.setCompanyId(gstNum);
@@ -133,149 +114,127 @@ public class CompanyService {
         return new ResponseWrapper<>(true, 201, "Job posted successfully", jobPost.getJobId(), null);
     }
 
-   public ResponseWrapper<List<JobPost>> getAllActiveJobs(String jwtToken) {
-        String companyId = JwtTokenUtil.getUserIdFromToken(jwtToken);
-        try {
-            List<JobPost> jobs = jobDao.findAllByCompanyIdAndActiveStatusTrue(companyId);
-            return new ResponseWrapper<>(true, 200, "Active jobs fetched", jobs, null);
-        } catch (Exception e) {
-            return new ResponseWrapper<>(false, 500, "Error fetching active jobs", null, e.getMessage());
+    public ResponseWrapper<List<JobPost>> getAllActiveJobs(String jwtToken) {
+        String gstNum = JwtTokenUtil.getUserIdFromToken(jwtToken);
+        Optional<Company> optionalCompany = companyDAO.findById(gstNum);
+        if(optionalCompany.isEmpty()) {
+            throw new CompanyNotFoundException();
         }
+        List<JobPost> jobs = jobDao.findAllByCompanyIdAndActiveStatusTrue(gstNum);
+        return new ResponseWrapper<>(true, 200, "Active jobs fetched", jobs, null);
     }
 
     public ResponseWrapper<List<JobPost>> getAllInactiveJobs(String jwtToken) {
-        String companyId = JwtTokenUtil.getUserIdFromToken(jwtToken);
-        try {
-            return new ResponseWrapper(
-                    true,
-                    200,
-                    "All inactive jobs fetched.",
-                    jobDao.findAllByCompanyIdAndActiveStatusFalse(companyId),
-                    null
-            );
-        } catch (Exception e) {
-            return new ResponseWrapper<>(
-                    false,
-                    503,
-                    "Couldn't be fetched due to unknown server error.",
-                    null,
-                    e.getMessage()
-            );
+        String gstNum = JwtTokenUtil.getUserIdFromToken(jwtToken);
+        Optional<Company> optionalCompany = companyDAO.findById(gstNum);
+        if(optionalCompany.isEmpty()) {
+            throw new CompanyNotFoundException();
         }
+        return new ResponseWrapper(
+                true,
+                200,
+                "All inactive jobs fetched.",
+                jobDao.findAllByCompanyIdAndActiveStatusFalse(gstNum),
+                null
+        );
     }
 
-//    public List<ApplicationDto> getAllApplicationsForJob(String jobId) {
-//        Aggregation aggregation = Aggregation.newAggregation(
-//                Aggregation.lookup("ApplicantData", "mobNo", "mobNo", "applicantDetails"),
-//                Aggregation.lookup("CompanyData", "gstNum", "gstNum", "companyDetails"),
-//                Aggregation.unwind("applicantDetails", true),
-//                Aggregation.unwind("companyDetails", true),
-//                Aggregation.project("applicationId", "jobId", "applicantId", "companyId", "resumeId", "status")
-//                        .and("_id").as("applicationId")
-//                        .and("applicantDetails.name").as("applicantName")
-//                        .and("companyDetails.companyName").as("companyName")
-//        );
-//        return mongoTemplate.aggregate(aggregation, "applications", ApplicationDto.class).getMappedResults();
-//    }
-
     public ResponseWrapper<List<ApplicationDto>> getAllApplicationsForJob(String jobId, String jwtToken) {
-        String companyId = JwtTokenUtil.getUserIdFromToken(jwtToken);
-        try {
-            Optional<JobPost> optionalJob = jobDao.findById(jobId);
-            if(optionalJob.isEmpty() || !optionalJob.get().getCompanyId().equals(companyId)) {
-                return new ResponseWrapper<>(false, 404, "Job not found.", null, null);
-            }
-            List<Application> applications = applicationDao.findAllByJobId(jobId);
-            if(applications.isEmpty()) {
-                return new ResponseWrapper<>(false, 204, "No application found for this job.", null, null);
-            }
-            List<ApplicationDto> dtos = new ArrayList<>();
-            for(Application application : applications) {
-                ApplicationDto dto = new ApplicationDto();
-                Optional<Applicant> optionalApplicant = applicantDao.findById(application.getApplicantId());
-                if(optionalApplicant.isEmpty()) {
-                    continue;
-                }
-                String applicantName = optionalApplicant.get().getName();
-                dto.setApplicationId(application.getApplicationId());
-                dto.setJobId(application.getJobId());
-                dto.setApplicantId(application.getApplicantId());
-                dto.setCompanyId(companyId);
-                dto.setApplicantName(applicantName);
-                dto.setResumeId(application.getResumeId());
-                dto.setStatus(application.getStatus());
-                dtos.add(dto);
-            }
-            return new ResponseWrapper<>(true, 200, "Returning all the applications for this job.", dtos, null);
-        } catch (Exception e) {
-            return new ResponseWrapper<>(false, 503, "Operation failed due to unknown server error.", null, e.getMessage());
+        String gstNum = JwtTokenUtil.getUserIdFromToken(jwtToken);
+        Optional<Company> optionalCompany = companyDAO.findById(gstNum);
+        if(optionalCompany.isEmpty()) {
+            throw new CompanyNotFoundException();
         }
+        Optional<JobPost> optionalJob = jobDao.findById(jobId);
+        if(optionalJob.isEmpty() || !optionalJob.get().getCompanyId().equals(gstNum)) {
+            throw new JobNotFoundException(jobId);
+        }
+        List<Application> applications = applicationDao.findAllByJobId(jobId);
+        if(applications.isEmpty()) {
+            return new ResponseWrapper<>(false, 204, "No application found for this job.", null, null);
+        }
+        List<ApplicationDto> dtos = new ArrayList<>();
+        for(Application application : applications) {
+            ApplicationDto dto = new ApplicationDto();
+            Optional<Applicant> optionalApplicant = applicantDao.findById(application.getApplicantId());
+            if(optionalApplicant.isEmpty()) {
+                continue;
+            }
+            String applicantName = optionalApplicant.get().getName();
+            dto.setApplicationId(application.getApplicationId());
+            dto.setJobId(application.getJobId());
+            dto.setApplicantId(application.getApplicantId());
+            dto.setCompanyId(gstNum);
+            dto.setApplicantName(applicantName);
+            dto.setResumeId(application.getResumeId());
+            dto.setStatus(application.getStatus());
+            dtos.add(dto);
+        }
+        return new ResponseWrapper<>(true, 200, "Returning all the applications for this job.", dtos, null);
     }
 
     public ResponseWrapper setJobStatus(String jobId, Boolean status, String jwtToken) {
-        String companyId = JwtTokenUtil.getUserIdFromToken(jwtToken);
-        try {
-            List<JobPost> jobs = jobDao.findByCompanyId(companyId);
-            boolean exists = jobs.stream().anyMatch(job -> job.getJobId().equals(jobId));
-            if (exists) {
-                JobPost jobPost = jobDao.findById(jobId).get();
-                jobPost.setActiveStatus(status);
-                jobDao.save(jobPost);
-                return new ResponseWrapper<>(true, 200, "Job status updated successfully", null, null);
-            } else {
-                return new ResponseWrapper<>(false, 404, "No Job to be found with given job Id.", null, null);
-            }
-        } catch (Exception e) {
-            return new ResponseWrapper<>(false, 500, "Failed to update job status", null, e.getMessage());
+        String gstNum = JwtTokenUtil.getUserIdFromToken(jwtToken);
+        if(!companyDAO.existsByGstNum(gstNum)) {
+           throw new CompanyNotFoundException();
+        }
+        List<JobPost> jobs = jobDao.findByCompanyId(gstNum);
+        boolean exists = jobs.stream().anyMatch(job -> job.getJobId().equals(jobId));
+        if (exists) {
+            JobPost jobPost = jobDao.findById(jobId).get();
+            jobPost.setActiveStatus(status);
+            jobDao.save(jobPost);
+            return new ResponseWrapper<>(true, 200, "Job status updated successfully", null, null);
+        } else {
+            throw new JobNotFoundException(jobId);
         }
     }
 
     public ResponseWrapper setApplicationStatus(String applicationId, applicationStatus status, String jwtToken) {
-        String companyId = JwtTokenUtil.getUserIdFromToken(jwtToken);
-        try {
-            Optional<Application> OptionalApplication = applicationDao.findById(applicationId);
-            if(OptionalApplication.isPresent()) {
-                Application application = OptionalApplication.get();
-                application.setStatus(status);
-                applicationDao.save(application);
-                return new ResponseWrapper<>(true, 200, "Application Status is set to required.", null, null);
-            } else {
-                return new ResponseWrapper<>(false, 404, "Application is not found.", null, null);
-            }
-        } catch (Exception e) {
-            return new ResponseWrapper<>(false, 500, "Operation failed due to unknown server error.", null, e.getMessage());
+        String gstNum = JwtTokenUtil.getUserIdFromToken(jwtToken);
+        if(!companyDAO.existsByGstNum(gstNum)) {
+            throw new CompanyNotFoundException();
+        }
+        Optional<Application> OptionalApplication = applicationDao.findById(applicationId);
+        if(OptionalApplication.isPresent()) {
+            Application application = OptionalApplication.get();
+            application.setStatus(status);
+            applicationDao.save(application);
+            return new ResponseWrapper<>(true, 200, "Application Status is set to required.", null, null);
+        } else {
+            throw new ApplicationNotFoundException(applicationId);
         }
     }
 
     public ResponseWrapper<List<Application>> getAllSelectedApplicationsForJob(String jwtToken, String jobId) {
         String gstNum = JwtTokenUtil.getUserIdFromToken(jwtToken);
-        try {
-            List<JobPost> jobs = jobDao.findByCompanyId(gstNum);
-            JobPost job = null;
-            for(JobPost j : jobs) {
-                if(j.getJobId().equals(jobId)) {
-                    job = j;
-                }
-            }
-            if(job == null) {
-                return new ResponseWrapper<>(false, 404, "Job not found.", null, null);
-            }
-            List<Application> selected = new ArrayList<>();
-            for(String applicationId : job.getApplicants()) {
-                Optional<Application> optionalApplication = applicationDao.findById(applicationId);
-                if(optionalApplication.isEmpty()) {
-                    continue;
-                }
-                Application application  = optionalApplication.get();
-                if(application.getStatus().equals(applicationStatus.SELECTED)) {
-                    selected.add(application);
-                }
-            }
-            return new ResponseWrapper<>(true, 200, "Selected applications fetched", selected, null);
-        } catch (Exception e) {
-            return new ResponseWrapper<>(false, 500, "Error fetching selected applications", null, e.getMessage());
+        if(!companyDAO.existsByGstNum(gstNum)) {
+            throw new CompanyNotFoundException();
         }
+        List<JobPost> jobs = jobDao.findByCompanyId(gstNum);
+        JobPost job = null;
+        for(JobPost j : jobs) {
+            if(j.getJobId().equals(jobId)) {
+                job = j;
+            }
+        }
+        if(job == null) {
+            throw new JobNotFoundException(jobId);
+        }
+        List<Application> selected = new ArrayList<>();
+        for(String applicationId : job.getApplicants()) {
+            Optional<Application> optionalApplication = applicationDao.findById(applicationId);
+            if(optionalApplication.isEmpty()) {
+                continue;
+            }
+            Application application  = optionalApplication.get();
+            if(application.getStatus().equals(applicationStatus.SELECTED)) {
+                selected.add(application);
+            }
+        }
+        return new ResponseWrapper<>(true, 200, "Selected applications fetched", selected, null);
     }
+
 
     @Scheduled(cron = "0 0 1 * * *")
     public void automaticDeactivationOfJobs() {
@@ -291,44 +250,37 @@ public class CompanyService {
     }
 
     public ResponseWrapper deleteJob(String jobId, String jwtToken) {
-        try {
-            String companyId = JwtTokenUtil.getUserIdFromToken(jwtToken);
-            List<JobPost> jobs = jobDao.findAllByCompanyId(companyId);
-            boolean exists = jobs.stream().anyMatch(job -> job.getJobId().equals(jobId));
-            if(!exists) {
-                return new ResponseWrapper<>(false, 404, "Job not found", null, null);
-            }
-            jobDao.deleteById(jobId);
-            return new ResponseWrapper<>(true, 200, "Job deleted successfully.", null, null);
-        } catch (Exception e) {
-            return new ResponseWrapper<>(false, 503, "Operation failed due to unknown server error.", null, e.getMessage());
+        String gstNum = JwtTokenUtil.getUserIdFromToken(jwtToken);
+        if(!companyDAO.existsByGstNum(gstNum)) {
+            throw new CompanyNotFoundException();
         }
+        List<JobPost> jobs = jobDao.findAllByCompanyId(gstNum);
+        boolean exists = jobs.stream().anyMatch(job -> job.getJobId().equals(jobId));
+        if(!exists) {
+            throw new JobNotFoundException(jobId);
+        }
+        jobDao.deleteById(jobId);
+        return new ResponseWrapper<>(true, 200, "Job deleted successfully.", null, null);
     }
 
-   public ResponseWrapper<String> getComapnyName(String gstNum) {
-        try {
-            Company company = companyDAO.findByGstNum(gstNum);
-            if(company == null) {
-                return new ResponseWrapper<>(false, 404, "Company not found", null, null);
-            }
-            return new ResponseWrapper<>(true, 200, "Company name fetched", company.getCompanyName(), null);
-        } catch (Exception e) {
-            return new ResponseWrapper<>(false, 500, "Error fetching company name", null, e.getMessage());
+
+    public ResponseWrapper<String> getComapnyName(String gstNum) {
+        Company company = companyDAO.findByGstNum(gstNum);
+        if(company == null) {
+            throw new CompanyNotFoundException();
         }
+        return new ResponseWrapper<>(true, 200, "Company name fetched", company.getCompanyName(), null);
     }
 
-   public ResponseWrapper<String> resetPassword(String mobNo, String password) {
-        try {
-            Company company = companyDAO.findByCompanyContactNum(mobNo);
-            if(company == null) {
-                return new ResponseWrapper<>(false, 404, "Company not found", null, null);
-            }
-            company.setCompanyPassword(passwordEncoder.encode(password));
-            companyDAO.save(company);
-            return new ResponseWrapper<>(true, 200, "Password reset successful", null, null);
-        } catch (Exception e) {
-            return new ResponseWrapper<>(false, 500, "Password reset failed", null, e.getMessage());
+
+    public ResponseWrapper<String> resetPassword(String mobNo, String password) {
+        Company company = companyDAO.findByCompanyContactNum(mobNo);
+        if(company == null) {
+            throw new CompanyNotFoundException();
         }
+        company.setCompanyPassword(passwordEncoder.encode(password));
+        companyDAO.save(company);
+        return new ResponseWrapper<>(true, 200, "Password reset successful", null, null);
     }
 
 }
