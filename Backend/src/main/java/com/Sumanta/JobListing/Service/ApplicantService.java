@@ -109,7 +109,8 @@ public class ApplicantService {
         );
     }
 
-    public ResponseWrapper<Void> applyToJob(String jobId, String applicantId, String companyId, MultipartFile resume) throws IOException {
+    public ResponseWrapper<Void> applyToJob(String jobId, String jwtToken, String companyId, MultipartFile resume) throws IOException {
+            String applicantId = JwtTokenUtil.getUserIdFromToken(jwtToken);
             if(!applicantDAO.existsById(applicantId)) {
                throw new ApplicantNotFoundException();
             }

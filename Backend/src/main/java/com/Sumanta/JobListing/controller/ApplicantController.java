@@ -109,7 +109,7 @@ public class ApplicantController {
                                               @RequestParam("resume")MultipartFile resume,
                                               HttpServletRequest request) throws IOException {
 
-        ResponseWrapper applicantServiceResponse = applicantService.applyToJob(jobId,JwtTokenUtil.getUserIdFromToken(JwtTokenUtil.extractTokenFromRequest(request)), companyId, resume);
+        ResponseWrapper applicantServiceResponse = applicantService.applyToJob(jobId,JwtTokenUtil.extractTokenFromRequest(request), companyId, resume);
         return new ResponseEntity<>(applicantServiceResponse, HttpStatus.valueOf(applicantServiceResponse.getHttpStatusCode()));
     }
 

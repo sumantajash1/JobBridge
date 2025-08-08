@@ -12,5 +12,4 @@ import lombok.ToString;
 public class AuthRequestBody {
     private String id;
     private String password;
-
 }
