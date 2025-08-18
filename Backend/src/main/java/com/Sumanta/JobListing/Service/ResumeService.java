@@ -1,49 +1,16 @@
 package com.Sumanta.JobListing.Service;
 
 import com.mongodb.client.gridfs.model.GridFSFile;
-import lombok.extern.slf4j.Slf4j;
-import org.bson.types.ObjectId;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.gridfs.GridFsTemplate;
-import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 
-@Service
-@Slf4j
-public class ResumeService {
-    @Autowired
-    private GridFsTemplate gridFsTemplate;
+public interface ResumeService {
 
-    public String uploadResume(MultipartFile file) throws IOException {
-        ObjectId fileId = gridFsTemplate.store(
-                file.getInputStream(),
-                file.getOriginalFilename(),
-                file.getContentType()
-        );
-        return fileId.toHexString();
-    }
+    String uploadResume(MultipartFile file) throws IOException;
 
-    public GridFSFile getFileById(String id) {
-        return gridFsTemplate.findOne(
-                org.springframework.data.mongodb.core.query.Query.query(
-                        org.springframework.data.mongodb.core.query.Criteria.where("_id").is(id)
-                )
-        );
-    }
+    GridFSFile getFileById(String id);
 
-    public boolean deleteFileById(String id) {
-        try {
-            gridFsTemplate.delete(
-              org.springframework.data.mongodb.core.query.Query.query(
-                      org.springframework.data.mongodb.core.query.Criteria.where("_id").is(id)
-              )
-            );
-        } catch (Exception e) {
-           e.printStackTrace();
-           return false;
-        }
-        return true;
-    }
+    boolean deleteFileById(String id);
+
 }
