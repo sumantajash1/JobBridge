@@ -6,6 +6,9 @@ import com.Sumanta.JobListing.Entity.JobPost;
 import com.Sumanta.JobListing.Service.ApplicantService;
 import com.Sumanta.JobListing.Service.OtpService;
 import com.Sumanta.JobListing.Service.ResumeService;
+import com.Sumanta.JobListing.Service.impl.ApplicantServiceImpl;
+import com.Sumanta.JobListing.Service.impl.OtpServiceImpl;
+import com.Sumanta.JobListing.Service.impl.ResumeServiceImpl;
 import com.Sumanta.JobListing.utils.CookieUtil;
 import com.Sumanta.JobListing.utils.JwtTokenUtil;
 import com.mongodb.client.gridfs.model.GridFSFile;
@@ -65,13 +68,13 @@ public class ApplicantController {
 
     @GetMapping("/get-otp/{mobNo}")
     public ResponseEntity<ResponseWrapper<String>> getOtp(@PathVariable("mobNo") String mobNo) {
-        ResponseWrapper<String> otpServiceResponse = otpService.generateOtpbyMobNo(mobNo);
+        ResponseWrapper<String> otpServiceResponse = otpServiceImpl.generateOtpbyMobNo(mobNo);
         return new ResponseEntity<>(otpServiceResponse, HttpStatus.valueOf(otpServiceResponse.getHttpStatusCode()));
     }
 
     @PostMapping("/verify-otp")
     public ResponseEntity<ResponseWrapper<String>> verifyOtp(@RequestBody AuthRequestBody dto) {
-        ResponseWrapper<String> otpServiceResponse = otpService.verifyOtp(dto.getId(), dto.getPassword());
+        ResponseWrapper<String> otpServiceResponse = otpServiceImpl.verifyOtp(dto.getId(), dto.getPassword());
         return new ResponseEntity<>(otpServiceResponse, HttpStatus.valueOf(otpServiceResponse.getHttpStatusCode()));
     }
 

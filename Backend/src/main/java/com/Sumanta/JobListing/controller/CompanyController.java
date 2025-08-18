@@ -5,9 +5,9 @@ import com.Sumanta.JobListing.Entity.Application;
 import com.Sumanta.JobListing.Entity.Company;
 import com.Sumanta.JobListing.Entity.JobPost;
 import com.Sumanta.JobListing.Entity.applicationStatus;
-import com.Sumanta.JobListing.Service.CompanyService;
-import com.Sumanta.JobListing.Service.OtpService;
-import com.Sumanta.JobListing.Service.ResumeService;
+import com.Sumanta.JobListing.Service.impl.CompanyServiceImpl;
+import com.Sumanta.JobListing.Service.impl.OtpServiceImpl;
+import com.Sumanta.JobListing.Service.impl.ResumeServiceImpl;
 import com.Sumanta.JobListing.utils.CookieUtil;
 import com.Sumanta.JobListing.utils.JwtTokenUtil;
 import com.mongodb.client.gridfs.model.GridFSFile;
@@ -36,11 +36,11 @@ import java.util.List;
 public class CompanyController {
 
     @Autowired
-    CompanyService companyService;
+    CompanyServiceImpl companyService;
     @Autowired
-    OtpService otpService;
+    OtpServiceImpl otpServiceImpl;
     @Autowired
-    ResumeService resumeService;
+    ResumeServiceImpl resumeService;
     @Autowired
     private GridFsOperations gridFsOperations;
 
@@ -68,19 +68,19 @@ public class CompanyController {
 
     @GetMapping("/generate-otp-gst-num/{gstNum}")
     public ResponseEntity<ResponseWrapper<String>> getOtp(@PathVariable("gstNum") String gstNum) {
-        ResponseWrapper<String> serviceResponse = otpService.generateOtpByGstNum(gstNum);
+        ResponseWrapper<String> serviceResponse = otpServiceImpl.generateOtpByGstNum(gstNum);
         return new ResponseEntity<>(serviceResponse, HttpStatus.valueOf(serviceResponse.getHttpStatusCode()));
     }
 
     @GetMapping("/generate-otp-mob-no/{mobNo}")
     public ResponseEntity<ResponseWrapper<String>> getOtpByMobNo(@PathVariable("mobNo") String mobNo) {
-       ResponseWrapper<String> serviceResponse = otpService.generateOtpbyMobNo(mobNo);
+       ResponseWrapper<String> serviceResponse = otpServiceImpl.generateOtpByMobNo(mobNo);
        return new ResponseEntity<>(serviceResponse, HttpStatus.valueOf(serviceResponse.getHttpStatusCode()));
     }
 
     @PostMapping("/verify-otp")
     public ResponseEntity<ResponseWrapper<String>> verifyOtp(@RequestBody AuthRequestBody dto) {
-        ResponseWrapper<String> otpServiceResponse = otpService.verifyOtp(dto.getId(), dto.getPassword());
+        ResponseWrapper<String> otpServiceResponse = otpServiceImpl.verifyOtp(dto.getId(), dto.getPassword());
         return new ResponseEntity<>(otpServiceResponse, HttpStatus.valueOf(otpServiceResponse.getHttpStatusCode()));
     }
 
@@ -93,7 +93,7 @@ public class CompanyController {
     @GetMapping("/verify-company-token/{jwtToken}")
     @PreAuthorize("hasRole('Company')")
     public ResponseEntity<ResponseWrapper<String>> verifyCompanyToken(HttpServletRequest request) {
-        ResponseWrapper<String> serviceResponse = companyService.getComapnyName(JwtTokenUtil.getUserIdFromToken(JwtTokenUtil.extractTokenFromRequest(request)));
+        ResponseWrapper<String> serviceResponse = companyService.getCompanyName(JwtTokenUtil.getUserIdFromToken(JwtTokenUtil.extractTokenFromRequest(request)));
         return new ResponseEntity<>(serviceResponse, HttpStatus.valueOf(serviceResponse.getHttpStatusCode()));
     }
 
