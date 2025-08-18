@@ -14,7 +14,6 @@ import com.Sumanta.JobListing.utils.GstNumberValidator;
 import com.Sumanta.JobListing.utils.JwtTokenUtil;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;

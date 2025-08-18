@@ -11,7 +11,6 @@ import com.Sumanta.JobListing.Service.ResumeService;
 import com.Sumanta.JobListing.utils.CookieUtil;
 import com.Sumanta.JobListing.utils.JwtTokenUtil;
 import com.mongodb.client.gridfs.model.GridFSFile;
-import com.twilio.jwt.Jwt;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;

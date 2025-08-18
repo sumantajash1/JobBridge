@@ -2,9 +2,7 @@ package com.Sumanta.JobListing.Advice;
 
 import com.Sumanta.JobListing.DTO.ResponseWrapper;
 import com.Sumanta.JobListing.Exception.*;
-import com.twilio.http.Response;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
