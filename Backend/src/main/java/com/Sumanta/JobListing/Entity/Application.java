@@ -1,5 +1,6 @@
 package com.Sumanta.JobListing.Entity;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -13,9 +14,13 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class Application {
     @Id
     private String applicationId;
+    @NotBlank
     private String jobId; //To be taken from client
+    @NotBlank
     private String applicantId; // To be taken from client
+    @NotBlank
     private String companyId;// To be taken from client
+    @NotBlank
     private String resumeId;
     private applicationStatus status;
 }

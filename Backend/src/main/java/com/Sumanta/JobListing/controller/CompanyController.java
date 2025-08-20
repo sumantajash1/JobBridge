@@ -13,6 +13,7 @@ import com.Sumanta.JobListing.utils.JwtTokenUtil;
 import com.mongodb.client.gridfs.model.GridFSFile;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.gridfs.GridFsOperations;
@@ -45,7 +46,7 @@ public class CompanyController {
     private GridFsOperations gridFsOperations;
 
     @PostMapping("/sign-up")
-    public ResponseEntity<ApiResponse<AuthResponseDto>> signUp(@RequestBody Company company, HttpServletResponse response) {
+    public ResponseEntity<ApiResponse<AuthResponseDto>> signUp(@Valid @RequestBody Company company, HttpServletResponse response) {
         ApiResponse<AuthResponseDto> serviceResponse = companyService.register(company);
         if(serviceResponse.isSuccess()) {
             String jwtToken = serviceResponse.getData().getJwtToken();
@@ -56,7 +57,7 @@ public class CompanyController {
     }
 
     @PostMapping("/sign-in")
-    public ResponseEntity<ApiResponse<AuthResponseDto>> signIn(@RequestBody AuthRequestBody authRequestBody, HttpServletResponse response) {
+    public ResponseEntity<ApiResponse<AuthResponseDto>> signIn(@Valid @RequestBody AuthRequestBody authRequestBody, HttpServletResponse response) {
         ApiResponse<AuthResponseDto> serviceResponse = companyService.login(authRequestBody);
         if(serviceResponse.isSuccess()) {
             String jwtToken = serviceResponse.getData().getJwtToken();
@@ -79,13 +80,13 @@ public class CompanyController {
     }
 
     @PostMapping("/verify-otp")
-    public ResponseEntity<ApiResponse<String>> verifyOtp(@RequestBody AuthRequestBody dto) {
+    public ResponseEntity<ApiResponse<String>> verifyOtp(@RequestBody @Valid AuthRequestBody dto) {
         ApiResponse<String> otpServiceResponse = otpServiceImpl.verifyOtp(dto.getId(), dto.getPassword());
         return new ResponseEntity<>(otpServiceResponse, HttpStatus.valueOf(otpServiceResponse.getHttpStatusCode()));
     }
 
     @PostMapping("/reset-password")
-    public ResponseEntity<ApiResponse<String>> resetPassword(@RequestBody AuthRequestBody dto) {
+    public ResponseEntity<ApiResponse<String>> resetPassword(@RequestBody @Valid AuthRequestBody dto) {
       ApiResponse<String> serviceResponse = companyService.resetPassword(dto.getId(), dto.getPassword());
       return new ResponseEntity<>(serviceResponse, HttpStatus.valueOf(serviceResponse.getHttpStatusCode()));
     }
@@ -99,7 +100,7 @@ public class CompanyController {
 
     @PostMapping("/post-job")
     @PreAuthorize("hasRole('Company')")
-    public ResponseEntity<ApiResponse<String>> postJob(@RequestBody JobPost jobPost, HttpServletRequest request) {
+    public ResponseEntity<ApiResponse<String>> postJob(@RequestBody @Valid JobPost jobPost, HttpServletRequest request) {
        ApiResponse<String> serviceResponse = companyService.postJob(jobPost, JwtTokenUtil.extractTokenFromRequest(request));
        return new ResponseEntity<>(serviceResponse, HttpStatus.valueOf(serviceResponse.getHttpStatusCode()));
     }

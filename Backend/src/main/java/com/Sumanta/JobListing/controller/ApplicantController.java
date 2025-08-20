@@ -11,6 +11,7 @@ import com.Sumanta.JobListing.utils.JwtTokenUtil;
 import com.mongodb.client.gridfs.model.GridFSFile;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.gridfs.GridFsOperations;
@@ -42,7 +43,7 @@ public class ApplicantController {
     private GridFsOperations gridFsOperations;
 
     @PostMapping("/sign-up")
-    public ResponseEntity<ApiResponse<AuthResponseDto>> signUp(@RequestBody Applicant applicant, HttpServletResponse response) {
+    public ResponseEntity<ApiResponse<AuthResponseDto>> signUp(@Valid @RequestBody Applicant applicant, HttpServletResponse response) {
         ApiResponse<AuthResponseDto> applicantServiceResponse= applicantService.register(applicant);
         if(applicantServiceResponse.isSuccess() && applicantServiceResponse.getData() != null) {
             String jwtToken = applicantServiceResponse.getData().getJwtToken();
@@ -53,7 +54,7 @@ public class ApplicantController {
     }
 
     @PostMapping("/sign-in")
-    public ResponseEntity<ApiResponse<AuthResponseDto>> signIn(@RequestBody AuthRequestBody applicantLoginRequestBody, HttpServletResponse response) {
+    public ResponseEntity<ApiResponse<AuthResponseDto>> signIn(@Valid @RequestBody AuthRequestBody applicantLoginRequestBody, HttpServletResponse response) {
         ApiResponse<AuthResponseDto> applicantServiceResponse = applicantService.logIn(applicantLoginRequestBody);
         if(applicantServiceResponse.isSuccess() && applicantServiceResponse.getData() != null) {
             String jwtToken = applicantServiceResponse.getData().getJwtToken();
@@ -70,7 +71,7 @@ public class ApplicantController {
     }
 
     @PostMapping("/verify-otp")
-    public ResponseEntity<ApiResponse<String>> verifyOtp(@RequestBody AuthRequestBody dto) {
+    public ResponseEntity<ApiResponse<String>> verifyOtp(@Valid @RequestBody AuthRequestBody dto) {
         ApiResponse<String> otpServiceResponse = otpService.verifyOtp(dto.getId(), dto.getPassword());
         return new ResponseEntity<>(otpServiceResponse, HttpStatus.valueOf(otpServiceResponse.getHttpStatusCode()));
     }
@@ -97,7 +98,7 @@ public class ApplicantController {
     }
 
     @PatchMapping("/reset-password")
-    public ResponseEntity<ApiResponse> resetPassword(@RequestBody AuthRequestBody dto) {
+    public ResponseEntity<ApiResponse> resetPassword(@Valid @RequestBody AuthRequestBody dto) {
         ApiResponse response = applicantService.resetPassword(dto.getId(), dto.getPassword());
         return new ResponseEntity<>(response, HttpStatus.valueOf(response.getHttpStatusCode()));
     }
