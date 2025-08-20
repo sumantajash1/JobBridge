@@ -12,25 +12,25 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<String>> handleGenericExceptions(Exception ex) {
-        ApiResponse<String> response = new ApiResponse<>(false, 503, "An unexpected server error occured, please try later.", null, ex.getMessage());
+        ApiResponse<String> response = new ApiResponse<>(false, 503, null, null, ex.getMessage());
         return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler(ApplicantNotFoundException.class)
     public ResponseEntity<ApiResponse<String>> handleApplicantNotFoundException(ApplicantNotFoundException ex) {
-        ApiResponse<String> response = new ApiResponse<String>(false, 404, "Applicant is not registered with us.", null, null);
+        ApiResponse<String> response = new ApiResponse<String>(false, 404, ex.getMessage(), null, null);
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(InvalidCredentialsException.class)
     public ResponseEntity<ApiResponse<String>> handleInvalidCredentialsException(InvalidCredentialsException ex) {
-        ApiResponse<String> response = new ApiResponse<String>(false, 401, "Invalid Credentials has been entered by the user.", null, null);
+        ApiResponse<String> response = new ApiResponse<String>(false, 401, ex.getMessage(), null, null);
         return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler(DuplicateApplicantException.class)
-    public ResponseEntity<ApiResponse<String>> handleDuplicateApplicantException(){
-        ApiResponse<String> response = new ApiResponse<>(false, 409, "An applicant already exists with entered credentials.", null, null);
+    public ResponseEntity<ApiResponse<String>> handleDuplicateApplicantException(DuplicateApplicantException ex){
+        ApiResponse<String> response = new ApiResponse<>(false, 409, ex.getMessage(), null, null);
         return new ResponseEntity<>(response, HttpStatus.CONFLICT);
     }
 
