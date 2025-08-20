@@ -45,8 +45,8 @@ public class CompanyController {
     private GridFsOperations gridFsOperations;
 
     @PostMapping("/sign-up")
-    public ResponseEntity<ResponseWrapper<AuthResponseDto>> signUp(@RequestBody Company company, HttpServletResponse response) {
-        ResponseWrapper<AuthResponseDto> serviceResponse = companyService.register(company);
+    public ResponseEntity<ApiResponse<AuthResponseDto>> signUp(@RequestBody Company company, HttpServletResponse response) {
+        ApiResponse<AuthResponseDto> serviceResponse = companyService.register(company);
         if(serviceResponse.isSuccess()) {
             String jwtToken = serviceResponse.getData().getJwtToken();
             response.setHeader("jwt", jwtToken);
@@ -56,8 +56,8 @@ public class CompanyController {
     }
 
     @PostMapping("/sign-in")
-    public ResponseEntity<ResponseWrapper<AuthResponseDto>> signIn(@RequestBody AuthRequestBody authRequestBody, HttpServletResponse response) {
-        ResponseWrapper<AuthResponseDto> serviceResponse = companyService.login(authRequestBody);
+    public ResponseEntity<ApiResponse<AuthResponseDto>> signIn(@RequestBody AuthRequestBody authRequestBody, HttpServletResponse response) {
+        ApiResponse<AuthResponseDto> serviceResponse = companyService.login(authRequestBody);
         if(serviceResponse.isSuccess()) {
             String jwtToken = serviceResponse.getData().getJwtToken();
             response.setHeader("jwt", jwtToken);
@@ -67,88 +67,88 @@ public class CompanyController {
     }
 
     @GetMapping("/generate-otp-gst-num/{gstNum}")
-    public ResponseEntity<ResponseWrapper<String>> getOtp(@PathVariable("gstNum") String gstNum) {
-        ResponseWrapper<String> serviceResponse = otpServiceImpl.generateOtpByGstNum(gstNum);
+    public ResponseEntity<ApiResponse<String>> getOtp(@PathVariable("gstNum") String gstNum) {
+        ApiResponse<String> serviceResponse = otpServiceImpl.generateOtpByGstNum(gstNum);
         return new ResponseEntity<>(serviceResponse, HttpStatus.valueOf(serviceResponse.getHttpStatusCode()));
     }
 
     @GetMapping("/generate-otp-mob-no/{mobNo}")
-    public ResponseEntity<ResponseWrapper<String>> getOtpByMobNo(@PathVariable("mobNo") String mobNo) {
-       ResponseWrapper<String> serviceResponse = otpServiceImpl.generateOtpByMobNo(mobNo);
+    public ResponseEntity<ApiResponse<String>> getOtpByMobNo(@PathVariable("mobNo") String mobNo) {
+       ApiResponse<String> serviceResponse = otpServiceImpl.generateOtpByMobNo(mobNo);
        return new ResponseEntity<>(serviceResponse, HttpStatus.valueOf(serviceResponse.getHttpStatusCode()));
     }
 
     @PostMapping("/verify-otp")
-    public ResponseEntity<ResponseWrapper<String>> verifyOtp(@RequestBody AuthRequestBody dto) {
-        ResponseWrapper<String> otpServiceResponse = otpServiceImpl.verifyOtp(dto.getId(), dto.getPassword());
+    public ResponseEntity<ApiResponse<String>> verifyOtp(@RequestBody AuthRequestBody dto) {
+        ApiResponse<String> otpServiceResponse = otpServiceImpl.verifyOtp(dto.getId(), dto.getPassword());
         return new ResponseEntity<>(otpServiceResponse, HttpStatus.valueOf(otpServiceResponse.getHttpStatusCode()));
     }
 
     @PostMapping("/reset-password")
-    public ResponseEntity<ResponseWrapper<String>> resetPassword(@RequestBody AuthRequestBody dto) {
-      ResponseWrapper<String> serviceResponse = companyService.resetPassword(dto.getId(), dto.getPassword());
+    public ResponseEntity<ApiResponse<String>> resetPassword(@RequestBody AuthRequestBody dto) {
+      ApiResponse<String> serviceResponse = companyService.resetPassword(dto.getId(), dto.getPassword());
       return new ResponseEntity<>(serviceResponse, HttpStatus.valueOf(serviceResponse.getHttpStatusCode()));
     }
 
     @GetMapping("/verify-company-token/{jwtToken}")
     @PreAuthorize("hasRole('Company')")
-    public ResponseEntity<ResponseWrapper<String>> verifyCompanyToken(HttpServletRequest request) {
-        ResponseWrapper<String> serviceResponse = companyService.getCompanyName(JwtTokenUtil.getUserIdFromToken(JwtTokenUtil.extractTokenFromRequest(request)));
+    public ResponseEntity<ApiResponse<String>> verifyCompanyToken(HttpServletRequest request) {
+        ApiResponse<String> serviceResponse = companyService.getCompanyName(JwtTokenUtil.getUserIdFromToken(JwtTokenUtil.extractTokenFromRequest(request)));
         return new ResponseEntity<>(serviceResponse, HttpStatus.valueOf(serviceResponse.getHttpStatusCode()));
     }
 
     @PostMapping("/post-job")
     @PreAuthorize("hasRole('Company')")
-    public ResponseEntity<ResponseWrapper<String>> postJob(@RequestBody JobPost jobPost, HttpServletRequest request) {
-       ResponseWrapper<String> serviceResponse = companyService.postJob(jobPost, JwtTokenUtil.extractTokenFromRequest(request));
+    public ResponseEntity<ApiResponse<String>> postJob(@RequestBody JobPost jobPost, HttpServletRequest request) {
+       ApiResponse<String> serviceResponse = companyService.postJob(jobPost, JwtTokenUtil.extractTokenFromRequest(request));
        return new ResponseEntity<>(serviceResponse, HttpStatus.valueOf(serviceResponse.getHttpStatusCode()));
     }
 
     @GetMapping("/show-all-active-jobs")
     @PreAuthorize("hasRole('Company')")
-    public ResponseEntity<ResponseWrapper<List<JobPost>>> showAllActiveJobs(HttpServletRequest request) {
-        ResponseWrapper<List<JobPost>> serviceResponse = companyService.getAllActiveJobs(JwtTokenUtil.extractTokenFromRequest(request));
+    public ResponseEntity<ApiResponse<List<JobPost>>> showAllActiveJobs(HttpServletRequest request) {
+        ApiResponse<List<JobPost>> serviceResponse = companyService.getAllActiveJobs(JwtTokenUtil.extractTokenFromRequest(request));
         return new ResponseEntity<>(serviceResponse, HttpStatus.valueOf(serviceResponse.getHttpStatusCode()));
     }
 
     @GetMapping("/show-all-inactive-jobs")
     @PreAuthorize("hasRole('Company')")
-    public ResponseEntity<ResponseWrapper<List<JobPost>>> showAllInactiveJobs(HttpServletRequest request) {
-        ResponseWrapper<List<JobPost>> serviceResponse = companyService.getAllInactiveJobs(JwtTokenUtil.extractTokenFromRequest(request));
+    public ResponseEntity<ApiResponse<List<JobPost>>> showAllInactiveJobs(HttpServletRequest request) {
+        ApiResponse<List<JobPost>> serviceResponse = companyService.getAllInactiveJobs(JwtTokenUtil.extractTokenFromRequest(request));
         return new ResponseEntity<>(serviceResponse, HttpStatus.valueOf(serviceResponse.getHttpStatusCode()));
     }
 
     @GetMapping("/job-all-applications/{jobId}")
     @PreAuthorize(("hasRole('Company')"))
-    public ResponseEntity<ResponseWrapper<List<ApplicationDto>>> showAllApplicationsForJobId(@PathVariable("jobId") String jobId, HttpServletRequest request) {
-        ResponseWrapper<List<ApplicationDto>> serviceResponse = companyService.getAllApplicationsForJob(jobId, JwtTokenUtil.extractTokenFromRequest(request));
+    public ResponseEntity<ApiResponse<List<ApplicationDto>>> showAllApplicationsForJobId(@PathVariable("jobId") String jobId, HttpServletRequest request) {
+        ApiResponse<List<ApplicationDto>> serviceResponse = companyService.getAllApplicationsForJob(jobId, JwtTokenUtil.extractTokenFromRequest(request));
         return new ResponseEntity<>(serviceResponse, HttpStatus.valueOf(serviceResponse.getHttpStatusCode()));
     }
 
     @PatchMapping("/set-job-status")
     @PreAuthorize("hasRole('Company')")
-    public ResponseEntity<ResponseWrapper<Void>> setJobStatus(@RequestParam("jobId") String jobId, @RequestParam("status") boolean status, HttpServletRequest request) {
+    public ResponseEntity<ApiResponse<Void>> setJobStatus(@RequestParam("jobId") String jobId, @RequestParam("status") boolean status, HttpServletRequest request) {
         if(jobId == null) {
-            return new ResponseEntity<>(new ResponseWrapper<>(false, 400, "Job ID or Status is missing", null, null), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new ApiResponse<>(false, 400, "Job ID or Status is missing", null, null), HttpStatus.BAD_REQUEST);
         }
-        ResponseWrapper<Void> serviceResponse = companyService.setJobStatus(jobId, status, JwtTokenUtil.extractTokenFromRequest(request));
+        ApiResponse<Void> serviceResponse = companyService.setJobStatus(jobId, status, JwtTokenUtil.extractTokenFromRequest(request));
         return new ResponseEntity<>(serviceResponse, HttpStatus.valueOf(serviceResponse.getHttpStatusCode()));
     }
 
     @PatchMapping("/set-application-status")
     @PreAuthorize("hasRole('Company')")
-    public ResponseEntity<ResponseWrapper<Void>> setApplicationStatus(@RequestParam("applicationId") String applicationId, @RequestParam("status") applicationStatus status, HttpServletRequest request) {
+    public ResponseEntity<ApiResponse<Void>> setApplicationStatus(@RequestParam("applicationId") String applicationId, @RequestParam("status") applicationStatus status, HttpServletRequest request) {
         if(applicationId == null || status == null) {
-            return new ResponseEntity<>(new ResponseWrapper<>(false, 400, "Application ID or Status is missing", null, null), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new ApiResponse<>(false, 400, "Application ID or Status is missing", null, null), HttpStatus.BAD_REQUEST);
         }
-        ResponseWrapper<Void> serviceResponse = companyService.setApplicationStatus(applicationId, status, JwtTokenUtil.extractTokenFromRequest(request));
+        ApiResponse<Void> serviceResponse = companyService.setApplicationStatus(applicationId, status, JwtTokenUtil.extractTokenFromRequest(request));
         return new ResponseEntity<>(serviceResponse, HttpStatus.valueOf(serviceResponse.getHttpStatusCode()));
     }
 
     @GetMapping("/view-all-selected-applications/{jobId}")
     @PreAuthorize("hasRole('Company')")
-    public ResponseEntity<ResponseWrapper<List<Application>>> viewAllSelectedApplications(@PathVariable("jobId") String jobId, HttpServletRequest request) {
-        ResponseWrapper<List<Application>> serviceResponse = companyService.getAllSelectedApplicationsForJob(JwtTokenUtil.extractTokenFromRequest(request), jobId);
+    public ResponseEntity<ApiResponse<List<Application>>> viewAllSelectedApplications(@PathVariable("jobId") String jobId, HttpServletRequest request) {
+        ApiResponse<List<Application>> serviceResponse = companyService.getAllSelectedApplicationsForJob(JwtTokenUtil.extractTokenFromRequest(request), jobId);
         return new ResponseEntity<>(serviceResponse, HttpStatus.valueOf(serviceResponse.getHttpStatusCode()));
     }
 
@@ -177,9 +177,9 @@ public class CompanyController {
 
     @DeleteMapping("/delete-job")
     @PreAuthorize("hasRole('Company')")
-    public ResponseEntity<ResponseWrapper<Void>> deleteJob(@RequestParam("jobId") String jobId, HttpServletRequest request) {
+    public ResponseEntity<ApiResponse<Void>> deleteJob(@RequestParam("jobId") String jobId, HttpServletRequest request) {
         String jwtToken = request.getHeader("Authorization").substring(7);
-        ResponseWrapper<Void> serviceResponse = companyService.deleteJob(jobId, jwtToken);
+        ApiResponse<Void> serviceResponse = companyService.deleteJob(jobId, jwtToken);
         return new ResponseEntity<>(serviceResponse, HttpStatus.valueOf(serviceResponse.getHttpStatusCode()));
     }
 

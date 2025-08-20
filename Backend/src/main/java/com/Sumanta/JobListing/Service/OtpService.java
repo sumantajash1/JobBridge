@@ -1,12 +1,12 @@
 package com.Sumanta.JobListing.Service;
 
-import com.Sumanta.JobListing.DTO.ResponseWrapper;
+import com.Sumanta.JobListing.DTO.ApiResponse;
 
 public interface OtpService {
 
-     ResponseWrapper<String> generateOtpByGstNum(String gstNum);
+     ApiResponse<String> generateOtpByGstNum(String gstNum);
 
-     ResponseWrapper<String> verifyOtp(String mobNo, String otp);
+     ApiResponse<String> verifyOtp(String mobNo, String otp);
 
-     ResponseWrapper<String> generateOtpByMobNo(String mobNo);
+     ApiResponse<String> generateOtpByMobNo(String mobNo);
 }

@@ -1,8 +1,9 @@
 package com.Sumanta.JobListing.Service.impl;
 
 import com.Sumanta.JobListing.DAO.CompanyDAO;
-import com.Sumanta.JobListing.DTO.ResponseWrapper;
+import com.Sumanta.JobListing.DTO.ApiResponse;
 import com.Sumanta.JobListing.Entity.Company;
+import com.Sumanta.JobListing.Exception.CompanyNotFoundException;
 import com.Sumanta.JobListing.Service.OtpService;
 import com.twilio.Twilio;
 import com.twilio.rest.verify.v2.service.Verification;
@@ -26,97 +27,40 @@ public class OtpServiceImpl implements OtpService{
     private String SERVICE_SID;
 
     @Override
-    public ResponseWrapper<String> generateOtpByGstNum(String gstNum) {
+    public ApiResponse<String> generateOtpByGstNum(String gstNum) {
         Company company = companyDAO.findByGstNum(gstNum);
         if(company==null) {
-             return new ResponseWrapper<>(
-                    false,
-                    404,
-                    "Company Not found.",
-                    null,
-                    null
-            );
+            throw new CompanyNotFoundException(gstNum);
         }
         String mobNo = "+91" + company.getCompanyContactNum();
         Twilio.init(ACCOUNT_SID, AUTH_TOKEN);
-        try {
-            Verification verification = Verification.creator(
-                    SERVICE_SID,
-                    mobNo,
-                    "sms"
-            ).create();
-        } catch (Exception e) {
-            return new ResponseWrapper<>(
-                    false,
-                    503,
-                    "OTP couldn't be generated.",
-                    null,
-                    e.getMessage()
-            );
-        }
-        return new ResponseWrapper<>(
-                true,
-                200,
-                "OTP sent successfully.",
+        Verification verification = Verification.creator(
+                SERVICE_SID,
                 mobNo,
-                null
-        );
+                "sms"
+        ).create();
+        return ApiResponse.ok(mobNo, "OTP sent successfully");
     }
 
     @Override
-    public ResponseWrapper<String> verifyOtp(String mobNo, String otp) {
+    public ApiResponse<String> verifyOtp(String mobNo, String otp) {
         Twilio.init(ACCOUNT_SID, AUTH_TOKEN);
-        try{
-            log.info("SUMANTA : Mobile No. for otp Verification : " +  mobNo + ", OTP : " + otp);
-            VerificationCheck verificationCheck = VerificationCheck
-                    .creator(SERVICE_SID)
-                    .setTo(mobNo)
-                    .setCode(otp)
-                    .create();
-            log.info("SUMANTA : Verification status : " + verificationCheck.getStatus());
-        } catch (Exception e) {
-            return new ResponseWrapper<>(
-                    false,
-                    503,
-                    "OTP couldn't be verified.",
-                    null,
-                    e.getMessage()
-            );
-        }
-        return new ResponseWrapper(
-                true,
-                200,
-                "OTP is Verified",
-                mobNo,
-                null
-        );
+        VerificationCheck verificationCheck = VerificationCheck
+                .creator(SERVICE_SID)
+                .setTo(mobNo)
+                .setCode(otp)
+                .create();
+        return ApiResponse.ok(mobNo, "OTP is verified");
     }
 
     @Override
-    public ResponseWrapper<String> generateOtpByMobNo(String mobNo) {
+    public ApiResponse<String> generateOtpByMobNo(String mobNo) {
         Twilio.init(ACCOUNT_SID, AUTH_TOKEN);
-        try {
             Verification verification = Verification.creator(
                     SERVICE_SID,
                     "+91"+mobNo,
                     "sms"
             ).create();
-        } catch (Exception e) {
-            return new ResponseWrapper(
-                    false,
-                    503,
-                    "OTP couldn't be generated.",
-                    null,
-                    e.getMessage()
-            );
-        }
-        return new ResponseWrapper(
-                true,
-                200,
-                "OTP sent to the user's mobile number.",
-                mobNo,
-                null
-        );
+        return ApiResponse.ok(mobNo, "OTP sent to the user's mobile number");
     }
-
 }

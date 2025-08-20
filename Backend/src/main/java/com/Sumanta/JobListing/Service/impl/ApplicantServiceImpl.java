@@ -7,7 +7,7 @@ import com.Sumanta.JobListing.DAO.JobDao;
 import com.Sumanta.JobListing.DTO.ApplicationDto;
 import com.Sumanta.JobListing.DTO.AuthRequestBody;
 import com.Sumanta.JobListing.DTO.AuthResponseDto;
-import com.Sumanta.JobListing.DTO.ResponseWrapper;
+import com.Sumanta.JobListing.DTO.ApiResponse;
 import com.Sumanta.JobListing.Entity.*;
 import com.Sumanta.JobListing.Exception.*;
 import com.Sumanta.JobListing.Service.ApplicantService;
@@ -41,7 +41,7 @@ public class ApplicantServiceImpl implements ApplicantService {
     CompanyDAO companyDao;
 
     @Override
-    public ResponseWrapper<AuthResponseDto> register(Applicant applicant) {
+    public ApiResponse<AuthResponseDto> register(Applicant applicant) {
         String mobNo = applicant.getMobNo();
         if(applicantDAO.existsByMobNo(mobNo)) {
             throw new DuplicateApplicantException("mobile number");
@@ -52,17 +52,11 @@ public class ApplicantServiceImpl implements ApplicantService {
         applicant.setPassword(passwordEncoder.encode(applicant.getPassword()));
         applicantDAO.save(applicant);
         String jwtToken = JwtTokenUtil.GenerateToken(mobNo, Role.Applicant);
-        return new ResponseWrapper<>(
-                true,
-                201,
-                "New user account has been created successfully",
-                new AuthResponseDto(applicant.getName(), jwtToken),
-                null
-        );
+        return ApiResponse.created(new AuthResponseDto(applicant.getName(), jwtToken), "New user account has been created successfully");
     }
 
     @Override
-    public ResponseWrapper<AuthResponseDto> logIn(AuthRequestBody applicantLoginRequestBody) {
+    public ApiResponse<AuthResponseDto> logIn(AuthRequestBody applicantLoginRequestBody) {
         String mobNo = applicantLoginRequestBody.getId();
         if(!applicantDAO.existsByMobNo(mobNo)) {
             throw new ApplicantNotFoundException();
@@ -72,53 +66,35 @@ public class ApplicantServiceImpl implements ApplicantService {
             throw new InvalidCredentialsException("password");
         }
         String jwtToken = JwtTokenUtil.GenerateToken(mobNo, Role.Applicant);
-        return new ResponseWrapper<AuthResponseDto>(
-                true,
-                200,
-                "User logged in Successfully.",
-                new AuthResponseDto(applicant.getName(), jwtToken),
-                null
-        );
+        return ApiResponse.ok(new AuthResponseDto(applicant.getName(), jwtToken), "User logged in Successfully");
     }
 
     @Override
-    public ResponseWrapper<List<JobPost>> fetchAllJobs() {
+    public ApiResponse<List<JobPost>> fetchAllJobs() {
         List<JobPost> jobs = jobDao.findAllByActiveStatusTrue();
-        return new ResponseWrapper<>(
-                true,
-                200,
-                "All jobs has been fetched.",
-                jobs,
-                null
-        );
+        return ApiResponse.ok(jobs, "All jobs has been fetched");
     }
 
     @Override
-    public ResponseWrapper<Void> resetPassword(String mobNo, String newPassword) {
+    public ApiResponse<Void> resetPassword(String mobNo, String newPassword) {
         Applicant applicant = applicantDAO.findByMobNo(mobNo);
         if(applicant == null) {
             throw new ApplicantNotFoundException();
         }
         applicant.setPassword(passwordEncoder.encode(newPassword));
         applicantDAO.save(applicant);
-        return new ResponseWrapper<>(
-                true,
-                200,
-                "Password reset successful.",
-                null,
-                null
-        );
+        return ApiResponse.noContent();
     }
 
     @Override
-    public ResponseWrapper<Void> applyToJob(String jobId, String jwtToken, String companyId, MultipartFile resume) throws IOException {
+    public ApiResponse<Void> applyToJob(String jobId, String jwtToken, String companyId, MultipartFile resume) throws IOException {
             String applicantId = JwtTokenUtil.getUserIdFromToken(jwtToken);
             if(!applicantDAO.existsById(applicantId)) {
                throw new ApplicantNotFoundException();
             }
             Optional<Company> optionalCompany = companyDao.findById(companyId);
             if(optionalCompany.isEmpty()) {
-               throw new CompanyNotFoundException();
+               throw new CompanyNotFoundException(companyId);
             }
             Optional<JobPost> optionalJob = jobDao.findById(jobId);
             if(optionalJob.isEmpty() || !optionalJob.get().getCompanyId().equals(companyId)) {
@@ -140,25 +116,19 @@ public class ApplicantServiceImpl implements ApplicantService {
             applicationDao.save(application);
             applicantIds.add(applicantId);
             jobDao.save(job);
-        return new ResponseWrapper<>(
-                true,
-                201,
-                "Applicant successfully applied to this job",
-                null,
-                null
-        );
+            return ApiResponse.noContent();
     }
 
     @Override
-    public ResponseWrapper<List<ApplicationDto>> getAllApplications(String jwtToken) {
+    public ApiResponse<List<ApplicationDto>> getAllApplications(String jwtToken) {
         String applicantId = JwtTokenUtil.getUserIdFromToken(jwtToken);
         List<Application> applications = applicationDao.findByApplicantId(applicantId);
         if (applications.isEmpty()) {
-            return new ResponseWrapper<>(false, 204, "No applications found.", null, null);
+            return new ApiResponse<>(false, 204, "No applications found.", null, null);
         }
         Optional<Company> optionalCompany = companyDao.findById(applications.get(0).getCompanyId());
         if (optionalCompany.isEmpty()) {
-            throw new CompanyNotFoundException();
+            throw new CompanyNotFoundException(applications.get(0).getCompanyId());
         }
         Company company = optionalCompany.get();
         String companyName = company.getCompanyName();
@@ -176,11 +146,11 @@ public class ApplicantServiceImpl implements ApplicantService {
             );
             dtos.add(dto);
         }
-        return new ResponseWrapper<>(true, 200, "Returning all the applications", dtos, null);
+        return new ApiResponse<>(true, 200, "Returning all the applications", dtos, null);
     }
 
     @Override
-    public ResponseWrapper<Void> deleteAccount(String jwtToken) {
+    public ApiResponse<Void> deleteAccount(String jwtToken) {
         String applicantId = JwtTokenUtil.getUserIdFromToken(jwtToken);
         if(!applicantDAO.existsById(applicantId)) {
             throw new ApplicantNotFoundException();
@@ -207,17 +177,11 @@ public class ApplicantServiceImpl implements ApplicantService {
             resumeService.deleteFileById(r);
         }
         applicantDAO.deleteById(applicantId);
-        return new ResponseWrapper<>(
-                true,
-                200,
-                "Account has been deleted successfully.",
-                null,
-                null
-        );
+        return ApiResponse.noContent();
     }
 
     @Override
-    public ResponseWrapper<Void> removeApplication(String applicationId, String jwtToken) {
+    public ApiResponse<Void> removeApplication(String applicationId, String jwtToken) {
         String applicantId = JwtTokenUtil.getUserIdFromToken(jwtToken);
         Optional<Application> optionalApplication = applicationDao.findByApplicationId(applicationId);
         if(optionalApplication.isEmpty() || !optionalApplication.get().getApplicantId().equals(applicantId)) {
@@ -232,13 +196,7 @@ public class ApplicantServiceImpl implements ApplicantService {
             jobDao.save(job.get());
         }
         applicationDao.deleteById(applicationId);
-        return new ResponseWrapper<>(
-                true,
-                204,
-                "Application withdrawn successfully.",
-                null,
-                null
-        );
+        return ApiResponse.noContent();
     }
 }
 

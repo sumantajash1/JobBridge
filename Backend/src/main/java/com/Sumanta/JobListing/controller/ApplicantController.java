@@ -6,9 +6,6 @@ import com.Sumanta.JobListing.Entity.JobPost;
 import com.Sumanta.JobListing.Service.ApplicantService;
 import com.Sumanta.JobListing.Service.OtpService;
 import com.Sumanta.JobListing.Service.ResumeService;
-import com.Sumanta.JobListing.Service.impl.ApplicantServiceImpl;
-import com.Sumanta.JobListing.Service.impl.OtpServiceImpl;
-import com.Sumanta.JobListing.Service.impl.ResumeServiceImpl;
 import com.Sumanta.JobListing.utils.CookieUtil;
 import com.Sumanta.JobListing.utils.JwtTokenUtil;
 import com.mongodb.client.gridfs.model.GridFSFile;
@@ -45,8 +42,8 @@ public class ApplicantController {
     private GridFsOperations gridFsOperations;
 
     @PostMapping("/sign-up")
-    public ResponseEntity<ResponseWrapper<AuthResponseDto>> signUp(@RequestBody Applicant applicant, HttpServletResponse response) {
-        ResponseWrapper<AuthResponseDto> applicantServiceResponse= applicantService.register(applicant);
+    public ResponseEntity<ApiResponse<AuthResponseDto>> signUp(@RequestBody Applicant applicant, HttpServletResponse response) {
+        ApiResponse<AuthResponseDto> applicantServiceResponse= applicantService.register(applicant);
         if(applicantServiceResponse.isSuccess() && applicantServiceResponse.getData() != null) {
             String jwtToken = applicantServiceResponse.getData().getJwtToken();
             response.setHeader( "jwtToken", jwtToken);
@@ -56,8 +53,8 @@ public class ApplicantController {
     }
 
     @PostMapping("/sign-in")
-    public ResponseEntity<ResponseWrapper<AuthResponseDto>> signIn(@RequestBody AuthRequestBody applicantLoginRequestBody, HttpServletResponse response) {
-        ResponseWrapper<AuthResponseDto> applicantServiceResponse = applicantService.logIn(applicantLoginRequestBody);
+    public ResponseEntity<ApiResponse<AuthResponseDto>> signIn(@RequestBody AuthRequestBody applicantLoginRequestBody, HttpServletResponse response) {
+        ApiResponse<AuthResponseDto> applicantServiceResponse = applicantService.logIn(applicantLoginRequestBody);
         if(applicantServiceResponse.isSuccess() && applicantServiceResponse.getData() != null) {
             String jwtToken = applicantServiceResponse.getData().getJwtToken();
             response.setHeader("jwtToken", jwtToken);
@@ -67,22 +64,22 @@ public class ApplicantController {
     }
 
     @GetMapping("/get-otp/{mobNo}")
-    public ResponseEntity<ResponseWrapper<String>> getOtp(@PathVariable("mobNo") String mobNo) {
-        ResponseWrapper<String> otpServiceResponse = otpServiceImpl.generateOtpbyMobNo(mobNo);
+    public ResponseEntity<ApiResponse<String>> getOtp(@PathVariable("mobNo") String mobNo) {
+        ApiResponse<String> otpServiceResponse = otpService.generateOtpByMobNo(mobNo);
         return new ResponseEntity<>(otpServiceResponse, HttpStatus.valueOf(otpServiceResponse.getHttpStatusCode()));
     }
 
     @PostMapping("/verify-otp")
-    public ResponseEntity<ResponseWrapper<String>> verifyOtp(@RequestBody AuthRequestBody dto) {
-        ResponseWrapper<String> otpServiceResponse = otpServiceImpl.verifyOtp(dto.getId(), dto.getPassword());
+    public ResponseEntity<ApiResponse<String>> verifyOtp(@RequestBody AuthRequestBody dto) {
+        ApiResponse<String> otpServiceResponse = otpService.verifyOtp(dto.getId(), dto.getPassword());
         return new ResponseEntity<>(otpServiceResponse, HttpStatus.valueOf(otpServiceResponse.getHttpStatusCode()));
     }
 
     @GetMapping("/verify-applicant-token")
     @PreAuthorize("hasRole('Applicant')")
-    public ResponseEntity<ResponseWrapper> verifyApplicantToken() {
+    public ResponseEntity<ApiResponse> verifyApplicantToken() {
         return new ResponseEntity<>(
-                new ResponseWrapper(
+                new ApiResponse(
                         true,
                         200,
                         "Applicant's Jwt Token is verified",
@@ -94,25 +91,25 @@ public class ApplicantController {
 
     @GetMapping("/get-all-jobs")
     @PreAuthorize("hasRole('Applicant')")
-    public ResponseEntity<ResponseWrapper<List<JobPost>>> allJobs() { // For Testing purpose only, while deleting, delete service method as well
-        ResponseWrapper<List<JobPost>> response = applicantService.fetchAllJobs();
+    public ResponseEntity<ApiResponse<List<JobPost>>> allJobs() { // For Testing purpose only, while deleting, delete service method as well
+        ApiResponse<List<JobPost>> response = applicantService.fetchAllJobs();
         return new ResponseEntity<>(response, HttpStatus.valueOf(response.getHttpStatusCode()));
     }
 
     @PatchMapping("/reset-password")
-    public ResponseEntity<ResponseWrapper> resetPassword(@RequestBody AuthRequestBody dto) {
-        ResponseWrapper response = applicantService.resetPassword(dto.getId(), dto.getPassword());
+    public ResponseEntity<ApiResponse> resetPassword(@RequestBody AuthRequestBody dto) {
+        ApiResponse response = applicantService.resetPassword(dto.getId(), dto.getPassword());
         return new ResponseEntity<>(response, HttpStatus.valueOf(response.getHttpStatusCode()));
     }
 
     @PreAuthorize("hasRole('Applicant')")
     @PostMapping("/jobs/apply")
-    public ResponseEntity<ResponseWrapper> applyToJobs(@RequestParam("jobId") String jobId,
-                                              @RequestParam("companyId") String companyId,
-                                              @RequestParam("resume")MultipartFile resume,
-                                              HttpServletRequest request) throws IOException {
+    public ResponseEntity<ApiResponse> applyToJobs(@RequestParam("jobId") String jobId,
+                                                   @RequestParam("companyId") String companyId,
+                                                   @RequestParam("resume")MultipartFile resume,
+                                                   HttpServletRequest request) throws IOException {
 
-        ResponseWrapper applicantServiceResponse = applicantService.applyToJob(jobId,JwtTokenUtil.extractTokenFromRequest(request), companyId, resume);
+        ApiResponse applicantServiceResponse = applicantService.applyToJob(jobId,JwtTokenUtil.extractTokenFromRequest(request), companyId, resume);
         return new ResponseEntity<>(applicantServiceResponse, HttpStatus.valueOf(applicantServiceResponse.getHttpStatusCode()));
     }
 
@@ -141,16 +138,16 @@ public class ApplicantController {
 
     @GetMapping("/get-all-applications")
     @PreAuthorize("hasRole('Applicant')")
-    public ResponseEntity<ResponseWrapper<List<ApplicationDto>>> getAllApplications(HttpServletRequest request) {
-        ResponseWrapper<List<ApplicationDto>> response = applicantService.getAllApplications(JwtTokenUtil.extractTokenFromRequest(request));
+    public ResponseEntity<ApiResponse<List<ApplicationDto>>> getAllApplications(HttpServletRequest request) {
+        ApiResponse<List<ApplicationDto>> response = applicantService.getAllApplications(JwtTokenUtil.extractTokenFromRequest(request));
         return new ResponseEntity<>(response, HttpStatus.valueOf(response.getHttpStatusCode()));
     }
 
     @GetMapping("/health-check")
     @PreAuthorize("hasRole('Applicant')")
-    public ResponseEntity<ResponseWrapper> healthCheck() {
+    public ResponseEntity<ApiResponse> healthCheck() {
         return new ResponseEntity<>(
-                new ResponseWrapper<>(
+                new ApiResponse<>(
                         true,
                         200,
                         "Health Check Successful",
@@ -163,15 +160,15 @@ public class ApplicantController {
 
     @DeleteMapping("/delete-account")
     @PreAuthorize("hasRole('Applicant')")
-    public ResponseEntity<ResponseWrapper<Void>> deleteAccount(HttpServletRequest request) {
-        ResponseWrapper<Void> serviceResp = applicantService.deleteAccount(JwtTokenUtil.extractTokenFromRequest(request));
+    public ResponseEntity<ApiResponse<Void>> deleteAccount(HttpServletRequest request) {
+        ApiResponse<Void> serviceResp = applicantService.deleteAccount(JwtTokenUtil.extractTokenFromRequest(request));
         return new ResponseEntity<>(serviceResp, HttpStatus.valueOf(serviceResp.getHttpStatusCode()));
     }
 
     @DeleteMapping("/remove-application/{applicationId}")
     @PreAuthorize("hasRole('Applicant')")
-    public ResponseEntity<ResponseWrapper> withdrawApplication(@PathVariable("applicationId") String applicationId, HttpServletRequest request) {
-        ResponseWrapper serviceResp = applicantService.removeApplication(applicationId, JwtTokenUtil.extractTokenFromRequest(request));
+    public ResponseEntity<ApiResponse> withdrawApplication(@PathVariable("applicationId") String applicationId, HttpServletRequest request) {
+        ApiResponse serviceResp = applicantService.removeApplication(applicationId, JwtTokenUtil.extractTokenFromRequest(request));
         return new ResponseEntity<>(serviceResp, HttpStatus.valueOf(serviceResp.getHttpStatusCode()));
     }
 }

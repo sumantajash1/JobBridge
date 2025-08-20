@@ -3,7 +3,7 @@ package com.Sumanta.JobListing.Service;
 import com.Sumanta.JobListing.DTO.ApplicationDto;
 import com.Sumanta.JobListing.DTO.AuthRequestBody;
 import com.Sumanta.JobListing.DTO.AuthResponseDto;
-import com.Sumanta.JobListing.DTO.ResponseWrapper;
+import com.Sumanta.JobListing.DTO.ApiResponse;
 import com.Sumanta.JobListing.Entity.Application;
 import com.Sumanta.JobListing.Entity.Company;
 import com.Sumanta.JobListing.Entity.JobPost;
@@ -13,28 +13,28 @@ import java.util.List;
 
 public interface CompanyService {
 
-     ResponseWrapper<AuthResponseDto> register(Company company);
+     ApiResponse<AuthResponseDto> register(Company company);
 
-     ResponseWrapper<AuthResponseDto> login(AuthRequestBody authRequestBody);
+     ApiResponse<AuthResponseDto> login(AuthRequestBody authRequestBody);
 
-     ResponseWrapper<String> postJob(JobPost jobPost, String jwtToken);
+     ApiResponse<String> postJob(JobPost jobPost, String jwtToken);
 
-     ResponseWrapper<List<JobPost>> getAllActiveJobs(String jwtToken);
+     ApiResponse<List<JobPost>> getAllActiveJobs(String jwtToken);
 
-     ResponseWrapper<List<JobPost>> getAllInactiveJobs(String jwtToken);
+     ApiResponse<List<JobPost>> getAllInactiveJobs(String jwtToken);
 
-     ResponseWrapper<List<ApplicationDto>> getAllApplicationsForJob(String jobId, String jwtToken);
+     ApiResponse<List<ApplicationDto>> getAllApplicationsForJob(String jobId, String jwtToken);
 
-     ResponseWrapper<Void> setJobStatus(String jobId, Boolean status, String jwtToken);
+     ApiResponse<Void> setJobStatus(String jobId, Boolean status, String jwtToken);
 
-     ResponseWrapper<Void> setApplicationStatus(String applicationId, applicationStatus status, String jwtToken);
+     ApiResponse<Void> setApplicationStatus(String applicationId, applicationStatus status, String jwtToken);
 
-     ResponseWrapper<List<Application>> getAllSelectedApplicationsForJob(String jwtToken, String jobId);
+     ApiResponse<List<Application>> getAllSelectedApplicationsForJob(String jwtToken, String jobId);
 
-     ResponseWrapper<Void> deleteJob(String jobId, String jwtToken);
+     ApiResponse<Void> deleteJob(String jobId, String jwtToken);
 
-     ResponseWrapper<String> getCompanyName(String gstNum);
+     ApiResponse<String> getCompanyName(String gstNum);
 
-     ResponseWrapper<String> resetPassword(String mobNo, String password);
+     ApiResponse<String> resetPassword(String mobNo, String password);
 
 }
