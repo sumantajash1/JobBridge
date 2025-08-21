@@ -110,7 +110,7 @@ public class ApplicantController {
                                                    @RequestParam("resume")MultipartFile resume,
                                                    HttpServletRequest request) throws IOException {
 
-        ApiResponse applicantServiceResponse = applicantService.applyToJob(jobId,JwtTokenUtil.extractTokenFromRequest(request), companyId, resume);
+        ApiResponse applicantServiceResponse = applicantService.applyToJob(jobId,JwtTokenUtil.getUserIdFromToken(JwtTokenUtil.extractTokenFromRequest(request)), companyId, resume);
         return new ResponseEntity<>(applicantServiceResponse, HttpStatus.valueOf(applicantServiceResponse.getHttpStatusCode()));
     }
 
@@ -140,7 +140,7 @@ public class ApplicantController {
     @GetMapping("/get-all-applications")
     @PreAuthorize("hasRole('Applicant')")
     public ResponseEntity<ApiResponse<List<ApplicationDto>>> getAllApplications(HttpServletRequest request) {
-        ApiResponse<List<ApplicationDto>> response = applicantService.getAllApplications(JwtTokenUtil.extractTokenFromRequest(request));
+        ApiResponse<List<ApplicationDto>> response = applicantService.getAllApplications(JwtTokenUtil.getUserIdFromToken(JwtTokenUtil.extractTokenFromRequest(request)));
         return new ResponseEntity<>(response, HttpStatus.valueOf(response.getHttpStatusCode()));
     }
 
@@ -169,7 +169,7 @@ public class ApplicantController {
     @DeleteMapping("/remove-application/{applicationId}")
     @PreAuthorize("hasRole('Applicant')")
     public ResponseEntity<ApiResponse> withdrawApplication(@PathVariable("applicationId") String applicationId, HttpServletRequest request) {
-        ApiResponse serviceResp = applicantService.removeApplication(applicationId, JwtTokenUtil.extractTokenFromRequest(request));
+        ApiResponse serviceResp = applicantService.removeApplication(applicationId, JwtTokenUtil.getUserIdFromToken(JwtTokenUtil.extractTokenFromRequest(request)));
         return new ResponseEntity<>(serviceResp, HttpStatus.valueOf(serviceResp.getHttpStatusCode()));
     }
 }

@@ -6,6 +6,7 @@ import com.Sumanta.JobListing.DTO.AuthResponseDto;
 import com.Sumanta.JobListing.DTO.ApiResponse;
 import com.Sumanta.JobListing.Entity.Applicant;
 import com.Sumanta.JobListing.Entity.JobPost;
+import com.twilio.rest.microvisor.v1.App;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -14,6 +15,10 @@ import java.util.List;
 public interface ApplicantService {
 
      ApiResponse<AuthResponseDto> register(Applicant applicant);
+
+     Applicant getApplicantOrThrow(String mobileNum);
+
+     JobPost getJobOrThrow(String jobId, String gstNum);
 
      ApiResponse<AuthResponseDto> logIn(AuthRequestBody applicantLoginRequestBody);
 

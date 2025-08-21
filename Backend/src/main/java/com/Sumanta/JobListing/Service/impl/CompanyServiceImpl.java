@@ -1,6 +1,5 @@
 package com.Sumanta.JobListing.Service.impl;
 
-import com.Sumanta.JobListing.DAO.ApplicantDAO;
 import com.Sumanta.JobListing.DAO.ApplicationDao;
 import com.Sumanta.JobListing.DAO.CompanyDAO;
 import com.Sumanta.JobListing.DAO.JobDao;
@@ -9,10 +8,14 @@ import com.Sumanta.JobListing.DTO.AuthResponseDto;
 import com.Sumanta.JobListing.DTO.AuthRequestBody;
 import com.Sumanta.JobListing.DTO.ApiResponse;
 import com.Sumanta.JobListing.Entity.*;
+import com.Sumanta.JobListing.Entity.enums.Role;
+import com.Sumanta.JobListing.Entity.enums.applicationStatus;
 import com.Sumanta.JobListing.Exception.*;
+import com.Sumanta.JobListing.Service.ApplicantService;
 import com.Sumanta.JobListing.Service.CompanyService;
 import com.Sumanta.JobListing.utils.GstNumberValidator;
 import com.Sumanta.JobListing.utils.JwtTokenUtil;
+import com.twilio.rest.bulkexports.v1.export.Job;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -35,7 +38,12 @@ public class CompanyServiceImpl implements CompanyService {
     @Autowired
     private ApplicationDao applicationDao;
     @Autowired
-    private ApplicantDAO applicantDao;
+    private ApplicantService applicantService;
+
+    @Override
+    public Company getCompanyOrThrow(String gstNum) {
+        return companyDAO.findById(gstNum).orElseThrow(() -> new CompanyNotFoundException(gstNum));
+    }
 
     @Override
     public ApiResponse<AuthResponseDto> register(Company company) {
@@ -59,11 +67,7 @@ public class CompanyServiceImpl implements CompanyService {
         if(!GstNumberValidator.isGstNumValid(gstNum)) {
             throw new InvalidCredentialsException("gst number");
         }
-        Optional<Company> optionalCompany = companyDAO.findById(gstNum);
-        if(optionalCompany.isEmpty()) {
-            throw new CompanyNotFoundException(gstNum);
-        }
-        Company company = optionalCompany.get();
+        Company company = getCompanyOrThrow(gstNum);
         if(!passwordEncoder.matches(authRequestBody.getPassword(), company.getCompanyPassword())) {
             throw new InvalidCredentialsException("password");
         }
@@ -88,18 +92,14 @@ public class CompanyServiceImpl implements CompanyService {
     }
 
     @Override
-    public ApiResponse<String> postJob(JobPost jobPost, String jwtToken) {
-        String gstNum = JwtTokenUtil.getUserIdFromToken(jwtToken);
-        Optional<Company> optionalCompany = companyDAO.findById(gstNum);
-        if(optionalCompany.isEmpty()) {
-            throw new CompanyNotFoundException(gstNum);
-        }
+    public ApiResponse<String> postJob(JobPost jobPost, String gstNum) {
+        Company company = getCompanyOrThrow(gstNum);
         List<JobPost> jobs = jobDao.findByCompanyId(gstNum);
         boolean exists = jobs.stream().anyMatch(j -> j.getJobTitle().equals(jobPost.getJobTitle()));
         if(exists) {
             throw new DuplicateJobException(jobPost.getJobTitle());
         }
-        String companyName = optionalCompany.get().getCompanyName();
+        String companyName = company.getCompanyName();
         jobPost.setCompanyId(gstNum);
         jobPost.setCompanyName(companyName);
         jobPost.setApplicants(new ArrayList<>());
@@ -108,37 +108,22 @@ public class CompanyServiceImpl implements CompanyService {
     }
 
     @Override
-    public ApiResponse<List<JobPost>> getAllActiveJobs(String jwtToken) {
-        String gstNum = JwtTokenUtil.getUserIdFromToken(jwtToken);
-        Optional<Company> optionalCompany = companyDAO.findById(gstNum);
-        if(optionalCompany.isEmpty()) {
-            throw new CompanyNotFoundException(gstNum);
-        }
+    public ApiResponse<List<JobPost>> getAllActiveJobs(String gstNum) {
+        Company company = getCompanyOrThrow(gstNum);
         List<JobPost> jobs = jobDao.findAllByCompanyIdAndActiveStatusTrue(gstNum);
         return ApiResponse.ok(jobs, "Active jobs fetched");
     }
 
     @Override
-    public ApiResponse<List<JobPost>> getAllInactiveJobs(String jwtToken) {
-        String gstNum = JwtTokenUtil.getUserIdFromToken(jwtToken);
-        Optional<Company> optionalCompany = companyDAO.findById(gstNum);
-        if(optionalCompany.isEmpty()) {
-            throw new CompanyNotFoundException(gstNum);
-        }
+    public ApiResponse<List<JobPost>> getAllInactiveJobs(String gstNum) {
+        Company company = getCompanyOrThrow(gstNum);
         return ApiResponse.ok(jobDao.findAllByCompanyIdAndActiveStatusFalse(gstNum), "All inactive jobs fetched");
     }
 
     @Override
-    public ApiResponse<List<ApplicationDto>> getAllApplicationsForJob(String jobId, String jwtToken) {
-        String gstNum = JwtTokenUtil.getUserIdFromToken(jwtToken);
-        Optional<Company> optionalCompany = companyDAO.findById(gstNum);
-        if(optionalCompany.isEmpty()) {
-            throw new CompanyNotFoundException(gstNum);
-        }
-        Optional<JobPost> optionalJob = jobDao.findById(jobId);
-        if(optionalJob.isEmpty() || !optionalJob.get().getCompanyId().equals(gstNum)) {
-            throw new JobNotFoundException(jobId);
-        }
+    public ApiResponse<List<ApplicationDto>> getAllApplicationsForJob(String jobId, String gstNum) {
+        Company company = getCompanyOrThrow(gstNum);
+        JobPost job = applicantService.getJobOrThrow(jobId, gstNum);
         List<Application> applications = applicationDao.findAllByJobId(jobId);
         if(applications.isEmpty()) {
             return ApiResponse.noContent();
@@ -146,11 +131,8 @@ public class CompanyServiceImpl implements CompanyService {
         List<ApplicationDto> dtos = new ArrayList<>();
         for(Application application : applications) {
             ApplicationDto dto = new ApplicationDto();
-            Optional<Applicant> optionalApplicant = applicantDao.findById(application.getApplicantId());
-            if(optionalApplicant.isEmpty()) {
-                continue;
-            }
-            String applicantName = optionalApplicant.get().getName();
+            Applicant applicant = applicantService.getApplicantOrThrow(application.getApplicantId());
+            String applicantName = applicant.getName();
             dto.setApplicationId(application.getApplicationId());
             dto.setJobId(application.getJobId());
             dto.setApplicantId(application.getApplicantId());
@@ -164,11 +146,8 @@ public class CompanyServiceImpl implements CompanyService {
     }
 
     @Override
-    public ApiResponse<Void> setJobStatus(String jobId, Boolean status, String jwtToken) {
-        String gstNum = JwtTokenUtil.getUserIdFromToken(jwtToken);
-        if(!companyDAO.existsByGstNum(gstNum)) {
-           throw new CompanyNotFoundException(gstNum);
-        }
+    public ApiResponse<Void> setJobStatus(String jobId, Boolean status, String gstNum) {
+        Company company = getCompanyOrThrow(gstNum);
         List<JobPost> jobs = jobDao.findByCompanyId(gstNum);
         boolean exists = jobs.stream().anyMatch(job -> job.getJobId().equals(jobId));
         if (exists) {
@@ -182,11 +161,8 @@ public class CompanyServiceImpl implements CompanyService {
     }
 
     @Override
-    public ApiResponse<Void> setApplicationStatus(String applicationId, applicationStatus status, String jwtToken) {
-        String gstNum = JwtTokenUtil.getUserIdFromToken(jwtToken);
-        if(!companyDAO.existsByGstNum(gstNum)) {
-            throw new CompanyNotFoundException(gstNum);
-        }
+    public ApiResponse<Void> setApplicationStatus(String applicationId, applicationStatus status, String gstNum) {
+        Company company = getCompanyOrThrow(gstNum);
         Optional<Application> OptionalApplication = applicationDao.findById(applicationId);
         if(OptionalApplication.isPresent()) {
             Application application = OptionalApplication.get();
@@ -199,21 +175,10 @@ public class CompanyServiceImpl implements CompanyService {
     }
 
     @Override
-    public ApiResponse<List<Application>> getAllSelectedApplicationsForJob(String jwtToken, String jobId) {
-        String gstNum = JwtTokenUtil.getUserIdFromToken(jwtToken);
-        if(!companyDAO.existsByGstNum(gstNum)) {
-            throw new CompanyNotFoundException(gstNum);
-        }
+    public ApiResponse<List<Application>> getAllSelectedApplicationsForJob(String gstNum, String jobId) {
+        Company company = getCompanyOrThrow(gstNum);
         List<JobPost> jobs = jobDao.findByCompanyId(gstNum);
-        JobPost job = null;
-        for(JobPost j : jobs) {
-            if(j.getJobId().equals(jobId)) {
-                job = j;
-            }
-        }
-        if(job == null) {
-            throw new JobNotFoundException(jobId);
-        }
+        JobPost job = applicantService.getJobOrThrow(jobId, gstNum);
         List<Application> selected = new ArrayList<>();
         for(String applicationId : job.getApplicants()) {
             Optional<Application> optionalApplication = applicationDao.findById(applicationId);
@@ -243,16 +208,9 @@ public class CompanyServiceImpl implements CompanyService {
     }
 
     @Override
-    public ApiResponse<Void> deleteJob(String jobId, String jwtToken) {
-        String gstNum = JwtTokenUtil.getUserIdFromToken(jwtToken);
-        if(!companyDAO.existsByGstNum(gstNum)) {
-            throw new CompanyNotFoundException(gstNum);
-        }
-        List<JobPost> jobs = jobDao.findAllByCompanyId(gstNum);
-        boolean exists = jobs.stream().anyMatch(job -> job.getJobId().equals(jobId));
-        if(!exists) {
-            throw new JobNotFoundException(jobId);
-        }
+    public ApiResponse<Void> deleteJob(String jobId, String gstNum) {
+        Company company = getCompanyOrThrow(gstNum);
+        JobPost job = applicantService.getJobOrThrow(jobId, gstNum);
         jobDao.deleteById(jobId);
         return ApiResponse.noContent();
     }

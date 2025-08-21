@@ -1,6 +1,6 @@
 package com.Sumanta.JobListing.filters;
 
-import com.Sumanta.JobListing.Entity.Role;
+import com.Sumanta.JobListing.Entity.enums.Role;
 import com.Sumanta.JobListing.utils.JwtTokenUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

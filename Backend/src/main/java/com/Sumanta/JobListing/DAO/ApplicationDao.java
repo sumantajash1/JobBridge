@@ -1,7 +1,7 @@
 package com.Sumanta.JobListing.DAO;
 
 import com.Sumanta.JobListing.Entity.Application;
-import com.Sumanta.JobListing.Entity.applicationStatus;
+import com.Sumanta.JobListing.Entity.enums.applicationStatus;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 

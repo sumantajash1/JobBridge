@@ -1,6 +1,6 @@
 package com.Sumanta.JobListing.utils;
 
-import com.Sumanta.JobListing.Entity.Role;
+import com.Sumanta.JobListing.Entity.enums.Role;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import jakarta.servlet.http.HttpServletRequest;
