@@ -9,9 +9,15 @@ import com.Sumanta.JobListing.DTO.AuthRequestBody;
 import com.Sumanta.JobListing.DTO.AuthResponseDto;
 import com.Sumanta.JobListing.DTO.ApiResponse;
 import com.Sumanta.JobListing.Entity.*;
+import com.Sumanta.JobListing.Entity.enums.Role;
+import com.Sumanta.JobListing.Entity.enums.applicationStatus;
 import com.Sumanta.JobListing.Exception.*;
 import com.Sumanta.JobListing.Service.ApplicantService;
+import com.Sumanta.JobListing.Service.CompanyService;
+import com.Sumanta.JobListing.Service.LookUpService;
 import com.Sumanta.JobListing.utils.JwtTokenUtil;
+import com.twilio.rest.bulkexports.v1.export.Job;
+import com.twilio.rest.microvisor.v1.App;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -38,7 +44,7 @@ public class ApplicantServiceImpl implements ApplicantService {
     @Autowired
     ResumeServiceImpl resumeService;
     @Autowired
-    CompanyDAO companyDao;
+    LookUpService lookUpService;
 
     @Override
     public ApiResponse<AuthResponseDto> register(Applicant applicant) {
@@ -58,10 +64,7 @@ public class ApplicantServiceImpl implements ApplicantService {
     @Override
     public ApiResponse<AuthResponseDto> logIn(AuthRequestBody applicantLoginRequestBody) {
         String mobNo = applicantLoginRequestBody.getId();
-        if(!applicantDAO.existsByMobNo(mobNo)) {
-            throw new ApplicantNotFoundException();
-        }
-        Applicant applicant = applicantDAO.findByMobNo(mobNo);
+       Applicant applicant = lookUpService.getApplicantOrThrow(mobNo);
         if(!passwordEncoder.matches(applicantLoginRequestBody.getPassword(), applicant.getPassword())) {
             throw new InvalidCredentialsException("password");
         }
@@ -77,85 +80,65 @@ public class ApplicantServiceImpl implements ApplicantService {
 
     @Override
     public ApiResponse<Void> resetPassword(String mobNo, String newPassword) {
-        Applicant applicant = applicantDAO.findByMobNo(mobNo);
-        if(applicant == null) {
-            throw new ApplicantNotFoundException();
-        }
+        Applicant applicant = lookUpService.getApplicantOrThrow(mobNo);
         applicant.setPassword(passwordEncoder.encode(newPassword));
         applicantDAO.save(applicant);
         return ApiResponse.noContent();
     }
 
     @Override
-    public ApiResponse<Void> applyToJob(String jobId, String jwtToken, String companyId, MultipartFile resume) throws IOException {
-            String applicantId = JwtTokenUtil.getUserIdFromToken(jwtToken);
-            if(!applicantDAO.existsById(applicantId)) {
-               throw new ApplicantNotFoundException();
-            }
-            Optional<Company> optionalCompany = companyDao.findById(companyId);
-            if(optionalCompany.isEmpty()) {
-               throw new CompanyNotFoundException(companyId);
-            }
-            Optional<JobPost> optionalJob = jobDao.findById(jobId);
-            if(optionalJob.isEmpty() || !optionalJob.get().getCompanyId().equals(companyId)) {
-                throw new JobNotFoundException(jobId);
-            }
-            JobPost job = optionalJob.get();
+    public ApiResponse<Void> applyToJob(String jobId, String mobileNum, String companyId, MultipartFile resume) throws IOException {
+            Applicant applicant = lookUpService.getApplicantOrThrow(mobileNum);
+            Company company = lookUpService.getCompanyOrThrow(companyId);
+            JobPost job = lookUpService.getJobOrThrow(jobId, companyId);
             List<String> applicantIds = job.getApplicants();
-            List<Application> applications = applicationDao.findByApplicantId(applicantId);
+            List<Application> applications = applicationDao.findByApplicantId(mobileNum);
             boolean alreadyApplied = applications.stream().anyMatch(application -> application.getJobId().equals(jobId));
             if(alreadyApplied) {
                 throw new ApplicantAlreadyAppliedToJobException(jobId);
             }
             Application application = new Application();
-            application.setApplicantId(applicantId);
+            application.setApplicantId(mobileNum);
             application.setJobId(jobId);
             application.setCompanyId(companyId);
             application.setResumeId(resumeService.uploadResume(resume));
             application.setStatus(applicationStatus.PENDING);
             applicationDao.save(application);
-            applicantIds.add(applicantId);
+            applicantIds.add(mobileNum);
             jobDao.save(job);
             return ApiResponse.noContent();
     }
 
     @Override
-    public ApiResponse<List<ApplicationDto>> getAllApplications(String jwtToken) {
-        String applicantId = JwtTokenUtil.getUserIdFromToken(jwtToken);
-        List<Application> applications = applicationDao.findByApplicantId(applicantId);
+    public ApiResponse<List<ApplicationDto>> getAllApplications(String mobileNum) {
+        List<Application> applications = applicationDao.findByApplicantId(mobileNum);
         if (applications.isEmpty()) {
-            return new ApiResponse<>(false, 204, "No applications found.", null, null);
+            return ApiResponse.noContent();
         }
-        Optional<Company> optionalCompany = companyDao.findById(applications.get(0).getCompanyId());
-        if (optionalCompany.isEmpty()) {
-            throw new CompanyNotFoundException(applications.get(0).getCompanyId());
-        }
-        Company company = optionalCompany.get();
-        String companyName = company.getCompanyName();
+        String applicantName = lookUpService.getApplicantOrThrow(mobileNum).getName();
         List<ApplicationDto> dtos = new ArrayList<>();
         for (Application application : applications) {
+            Company company = lookUpService.getCompanyOrThrow(application.getCompanyId());
+            String companyName = company.getCompanyName();
             ApplicationDto dto = new ApplicationDto(
                     application.getApplicationId(),
                     application.getJobId(),
-                    applicantId,
+                    mobileNum,
                     application.getCompanyId(),
-                    null,
+                    applicantName,
                     companyName,
                     application.getResumeId(),
                     application.getStatus()
             );
             dtos.add(dto);
         }
-        return new ApiResponse<>(true, 200, "Returning all the applications", dtos, null);
+        return ApiResponse.ok(dtos, "All applications are fetched");
     }
 
     @Override
-    public ApiResponse<Void> deleteAccount(String jwtToken) {
-        String applicantId = JwtTokenUtil.getUserIdFromToken(jwtToken);
-        if(!applicantDAO.existsById(applicantId)) {
-            throw new ApplicantNotFoundException();
-        }
-        List<Application> applications = applicationDao.findByApplicantId(applicantId);
+    public ApiResponse<Void> deleteAccount(String mobileNum) {
+        Applicant applicant = lookUpService.getApplicantOrThrow(mobileNum);
+        List<Application> applications = applicationDao.findByApplicantId(mobileNum);
         List<String> jobIds = new ArrayList<>();
         List<String> resumeIds = new ArrayList<>();
         for(Application a : applications) {
@@ -168,7 +151,7 @@ public class ApplicantServiceImpl implements ApplicantService {
             if(optionalJob.isPresent()) {
                 JobPost job = optionalJob.get();
                 List<String> applicants = job.getApplicants();
-                applicants.remove(applicantId);
+                applicants.remove(mobileNum);
                 job.setApplicants(applicants);
                 jobDao.save(job);
             }
@@ -176,25 +159,24 @@ public class ApplicantServiceImpl implements ApplicantService {
         for(String r : resumeIds) {
             resumeService.deleteFileById(r);
         }
-        applicantDAO.deleteById(applicantId);
+        applicantDAO.deleteById(mobileNum);
         return ApiResponse.noContent();
     }
 
     @Override
-    public ApiResponse<Void> removeApplication(String applicationId, String jwtToken) {
-        String applicantId = JwtTokenUtil.getUserIdFromToken(jwtToken);
+    public ApiResponse<Void> removeApplication(String applicationId, String applicantId) {
+        Applicant applicant = lookUpService.getApplicantOrThrow(applicantId);
         Optional<Application> optionalApplication = applicationDao.findByApplicationId(applicationId);
         if(optionalApplication.isEmpty() || !optionalApplication.get().getApplicantId().equals(applicantId)) {
             throw new ApplicationNotFoundException(applicantId);
         }
+        Application application = optionalApplication.get();
         String resumeId = optionalApplication.get().getResumeId();
         resumeService.deleteFileById(resumeId);
-        Optional<JobPost> job = jobDao.findById(optionalApplication.get().getJobId());
-        if(job.isPresent()) {
-            List<String> applicantIds = job.get().getApplicants();
-            applicantIds.remove(applicantId);
-            jobDao.save(job.get());
-        }
+        JobPost job = lookUpService.getJobOrThrow(application.getJobId(), application.getCompanyId());
+        List<String> applicantIds = job.getApplicants();
+        applicantIds.remove(applicantId);
+        jobDao.save(job);
         applicationDao.deleteById(applicationId);
         return ApiResponse.noContent();
     }

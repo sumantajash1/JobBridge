@@ -1,5 +1,6 @@
 package com.Sumanta.JobListing.Entity;
 
+import com.Sumanta.JobListing.Entity.enums.applicationStatus;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import org.springframework.data.annotation.Id;

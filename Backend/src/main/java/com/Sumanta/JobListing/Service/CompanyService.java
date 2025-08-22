@@ -7,7 +7,7 @@ import com.Sumanta.JobListing.DTO.ApiResponse;
 import com.Sumanta.JobListing.Entity.Application;
 import com.Sumanta.JobListing.Entity.Company;
 import com.Sumanta.JobListing.Entity.JobPost;
-import com.Sumanta.JobListing.Entity.applicationStatus;
+import com.Sumanta.JobListing.Entity.enums.applicationStatus;
 
 import java.util.List;
 

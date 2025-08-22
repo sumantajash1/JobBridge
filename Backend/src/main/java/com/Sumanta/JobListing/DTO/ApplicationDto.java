@@ -1,6 +1,6 @@
 package com.Sumanta.JobListing.DTO;
 
-import com.Sumanta.JobListing.Entity.applicationStatus;
+import com.Sumanta.JobListing.Entity.enums.applicationStatus;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
