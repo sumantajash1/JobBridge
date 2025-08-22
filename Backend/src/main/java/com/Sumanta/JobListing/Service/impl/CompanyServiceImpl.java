@@ -13,6 +13,7 @@ import com.Sumanta.JobListing.Entity.enums.applicationStatus;
 import com.Sumanta.JobListing.Exception.*;
 import com.Sumanta.JobListing.Service.ApplicantService;
 import com.Sumanta.JobListing.Service.CompanyService;
+import com.Sumanta.JobListing.Service.LookUpService;
 import com.Sumanta.JobListing.utils.GstNumberValidator;
 import com.Sumanta.JobListing.utils.JwtTokenUtil;
 import com.twilio.rest.bulkexports.v1.export.Job;
@@ -38,12 +39,7 @@ public class CompanyServiceImpl implements CompanyService {
     @Autowired
     private ApplicationDao applicationDao;
     @Autowired
-    private ApplicantService applicantService;
-
-    @Override
-    public Company getCompanyOrThrow(String gstNum) {
-        return companyDAO.findById(gstNum).orElseThrow(() -> new CompanyNotFoundException(gstNum));
-    }
+    LookUpService lookUpService;
 
     @Override
     public ApiResponse<AuthResponseDto> register(Company company) {
@@ -67,7 +63,7 @@ public class CompanyServiceImpl implements CompanyService {
         if(!GstNumberValidator.isGstNumValid(gstNum)) {
             throw new InvalidCredentialsException("gst number");
         }
-        Company company = getCompanyOrThrow(gstNum);
+        Company company = lookUpService.getCompanyOrThrow(gstNum);
         if(!passwordEncoder.matches(authRequestBody.getPassword(), company.getCompanyPassword())) {
             throw new InvalidCredentialsException("password");
         }
@@ -93,7 +89,7 @@ public class CompanyServiceImpl implements CompanyService {
 
     @Override
     public ApiResponse<String> postJob(JobPost jobPost, String gstNum) {
-        Company company = getCompanyOrThrow(gstNum);
+        Company company = lookUpService.getCompanyOrThrow(gstNum);
         List<JobPost> jobs = jobDao.findByCompanyId(gstNum);
         boolean exists = jobs.stream().anyMatch(j -> j.getJobTitle().equals(jobPost.getJobTitle()));
         if(exists) {
@@ -109,21 +105,21 @@ public class CompanyServiceImpl implements CompanyService {
 
     @Override
     public ApiResponse<List<JobPost>> getAllActiveJobs(String gstNum) {
-        Company company = getCompanyOrThrow(gstNum);
+        Company company = lookUpService.getCompanyOrThrow(gstNum);
         List<JobPost> jobs = jobDao.findAllByCompanyIdAndActiveStatusTrue(gstNum);
         return ApiResponse.ok(jobs, "Active jobs fetched");
     }
 
     @Override
     public ApiResponse<List<JobPost>> getAllInactiveJobs(String gstNum) {
-        Company company = getCompanyOrThrow(gstNum);
+        Company company = lookUpService.getCompanyOrThrow(gstNum);
         return ApiResponse.ok(jobDao.findAllByCompanyIdAndActiveStatusFalse(gstNum), "All inactive jobs fetched");
     }
 
     @Override
     public ApiResponse<List<ApplicationDto>> getAllApplicationsForJob(String jobId, String gstNum) {
-        Company company = getCompanyOrThrow(gstNum);
-        JobPost job = applicantService.getJobOrThrow(jobId, gstNum);
+        Company company = lookUpService.getCompanyOrThrow(gstNum);
+        JobPost job = lookUpService.getJobOrThrow(jobId, gstNum);
         List<Application> applications = applicationDao.findAllByJobId(jobId);
         if(applications.isEmpty()) {
             return ApiResponse.noContent();
@@ -131,7 +127,7 @@ public class CompanyServiceImpl implements CompanyService {
         List<ApplicationDto> dtos = new ArrayList<>();
         for(Application application : applications) {
             ApplicationDto dto = new ApplicationDto();
-            Applicant applicant = applicantService.getApplicantOrThrow(application.getApplicantId());
+            Applicant applicant = lookUpService.getApplicantOrThrow(application.getApplicantId());
             String applicantName = applicant.getName();
             dto.setApplicationId(application.getApplicationId());
             dto.setJobId(application.getJobId());
@@ -147,7 +143,7 @@ public class CompanyServiceImpl implements CompanyService {
 
     @Override
     public ApiResponse<Void> setJobStatus(String jobId, Boolean status, String gstNum) {
-        Company company = getCompanyOrThrow(gstNum);
+        Company company = lookUpService.getCompanyOrThrow(gstNum);
         List<JobPost> jobs = jobDao.findByCompanyId(gstNum);
         boolean exists = jobs.stream().anyMatch(job -> job.getJobId().equals(jobId));
         if (exists) {
@@ -162,7 +158,7 @@ public class CompanyServiceImpl implements CompanyService {
 
     @Override
     public ApiResponse<Void> setApplicationStatus(String applicationId, applicationStatus status, String gstNum) {
-        Company company = getCompanyOrThrow(gstNum);
+        Company company = lookUpService.getCompanyOrThrow(gstNum);
         Optional<Application> OptionalApplication = applicationDao.findById(applicationId);
         if(OptionalApplication.isPresent()) {
             Application application = OptionalApplication.get();
@@ -176,9 +172,9 @@ public class CompanyServiceImpl implements CompanyService {
 
     @Override
     public ApiResponse<List<Application>> getAllSelectedApplicationsForJob(String gstNum, String jobId) {
-        Company company = getCompanyOrThrow(gstNum);
+        Company company = lookUpService.getCompanyOrThrow(gstNum);
         List<JobPost> jobs = jobDao.findByCompanyId(gstNum);
-        JobPost job = applicantService.getJobOrThrow(jobId, gstNum);
+        JobPost job = lookUpService.getJobOrThrow(jobId, gstNum);
         List<Application> selected = new ArrayList<>();
         for(String applicationId : job.getApplicants()) {
             Optional<Application> optionalApplication = applicationDao.findById(applicationId);
@@ -209,8 +205,8 @@ public class CompanyServiceImpl implements CompanyService {
 
     @Override
     public ApiResponse<Void> deleteJob(String jobId, String gstNum) {
-        Company company = getCompanyOrThrow(gstNum);
-        JobPost job = applicantService.getJobOrThrow(jobId, gstNum);
+        Company company = lookUpService.getCompanyOrThrow(gstNum);
+        JobPost job = lookUpService.getJobOrThrow(jobId, gstNum);
         jobDao.deleteById(jobId);
         return ApiResponse.noContent();
     }

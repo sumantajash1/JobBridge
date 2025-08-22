@@ -14,6 +14,7 @@ import com.Sumanta.JobListing.Entity.enums.applicationStatus;
 import com.Sumanta.JobListing.Exception.*;
 import com.Sumanta.JobListing.Service.ApplicantService;
 import com.Sumanta.JobListing.Service.CompanyService;
+import com.Sumanta.JobListing.Service.LookUpService;
 import com.Sumanta.JobListing.utils.JwtTokenUtil;
 import com.twilio.rest.bulkexports.v1.export.Job;
 import com.twilio.rest.microvisor.v1.App;
@@ -43,17 +44,7 @@ public class ApplicantServiceImpl implements ApplicantService {
     @Autowired
     ResumeServiceImpl resumeService;
     @Autowired
-    CompanyService companyService;
-
-    @Override
-    public JobPost getJobOrThrow(String jobId, String gstNum) {
-        return jobDao.findById(jobId).filter(job -> job.getCompanyId().equals(gstNum)).orElseThrow(() -> new JobNotFoundException(jobId));
-    }
-
-    @Override
-    public Applicant getApplicantOrThrow(String mobileNum) {
-        return applicantDAO.findById(mobileNum).orElseThrow(() -> new ApplicantNotFoundException());
-    }
+    LookUpService lookUpService;
 
     @Override
     public ApiResponse<AuthResponseDto> register(Applicant applicant) {
@@ -73,7 +64,7 @@ public class ApplicantServiceImpl implements ApplicantService {
     @Override
     public ApiResponse<AuthResponseDto> logIn(AuthRequestBody applicantLoginRequestBody) {
         String mobNo = applicantLoginRequestBody.getId();
-       Applicant applicant = getApplicantOrThrow(mobNo);
+       Applicant applicant = lookUpService.getApplicantOrThrow(mobNo);
         if(!passwordEncoder.matches(applicantLoginRequestBody.getPassword(), applicant.getPassword())) {
             throw new InvalidCredentialsException("password");
         }
@@ -89,7 +80,7 @@ public class ApplicantServiceImpl implements ApplicantService {
 
     @Override
     public ApiResponse<Void> resetPassword(String mobNo, String newPassword) {
-        Applicant applicant = getApplicantOrThrow(mobNo);
+        Applicant applicant = lookUpService.getApplicantOrThrow(mobNo);
         applicant.setPassword(passwordEncoder.encode(newPassword));
         applicantDAO.save(applicant);
         return ApiResponse.noContent();
@@ -97,9 +88,9 @@ public class ApplicantServiceImpl implements ApplicantService {
 
     @Override
     public ApiResponse<Void> applyToJob(String jobId, String mobileNum, String companyId, MultipartFile resume) throws IOException {
-            Applicant applicant = getApplicantOrThrow(mobileNum);
-            Company company = companyService.getCompanyOrThrow(companyId);
-            JobPost job = getJobOrThrow(jobId, companyId);
+            Applicant applicant = lookUpService.getApplicantOrThrow(mobileNum);
+            Company company = lookUpService.getCompanyOrThrow(companyId);
+            JobPost job = lookUpService.getJobOrThrow(jobId, companyId);
             List<String> applicantIds = job.getApplicants();
             List<Application> applications = applicationDao.findByApplicantId(mobileNum);
             boolean alreadyApplied = applications.stream().anyMatch(application -> application.getJobId().equals(jobId));
@@ -124,10 +115,10 @@ public class ApplicantServiceImpl implements ApplicantService {
         if (applications.isEmpty()) {
             return ApiResponse.noContent();
         }
-        String applicantName = getApplicantOrThrow(mobileNum).getName();
+        String applicantName = lookUpService.getApplicantOrThrow(mobileNum).getName();
         List<ApplicationDto> dtos = new ArrayList<>();
         for (Application application : applications) {
-            Company company = companyService.getCompanyOrThrow(application.getCompanyId());
+            Company company = lookUpService.getCompanyOrThrow(application.getCompanyId());
             String companyName = company.getCompanyName();
             ApplicationDto dto = new ApplicationDto(
                     application.getApplicationId(),
@@ -146,7 +137,7 @@ public class ApplicantServiceImpl implements ApplicantService {
 
     @Override
     public ApiResponse<Void> deleteAccount(String mobileNum) {
-        Applicant applicant = getApplicantOrThrow(mobileNum);
+        Applicant applicant = lookUpService.getApplicantOrThrow(mobileNum);
         List<Application> applications = applicationDao.findByApplicantId(mobileNum);
         List<String> jobIds = new ArrayList<>();
         List<String> resumeIds = new ArrayList<>();
@@ -174,7 +165,7 @@ public class ApplicantServiceImpl implements ApplicantService {
 
     @Override
     public ApiResponse<Void> removeApplication(String applicationId, String applicantId) {
-        Applicant applicant = getApplicantOrThrow(applicantId);
+        Applicant applicant = lookUpService.getApplicantOrThrow(applicantId);
         Optional<Application> optionalApplication = applicationDao.findByApplicationId(applicationId);
         if(optionalApplication.isEmpty() || !optionalApplication.get().getApplicantId().equals(applicantId)) {
             throw new ApplicationNotFoundException(applicantId);
@@ -182,7 +173,7 @@ public class ApplicantServiceImpl implements ApplicantService {
         Application application = optionalApplication.get();
         String resumeId = optionalApplication.get().getResumeId();
         resumeService.deleteFileById(resumeId);
-        JobPost job = getJobOrThrow(application.getJobId(), application.getCompanyId());
+        JobPost job = lookUpService.getJobOrThrow(application.getJobId(), application.getCompanyId());
         List<String> applicantIds = job.getApplicants();
         applicantIds.remove(applicantId);
         jobDao.save(job);

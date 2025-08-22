@@ -15,8 +15,6 @@ public interface CompanyService {
 
      ApiResponse<AuthResponseDto> register(Company company);
 
-     Company getCompanyOrThrow(String mobileNum);
-
      ApiResponse<AuthResponseDto> login(AuthRequestBody authRequestBody);
 
      ApiResponse<String> postJob(JobPost jobPost, String jwtToken);

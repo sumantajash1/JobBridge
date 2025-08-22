@@ -16,10 +16,6 @@ public interface ApplicantService {
 
      ApiResponse<AuthResponseDto> register(Applicant applicant);
 
-     Applicant getApplicantOrThrow(String mobileNum);
-
-     JobPost getJobOrThrow(String jobId, String gstNum);
-
      ApiResponse<AuthResponseDto> logIn(AuthRequestBody applicantLoginRequestBody);
 
      ApiResponse<List<JobPost>> fetchAllJobs();
